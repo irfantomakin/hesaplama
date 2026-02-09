@@ -3,245 +3,347 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>Süre Hesaplama</title>
+<title>Tomakin Süre Hesaplama</title>
 
 <style>
-:root{
-  --bg:#f6f7f9;
-  --card:#fff;
-  --border:#e6e6e6;
-  --danger:#c62828;
-  --dark:#2b2b2b;
-  --safeBottom: env(safe-area-inset-bottom, 0px);
-}
+  :root{
+    --bg:#f6f7f9;
+    --card:#fff;
+    --border:#e6e6e6;
+    --shadow: 0 6px 16px rgba(0,0,0,.06);
+    --danger:#c62828;
+    --dark:#2b2b2b;
+    --safeTop: env(safe-area-inset-top, 0px);
+    --safeBottom: env(safe-area-inset-bottom, 0px);
+  }
 
-html,body{
-  margin:0;
-  height:100%;
-  background:var(--bg);
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-}
+  html, body { height: 100%; }
+  body{
+    font-family: Arial, sans-serif;
+    margin:0;
+    padding: 14px 14px calc(14px + var(--safeBottom));
+    max-width: 1100px;
+    margin-inline:auto;
+    background:var(--bg);
+  }
 
-h1{
-  text-align:center;
-  font-size:18px;
-  margin:10px 0;
-}
+  h1{
+    text-align:center;
+    margin: calc(6px + var(--safeTop)) 0 12px 0;
+    font-size: 20px;
+  }
 
-.toolbar{
-  display:flex;
-  gap:10px;
-  justify-content:center;
-  margin-bottom:8px;
-}
-.btn{
-  padding:10px 14px;
-  border-radius:14px;
-  border:1px solid #ccc;
-  background:#fff;
-  font-weight:700;
-}
-.btn.active{
-  border-color:#000;
-}
+  /* Mobil sekmeler */
+  .toolbar{
+    display:none;
+    gap:10px;
+    justify-content:center;
+    margin-bottom:10px;
+  }
+  .btn{
+    padding:10px 14px;
+    border-radius:12px;
+    border:1px solid #ddd;
+    background:#fff;
+    font-weight:700;
+    cursor:pointer;
+  }
+  .btn.active{ border-color:#111; }
 
-.areas{
-  display:block;
-}
+  .areas{
+    display:flex;
+    gap:16px;
+    align-items:flex-start;
+  }
 
-.area{
-  background:#fff;
-  margin:0 10px;
-  border-radius:20px;
-  display:none;
-  flex-direction:column;
-  height:calc(100dvh - 140px);
-  overflow:auto;
-  padding-bottom:140px; /* ✅ TOPLAM için boşluk */
-}
-.area.active{ display:flex; }
+  .area{
+    flex:1;
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:18px;
+    padding:14px;
+    box-shadow: var(--shadow);
+    display:flex;
+    flex-direction:column;
+    min-height: 0;
+  }
 
-.area-head{
-  position:sticky;
-  top:0;
-  background:#fff;
-  z-index:5;
-  padding:12px;
-}
+  .area-head{
+    position: sticky;
+    top: 0;
+    background: var(--card);
+    z-index: 2;
+    padding-bottom: 10px;
+  }
 
-.titlebar{
-  display:flex;
-  align-items:center;
-  gap:10px;
-}
-.titlebar h2{
-  margin:0;
-  font-size:20px;
-}
-.titlebar .spacer{ flex:1; }
+  /* Başlık satırı: Alan X + (boşlukta) Hepsini Sil */
+  .titlebar{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom: 8px;
+  }
+  .titlebar h2{ margin:0; font-size:18px; }
+  .titlebar .spacer{ flex: 1 1 auto; } /* boşluk alanı */
 
-.clear-all{
-  border:1px solid #f1b7b7;
-  color:var(--danger);
-  background:#fff;
-  padding:8px 12px;
-  border-radius:14px;
-  font-weight:800;
-}
+  .clear-all{
+    border: 1px solid #f1b7b7;
+    background: #fff;
+    color: var(--danger);
+    font-weight: 900;
+    border-radius: 12px;
+    padding: 10px 12px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .clear-all:active{ transform: scale(0.98); }
 
-.topbar{
-  display:flex;
-  align-items:center;
-  gap:12px;
-  margin-top:8px;
-}
+  /* Kırmızı fark + sağ kontrol alanı */
+  .topbar{
+    display:flex;
+    gap:12px;
+    align-items:center;
+    justify-content:space-between;
+  }
 
-.top-diff{
-  font-size:36px;
-  font-weight:900;
-  color:var(--danger);
-  min-width:120px;
-}
+  /* Kırmızı fark alanı (min 60px) */
+  .top-diff{
+    font-size: 60px;
+    font-weight: 900;
+    color:var(--danger);
+    margin: 0;
+    line-height:1.05;
 
-.right-controls{
-  display:flex;
-  align-items:center;
-  gap:8px;
-}
+    min-height: 60px;
+    display:flex;
+    align-items:center;
+    flex: 1 1 auto;
+  }
 
-input{
-  width:120px;
-  padding:10px;
-  font-size:18px;
-  text-align:center;
-  border-radius:16px;
-  border:1px solid #ddd;
-}
-input.filled{
-  background:#2b2b2b;
-  color:#fff;
-  border-color:#2b2b2b;
-}
+  .right-controls{
+    display:flex;
+    gap:10px;
+    align-items:center;
+    justify-content:flex-end;
+    flex: 0 0 auto;
+  }
 
-.icon-btn{
-  width:42px;
-  height:42px;
-  border-radius:14px;
-  border:1px solid #ddd;
-  background:#fff;
-  font-size:18px;
-}
+  .mini-label{
+    font-weight:800;
+    color:#111;
+    white-space:nowrap;
+  }
 
-.list{
-  flex:1;
-  padding:10px 12px;
-}
+  input{
+    width: 120px;
+    padding:10px;
+    text-align:center;
+    font-size: 18px;
+    border-radius: 14px;
+    border:1px solid #dcdcdc;
+    outline:none;
+    background:#fff;
+    color:#111;
+  }
+  input:focus{
+    border-color:#111;
+    box-shadow: 0 0 0 4px rgba(0,0,0,.06);
+  }
 
-.row{
-  display:flex;
-  align-items:center;
-  gap:10px;
-  margin-bottom:10px;
-}
-.idx{
-  width:28px;
-  text-align:right;
-  color:#777;
-}
+  /* İçi dolu kutu koyu */
+  input.filled{
+    background:var(--dark);
+    color:#ffffff;
+    border-color:var(--dark);
+  }
+  input.filled::selection{
+    background:#ffffff;
+    color:#000000;
+  }
 
-.area-foot{
-  position:sticky;
-  bottom:0;
-  background:#fff;
-  padding:10px 12px;
-  border-top:1px solid #eee;
-  z-index:4;
-}
+  /* küçük ikon butonlar (satır sil ve girilen sil) */
+  .icon-btn{
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+    border: 1px solid #ddd;
+    background: #fff;
+    font-size: 18px;
+    font-weight: 900;
+    line-height: 1;
+    cursor: pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex: 0 0 auto;
+  }
+  .icon-btn:active{ transform: scale(0.97); }
 
-.total{
-  display:flex;
-  justify-content:space-between;
-  font-size:20px;
-  font-weight:900;
-}
+  .list{
+    min-height: 0;
+    overflow: auto;
+    border-top: 1px dashed #f0f0f0;
+    border-bottom: 1px dashed #f0f0f0;
+    padding: 6px 0;
+  }
 
-.grand{
-  position:fixed;
-  bottom:0;
-  left:0;
-  right:0;
-  padding:14px;
-  background:#000;
-  color:#fff;
-  font-size:22px;
-  font-weight:900;
-  text-align:center;
-}
+  .row{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:6px 4px;
+    border-bottom: 1px dashed #eee;
+  }
+  .row:last-child{ border-bottom:none; }
+
+  .idx{
+    width: 34px;
+    text-align:right;
+    color:#666;
+    font-weight:700;
+    flex: 0 0 auto;
+  }
+
+  .area-foot{
+    position: sticky;
+    bottom: 0;
+    background: var(--card);
+    z-index: 2;
+    padding-top: 10px;
+  }
+
+  .total{
+    font-weight:800;
+    font-size: 18px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding-top: 10px;
+    border-top: 1px solid #eee;
+  }
+
+  .grand{
+    margin-top: 12px;
+    background:#111;
+    color:#fff;
+    border-radius: 18px;
+    padding: 12px 14px;
+    text-align:center;
+    font-size: 20px;
+    font-weight:900;
+    position: sticky;
+    bottom: 0;
+    z-index: 3;
+  }
+
+  /* Mobil sığdırma */
+  @media (max-width: 900px){
+    body{ padding: 10px 10px calc(10px + var(--safeBottom)); }
+    h1{ font-size: 18px; margin: calc(6px + var(--safeTop)) 0 10px; }
+
+    .toolbar{ display:flex; }
+    .areas{ display:block; }
+
+    .area{ display:none; height: calc(100dvh - (138px + var(--safeTop) + var(--safeBottom))); }
+    .area.active{ display:flex; }
+
+    .top-diff{ font-size: 30px; }
+
+    input{ width: 140px; font-size: 18px; padding: 10px; }
+    .row{ padding: 6px 2px; }
+    .idx{ width: 30px; font-size: 13px; }
+
+    .right-controls{ gap:8px; flex-wrap: wrap; justify-content:flex-end; }
+    .clear-all{ padding: 10px 10px; }
+
+    /* ✅ iPhone klavye açılınca body kaymasın */
+    html, body{
+      height: 100dvh;
+      overflow: hidden;
+    }
+
+    /* ✅ Kaydırma alanın kendisinde: sticky header (kırmızı alan) hep görünür */
+    .area{
+      overflow: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    /* ✅ liste artık scroll değil (scroll .area’da) */
+    .list{
+      overflow: visible;
+    }
+  }
 </style>
 </head>
 
 <body>
 
-<h1>Süre Hesaplama</h1>
-
 <div class="toolbar">
-  <button class="btn active" id="tab1">Reklamdan Önce</button>
-  <button class="btn" id="tab2">Reklamdan Sonra</button>
+  <button class="btn active" id="tab1" type="button">Reklamdan Önce</button>
+  <button class="btn" id="tab2" type="button">Reklamdan Sonra</button>
 </div>
 
 <div class="areas">
 
-<!-- ALAN 1 -->
-<div class="area active" id="areaBox1">
-  <div class="area-head">
-    <div class="titlebar">
-      <h2>Reklamdan Önce</h2>
-      <div class="spacer"></div>
-      <button class="clear-all" onclick="clearArea('area1')">Hepsini Sil</button>
+  <!-- ALAN 1 -->
+  <div class="area active" data-area="1">
+    <div class="area-head">
+
+      <div class="titlebar">
+        <h2>Reklamdan Önce</h2>
+        <div class="spacer"></div>
+        <button class="clear-all" id="clearArea1" type="button">Hepsini Sil</button>
+      </div>
+
+      <div class="topbar">
+        <div class="top-diff" id="remain1">-00:00</div>
+
+        <div class="right-controls">
+          <span class="mini-label">Girilen</span>
+          <input id="sub1" placeholder="sn/dk" inputmode="numeric" pattern="[0-9]*" autocomplete="off" spellcheck="false">
+          <button class="icon-btn" id="clearSub1" type="button" aria-label="Girilen temizle" title="Girilen temizle">✕</button>
+        </div>
+      </div>
     </div>
 
-    <div class="topbar">
-      <div class="top-diff" id="remain1">00:00</div>
-      <div class="right-controls">
-        <span>Girilen</span>
-        <input id="sub1" placeholder="dk/sn" inputmode="numeric">
-        <button class="icon-btn" onclick="clearInput(sub1)">×</button>
+    <div class="list" id="area1"></div>
+
+    <div class="area-foot">
+      <div class="total">
+        <span>Toplam</span><span id="total1">00:00</span>
       </div>
     </div>
   </div>
 
-  <div class="list" id="area1"></div>
+  <!-- ALAN 2 -->
+  <div class="area" data-area="2">
+    <div class="area-head">
 
-  <div class="area-foot">
-    <div class="total"><span>Toplam</span><span id="total1">00:00</span></div>
-  </div>
-</div>
+      <div class="titlebar">
+        <h2>Reklamdan Sonra</h2>
+        <div class="spacer"></div>
+        <button class="clear-all" id="clearArea2" type="button">Hepsini Sil</button>
+      </div>
 
-<!-- ALAN 2 -->
-<div class="area" id="areaBox2">
-  <div class="area-head">
-    <div class="titlebar">
-      <h2>Reklamdan Sonra</h2>
-      <div class="spacer"></div>
-      <button class="clear-all" onclick="clearArea('area2')">Hepsini Sil</button>
+      <div class="topbar">
+        <div class="top-diff" id="remain2">-00:00</div>
+
+        <div class="right-controls">
+          <span class="mini-label">Girilen</span>
+          <input id="sub2" placeholder="sn/dk" inputmode="numeric" pattern="[0-9]*" autocomplete="off" spellcheck="false">
+          <button class="icon-btn" id="clearSub2" type="button" aria-label="Girilen temizle" title="Girilen temizle">✕</button>
+        </div>
+      </div>
     </div>
 
-    <div class="topbar">
-      <div class="top-diff" id="remain2">00:00</div>
-      <div class="right-controls">
-        <span>Girilen</span>
-        <input id="sub2" placeholder="dk/sn" inputmode="numeric">
-        <button class="icon-btn" onclick="clearInput(sub2)">×</button>
+    <div class="list" id="area2"></div>
+
+    <div class="area-foot">
+      <div class="total">
+        <span>Toplam</span><span id="total2">00:00</span>
       </div>
     </div>
   </div>
-
-  <div class="list" id="area2"></div>
-
-  <div class="area-foot">
-    <div class="total"><span>Toplam</span><span id="total2">00:00</span></div>
-  </div>
-</div>
 
 </div>
 
@@ -250,65 +352,284 @@ input.filled{
 </div>
 
 <script>
-function makeRows(id,count){
-  const box=document.getElementById(id);
+let allInputs = [];
+
+/* ---------- FILLED ---------- */
+function updateFilledState(input){
+  if(input.value && input.value.trim() !== "") input.classList.add("filled");
+  else input.classList.remove("filled");
+}
+
+/* ---------- FORMAT ---------- */
+function sanitize(value){
+  value = (value || "").replace(/[^0-9:]/g,"");
+  const parts = value.split(":");
+  if(parts.length > 2){
+    value = parts[0] + ":" + parts.slice(1).join("").replace(/:/g,"");
+  }
+  return value;
+}
+
+function autoFormat(v){
+  v = sanitize(v);
+  if(!v) return "";
+
+  if(v.includes(":")){
+    let [m,s] = v.split(":");
+    m = parseInt(m || "0",10) || 0;
+    s = parseInt(s || "0",10) || 0;
+    m += Math.floor(s/60);
+    s = s % 60;
+    return `${m}:${String(s).padStart(2,"0")}`;
+  }
+
+  const d = v.replace(/\D/g,"");
+  if(!d) return "";
+  if(d.length <= 2) return `0:${d.padStart(2,"0")}`;
+
+  let m = parseInt(d.slice(0,-2),10) || 0;
+  let s = parseInt(d.slice(-2),10) || 0;
+  m += Math.floor(s/60);
+  s = s % 60;
+  return `${m}:${String(s).padStart(2,"0")}`;
+}
+
+function toSeconds(v){
+  if(!v) return 0;
+  const f = autoFormat(v);
+  if(!f.includes(":")) return 0;
+  const [m,s] = f.split(":");
+  return (parseInt(m,10)||0)*60 + (parseInt(s,10)||0);
+}
+
+function fromSeconds(sec){
+  const neg = sec < 0;
+  sec = Math.abs(sec);
+  const m = Math.floor(sec/60);
+  const s = sec % 60;
+  return `${neg?"-":""}${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
+}
+
+/* ---------- NAV (OK TUŞLARI - PC) ---------- */
+function isVisible(el){ return !!(el.offsetParent); }
+
+function focusPrevVisible(cur){
+  const i = allInputs.indexOf(cur);
+  for(let j=i-1;j>=0;j--){
+    if(isVisible(allInputs[j])){ allInputs[j].focus(); return true; }
+  }
+  return false;
+}
+function focusNextVisible(cur){
+  const i = allInputs.indexOf(cur);
+  for(let j=i+1;j<allInputs.length;j++){
+    if(isVisible(allInputs[j])){ allInputs[j].focus(); return true; }
+  }
+  return false;
+}
+
+/* ---------- INPUT ÜRETİM ---------- */
+function createAreaInputs(containerId, count){
+  const c = document.getElementById(containerId);
   for(let i=1;i<=count;i++){
-    const r=document.createElement("div");
-    r.className="row";
-    r.innerHTML=`
-      <div class="idx">${i}.</div>
-      <input placeholder="dk/sn" inputmode="numeric">
-      <button class="icon-btn">×</button>`;
-    const inp=r.querySelector("input");
-    const btn=r.querySelector("button");
-    inp.oninput=()=>calc();
-    btn.onclick=()=>{inp.value="";calc();}
-    box.appendChild(r);
+    const row = document.createElement("div");
+    row.className = "row";
+
+    const idx = document.createElement("div");
+    idx.className = "idx";
+    idx.textContent = i + ".";
+
+    const input = document.createElement("input");
+    input.type = "text";
+    input.placeholder = "sn/dk";
+    input.inputMode = "numeric";
+    input.pattern = "[0-9]*";
+    input.autocomplete = "off";
+    input.spellcheck = false;
+
+    const clearBtn = document.createElement("button");
+    clearBtn.className = "icon-btn";
+    clearBtn.type = "button";
+    clearBtn.textContent = "✕";
+    clearBtn.setAttribute("aria-label", "Satırı temizle");
+    clearBtn.title = "Satırı temizle";
+
+    wireAreaInput(input);
+
+    clearBtn.addEventListener("click", () => {
+      if(!input.value) return;
+      input.value = "";
+      updateFilledState(input);
+      calculateTotals();
+      input.focus();
+    });
+
+    row.appendChild(idx);
+    row.appendChild(input);
+    row.appendChild(clearBtn);
+    c.appendChild(row);
+
+    allInputs.push(input);
   }
 }
 
-makeRows("area1",13);
-makeRows("area2",7);
+/* ---------- SAHA KUTULARI ---------- */
+function wireAreaInput(input){
+  input.addEventListener("focus",()=>setTimeout(()=>input.select(),0));
+  input.addEventListener("click",()=>setTimeout(()=>input.select(),0));
 
-tab1.onclick=()=>{
-  tab1.classList.add("active");
-  tab2.classList.remove("active");
-  areaBox1.classList.add("active");
-  areaBox2.classList.remove("active");
+  input.addEventListener("keydown",(e)=>{
+    if(e.key === "ArrowUp" || e.key === "ArrowLeft"){
+      e.preventDefault(); focusPrevVisible(input); return;
+    }
+    if(e.key === "ArrowDown" || e.key === "ArrowRight"){
+      e.preventDefault(); focusNextVisible(input); return;
+    }
+    if(e.key==="Enter"){
+      e.preventDefault();
+      input.value = autoFormat(input.value);
+      calculateTotals();
+      updateFilledState(input);
+      focusNextVisible(input);
+    }
+  });
+
+  input.addEventListener("input",()=>{
+    input.value = sanitize(input.value);
+
+    // 3 hane → format + alt kutu
+    if(!input.value.includes(":")){
+      const digits = input.value.replace(/\D/g,"");
+      if(digits.length === 3){
+        input.value = autoFormat(digits);
+        calculateTotals();
+        updateFilledState(input);
+        focusNextVisible(input);
+        return;
+      }
+    }
+
+    calculateTotals();
+    updateFilledState(input);
+  });
+
+  input.addEventListener("blur",()=>{
+    if(input.value) input.value = autoFormat(input.value);
+    calculateTotals();
+    updateFilledState(input);
+  });
+}
+
+/* ---------- GİRİLEN KUTULARI ---------- */
+function wireSubtractInput(input){
+  input.addEventListener("focus",()=>setTimeout(()=>input.select(),0));
+  input.addEventListener("click",()=>setTimeout(()=>input.select(),0));
+
+  input.addEventListener("keydown",(e)=>{
+    if(e.key==="Enter"){
+      e.preventDefault();
+      input.value = autoFormat(input.value);
+      calculateTotals();
+      updateFilledState(input);
+    }
+  });
+
+  input.addEventListener("input",()=>{
+    input.value = sanitize(input.value);
+
+    // 4 hane → format (kutuda kal)
+    if(!input.value.includes(":")){
+      const digits = input.value.replace(/\D/g,"");
+      if(digits.length === 4){
+        input.value = autoFormat(digits);
+      }
+    }
+
+    calculateTotals();
+    updateFilledState(input);
+  });
+
+  input.addEventListener("blur",()=>{
+    if(input.value) input.value = autoFormat(input.value);
+    calculateTotals();
+    updateFilledState(input);
+  });
+}
+
+/* ---------- TOPLAMLAR ---------- */
+function sumArea(id){
+  let t=0;
+  document.querySelectorAll(`#${id} input`).forEach(i=> t += toSeconds(i.value));
+  return t;
+}
+
+function calculateTotals(){
+  const a1 = sumArea("area1");
+  const a2 = sumArea("area2");
+
+  total1.textContent = fromSeconds(a1);
+  total2.textContent = fromSeconds(a2);
+  grandTotal.textContent = fromSeconds(a1+a2);
+
+  remain1.textContent = fromSeconds(a1 - toSeconds(sub1.value));
+  remain2.textContent = fromSeconds(a2 - toSeconds(sub2.value));
+}
+
+/* ---------- MOBİL SEKME ---------- */
+function setActiveArea(n){
+  document.querySelectorAll(".area").forEach(a=>a.classList.remove("active"));
+  document.querySelector(`.area[data-area="${n}"]`).classList.add("active");
+  tab1.classList.toggle("active",n===1);
+  tab2.classList.toggle("active",n===2);
+}
+tab1.onclick=()=>setActiveArea(1);
+tab2.onclick=()=>setActiveArea(2);
+
+/* ---------- CLEAR BUTONLARI ---------- */
+function clearArea(areaId){
+  const inputs = document.querySelectorAll(`#${areaId} input`);
+  const anyFilled = Array.from(inputs).some(i => i.value);
+  if(!anyFilled) return;
+
+  inputs.forEach(i=>{
+    i.value = "";
+    updateFilledState(i);
+  });
+  calculateTotals();
+}
+
+clearArea1.onclick = ()=> clearArea("area1");
+clearArea2.onclick = ()=> clearArea("area2");
+
+// Girilen tek tek temizle (Hepsini Sil bunları silmez)
+clearSub1.onclick = ()=>{
+  if(!sub1.value) return;
+  sub1.value = "";
+  updateFilledState(sub1);
+  calculateTotals();
+  sub1.focus();
 };
-tab2.onclick=()=>{
-  tab2.classList.add("active");
-  tab1.classList.remove("active");
-  areaBox2.classList.add("active");
-  areaBox1.classList.remove("active");
+clearSub2.onclick = ()=>{
+  if(!sub2.value) return;
+  sub2.value = "";
+  updateFilledState(sub2);
+  calculateTotals();
+  sub2.focus();
 };
 
-function clearArea(id){
-  document.querySelectorAll(`#${id} input`).forEach(i=>i.value="");
-  calc();
-}
-function clearInput(i){ i.value=""; calc(); }
+/* ---------- BAŞLAT ---------- */
+createAreaInputs("area1",13);
+createAreaInputs("area2",7);
 
-function toSec(v){
-  if(!v) return 0;
-  const p=v.replace(/\D/g,"");
-  if(p.length<=2) return Number(p);
-  return Number(p.slice(0,-2))*60+Number(p.slice(-2));
-}
-function fmt(s){
-  const m=Math.floor(s/60);
-  const sn=s%60;
-  return `${String(m).padStart(2,"0")}:${String(sn).padStart(2,"0")}`;
-}
-function calc(){
-  const a1=[...area1.querySelectorAll("input")].reduce((t,i)=>t+toSec(i.value),0);
-  const a2=[...area2.querySelectorAll("input")].reduce((t,i)=>t+toSec(i.value),0);
-  total1.textContent=fmt(a1);
-  total2.textContent=fmt(a2);
-  grandTotal.textContent=fmt(a1+a2);
-  remain1.textContent=fmt(Math.abs(a1-toSec(sub1.value)));
-  remain2.textContent=fmt(Math.abs(a2-toSec(sub2.value)));
-}
+allInputs.push(sub1);
+allInputs.push(sub2);
+
+wireSubtractInput(sub1);
+wireSubtractInput(sub2);
+
+setActiveArea(1);
+calculateTotals();
+document.querySelectorAll("input").forEach(updateFilledState);
 </script>
 
 </body>
