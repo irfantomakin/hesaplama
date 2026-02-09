@@ -1,3 +1,13 @@
+Aynen ✅ Redo (İleri Al) ekliyorum.
+	•	Undo yapınca (geri al), o anki durum redo yığınına gider.
+	•	Sonra Redo ile tekrar ileri alırsın.
+	•	Yeni bir değişiklik yapınca Redo sıfırlanır (standart davranış).
+	•	Kısayollar:
+	•	Undo: Ctrl/Cmd + Z
+	•	Redo: Ctrl/Cmd + Shift + Z  (ek olarak Ctrl + Y de)
+
+Aşağıdaki dosya tam son hal (index.html’ini bununla değiştir):
+
 <!DOCTYPE html>
 <html lang="tr">
 <head>
@@ -33,7 +43,6 @@
     font-size: 20px;
   }
 
-  /* Mobil sekmeler */
   .toolbar{
     display:none;
     gap:10px;
@@ -64,7 +73,7 @@
     box-shadow: var(--shadow);
     display:flex;
     flex-direction:column;
-    min-height: 0; /* önemli: içeride scroll için */
+    min-height: 0;
   }
 
   .area-head{
@@ -75,20 +84,55 @@
     padding-bottom: 8px;
   }
 
+  .head-row{
+    display:flex;
+    align-items:flex-end;
+    justify-content:space-between;
+    gap:10px;
+  }
+
   h2{
     margin: 0 0 4px 0;
     font-size: 18px;
   }
 
   .top-diff{
-    font-size: 50px;
+    font-size: 34px;
     font-weight: 900;
     color:var(--danger);
-    margin: 4px 0 8px 0;
+    margin: 4px 0 0 0;
     line-height:1.05;
   }
 
-  /* Liste alanı: burada kaydıracağız */
+  .head-actions{
+    display:flex;
+    gap:8px;
+    align-items:center;
+    flex-wrap: wrap;
+    justify-content:flex-end;
+  }
+
+  .action-btn{
+    border: 1px solid #ddd;
+    background: #fff;
+    font-weight: 800;
+    border-radius: 12px;
+    padding: 10px 12px;
+    white-space: nowrap;
+    cursor: pointer;
+  }
+  .action-btn:active{ transform: scale(0.98); }
+
+  .clear-all{
+    border-color:#f1b7b7;
+    color: var(--danger);
+  }
+
+  .undo-btn[disabled], .redo-btn[disabled]{
+    opacity:.45;
+    cursor:not-allowed;
+  }
+
   .list{
     min-height: 0;
     overflow: auto;
@@ -130,7 +174,6 @@
     box-shadow: 0 0 0 4px rgba(0,0,0,.06);
   }
 
-  /* İçi dolu kutu koyu */
   input.filled{
     background:var(--dark);
     color:#ffffff;
@@ -141,7 +184,20 @@
     color:#000000;
   }
 
-  /* Alt özet: sabit kalsın */
+  .clear-one{
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+    border: 1px solid #ddd;
+    background: #fff;
+    font-size: 18px;
+    font-weight: 900;
+    line-height: 1;
+    cursor: pointer;
+    flex: 0 0 auto;
+  }
+  .clear-one:active{ transform: scale(0.97); }
+
   .area-foot{
     position: sticky;
     bottom: 0;
@@ -168,6 +224,13 @@
     margin-top:10px;
   }
 
+  .sub-right{
+    display:flex;
+    gap:10px;
+    align-items:center;
+    flex: 0 0 auto;
+  }
+
   .grand{
     margin-top: 12px;
     background:#111;
@@ -182,39 +245,30 @@
     z-index: 3;
   }
 
-  /* Mobil sığdırma modu */
   @media (max-width: 900px){
-    body{
-      /* ekranı daha verimli kullan */
-      padding: 10px 10px calc(10px + var(--safeBottom));
-    }
+    body{ padding: 10px 10px calc(10px + var(--safeBottom)); }
     h1{ font-size: 18px; margin: calc(6px + var(--safeTop)) 0 10px; }
 
     .toolbar{ display:flex; }
     .areas{ display:block; }
 
-    .area{ display:none; height: calc(100dvh - (110px + var(--safeTop) + var(--safeBottom))); }
+    .area{ display:none; height: calc(100dvh - (130px + var(--safeTop) + var(--safeBottom))); }
     .area.active{ display:flex; }
 
-    /* mobilde input daha dar, satır daha kompakt */
     input{ width: 100%; font-size: 18px; padding: 10px; }
     .row{ padding: 6px 2px; }
     .idx{ width: 30px; font-size: 13px; }
-
-    /* fark biraz küçülsün ki daha çok satır görünsün */
     .top-diff{ font-size: 30px; }
+    .list{ flex: 1 1 auto; -webkit-overflow-scrolling: touch; }
 
-    /* listeye kalan alanı ver */
-    .list{
-      flex: 1 1 auto;
-      -webkit-overflow-scrolling: touch;
-    }
+    .sub-right{ width: 100%; }
   }
 </style>
 </head>
 
 <body>
 
+<h1>Süre Hesaplama (dk:sn)</h1>
 
 <div class="toolbar">
   <button class="btn active" id="tab1" type="button">Alan 1</button>
@@ -223,10 +277,20 @@
 
 <div class="areas">
 
+  <!-- ALAN 1 -->
   <div class="area" data-area="1">
     <div class="area-head">
-      <h2>Alan 1</h2>
-      <div class="top-diff" id="remain1">-00:00</div>
+      <div class="head-row">
+        <div>
+          <h2>Alan 1</h2>
+          <div class="top-diff" id="remain1">-00:00</div>
+        </div>
+        <div class="head-actions">
+          <button class="action-btn undo-btn" id="undoBtn1" type="button" disabled>Geri Al</button>
+          <button class="action-btn redo-btn" id="redoBtn1" type="button" disabled>İleri Al</button>
+          <button class="action-btn clear-all" id="clearArea1" type="button">Hepsini Temizle</button>
+        </div>
+      </div>
     </div>
 
     <div class="list" id="area1"></div>
@@ -235,17 +299,31 @@
       <div class="total">
         <span>Toplam</span><span id="total1">00:00</span>
       </div>
+
       <div class="subtract-row">
         <b>Girilen</b>
-        <input id="sub1" placeholder="sn/dk" inputmode="numeric" pattern="[0-9]*" autocomplete="off" spellcheck="false">
+        <div class="sub-right">
+          <input id="sub1" placeholder="sn/dk" inputmode="numeric" pattern="[0-9]*" autocomplete="off" spellcheck="false">
+          <button class="clear-one" id="clearSub1" type="button" aria-label="Girilen temizle">✕</button>
+        </div>
       </div>
     </div>
   </div>
 
+  <!-- ALAN 2 -->
   <div class="area" data-area="2">
     <div class="area-head">
-      <h2>Alan 2</h2>
-      <div class="top-diff" id="remain2">-00:00</div>
+      <div class="head-row">
+        <div>
+          <h2>Alan 2</h2>
+          <div class="top-diff" id="remain2">-00:00</div>
+        </div>
+        <div class="head-actions">
+          <button class="action-btn undo-btn" id="undoBtn2" type="button" disabled>Geri Al</button>
+          <button class="action-btn redo-btn" id="redoBtn2" type="button" disabled>İleri Al</button>
+          <button class="action-btn clear-all" id="clearArea2" type="button">Hepsini Temizle</button>
+        </div>
+      </div>
     </div>
 
     <div class="list" id="area2"></div>
@@ -254,9 +332,13 @@
       <div class="total">
         <span>Toplam</span><span id="total2">00:00</span>
       </div>
+
       <div class="subtract-row">
         <b>Girilen</b>
-        <input id="sub2" placeholder="sn/dk" inputmode="numeric" pattern="[0-9]*" autocomplete="off" spellcheck="false">
+        <div class="sub-right">
+          <input id="sub2" placeholder="sn/dk" inputmode="numeric" pattern="[0-9]*" autocomplete="off" spellcheck="false">
+          <button class="clear-one" id="clearSub2" type="button" aria-label="Girilen temizle">✕</button>
+        </div>
       </div>
     </div>
   </div>
@@ -270,47 +352,92 @@
 <script>
 let allInputs = [];
 
-/* ---------- DOLU/BOŞ GÖRSEL DURUM ---------- */
+/* ------------------ UNDO / REDO ------------------ */
+const undoStack = [];
+const redoStack = [];
+const MAX_HISTORY = 120;
+
+function getSnapshot(){
+  return {
+    area1: Array.from(document.querySelectorAll('#area1 input')).map(i => i.value),
+    area2: Array.from(document.querySelectorAll('#area2 input')).map(i => i.value),
+    sub1: sub1.value,
+    sub2: sub2.value,
+    activeArea: document.querySelector('.area.active')?.getAttribute('data-area') || "1"
+  };
+}
+
+function sameSnapshot(a,b){
+  if(!a || !b) return false;
+  if(a.sub1 !== b.sub1 || a.sub2 !== b.sub2 || a.activeArea !== b.activeArea) return false;
+  if(a.area1.length !== b.area1.length || a.area2.length !== b.area2.length) return false;
+  for(let i=0;i<a.area1.length;i++) if(a.area1[i] !== b.area1[i]) return false;
+  for(let i=0;i<a.area2.length;i++) if(a.area2[i] !== b.area2[i]) return false;
+  return true;
+}
+
+function pushUndo(){
+  const snap = getSnapshot();
+  const last = undoStack[undoStack.length - 1];
+  if(last && sameSnapshot(last, snap)) return;
+
+  undoStack.push(snap);
+  if(undoStack.length > MAX_HISTORY) undoStack.shift();
+
+  // ✅ yeni aksiyon → redo temizlenir
+  redoStack.length = 0;
+
+  updateUndoRedoButtons();
+}
+
+function applySnapshot(snap){
+  const a1 = document.querySelectorAll('#area1 input');
+  const a2 = document.querySelectorAll('#area2 input');
+  a1.forEach((inp, idx) => inp.value = snap.area1[idx] ?? "");
+  a2.forEach((inp, idx) => inp.value = snap.area2[idx] ?? "");
+  sub1.value = snap.sub1 ?? "";
+  sub2.value = snap.sub2 ?? "";
+  setActiveArea(parseInt(snap.activeArea || "1", 10));
+
+  document.querySelectorAll("input").forEach(updateFilledState);
+  calculateTotals();
+}
+
+function undo(){
+  if(undoStack.length === 0) return;
+  const current = getSnapshot();
+  const prev = undoStack.pop();
+  redoStack.push(current);
+  applySnapshot(prev);
+  updateUndoRedoButtons();
+}
+
+function redo(){
+  if(redoStack.length === 0) return;
+  const current = getSnapshot();
+  const next = redoStack.pop();
+  undoStack.push(current);
+  applySnapshot(next);
+  updateUndoRedoButtons();
+}
+
+function updateUndoRedoButtons(){
+  const uDisabled = undoStack.length === 0;
+  const rDisabled = redoStack.length === 0;
+
+  undoBtn1.disabled = uDisabled;
+  undoBtn2.disabled = uDisabled;
+  redoBtn1.disabled = rDisabled;
+  redoBtn2.disabled = rDisabled;
+}
+
+/* ------------------ DOLU/BOŞ ------------------ */
 function updateFilledState(input){
-  if(input.value && input.value.trim() !== ""){
-    input.classList.add("filled");
-  }else{
-    input.classList.remove("filled");
-  }
+  if(input.value && input.value.trim() !== "") input.classList.add("filled");
+  else input.classList.remove("filled");
 }
 
-/* ---------- INPUT ÜRETİM ---------- */
-function createAreaInputs(containerId, count){
-  const c = document.getElementById(containerId);
-  for(let i=1;i<=count;i++){
-    const row=document.createElement("div");
-    row.className="row";
-
-    const idx=document.createElement("div");
-    idx.className="idx";
-    idx.textContent=i+".";
-
-    const input=document.createElement("input");
-    input.type="text";
-    input.placeholder="sn/dk";
-
-    // ✅ Telefonda sayısal klavye
-    input.inputMode = "numeric";
-    input.pattern = "[0-9]*";
-    input.autocomplete = "off";
-    input.spellcheck = false;
-
-    wireAreaInput(input);
-
-    row.appendChild(idx);
-    row.appendChild(input);
-    c.appendChild(row);
-
-    allInputs.push(input);
-  }
-}
-
-/* ---------- ORTAK FORMAT ---------- */
+/* ------------------ FORMAT ------------------ */
 function sanitize(value){
   value = (value || "").replace(/[^0-9:]/g,"");
   const parts = value.split(":");
@@ -335,7 +462,6 @@ function autoFormat(v){
 
   const d = v.replace(/\D/g,"");
   if(!d) return "";
-
   if(d.length <= 2) return `0:${d.padStart(2,"0")}`;
 
   let m = parseInt(d.slice(0,-2),10) || 0;
@@ -361,7 +487,7 @@ function fromSeconds(sec){
   return `${neg?"-":""}${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
 }
 
-/* ---------- ODAK YARDIMCILARI ---------- */
+/* ------------------ NAV (OK TUŞLARI) ------------------ */
 function isVisible(el){ return !!(el.offsetParent); }
 
 function focusPrevVisible(cur){
@@ -379,7 +505,52 @@ function focusNextVisible(cur){
   return false;
 }
 
-/* ---------- SAHA KUTULARI ---------- */
+/* ------------------ INPUT ÜRETİM ------------------ */
+function createAreaInputs(containerId, count){
+  const c = document.getElementById(containerId);
+  for(let i=1;i<=count;i++){
+    const row = document.createElement("div");
+    row.className = "row";
+
+    const idx = document.createElement("div");
+    idx.className = "idx";
+    idx.textContent = i + ".";
+
+    const input = document.createElement("input");
+    input.type = "text";
+    input.placeholder = "sn/dk";
+    input.inputMode = "numeric";
+    input.pattern = "[0-9]*";
+    input.autocomplete = "off";
+    input.spellcheck = false;
+
+    const clearBtn = document.createElement("button");
+    clearBtn.className = "clear-one";
+    clearBtn.type = "button";
+    clearBtn.textContent = "✕";
+    clearBtn.setAttribute("aria-label", "Satırı temizle");
+
+    wireAreaInput(input);
+
+    clearBtn.addEventListener("click", () => {
+      if(!input.value) return;
+      pushUndo();
+      input.value = "";
+      updateFilledState(input);
+      calculateTotals();
+      input.focus();
+    });
+
+    row.appendChild(idx);
+    row.appendChild(input);
+    row.appendChild(clearBtn);
+    c.appendChild(row);
+
+    allInputs.push(input);
+  }
+}
+
+/* ------------------ SAHA KUTULARI ------------------ */
 function wireAreaInput(input){
   input.addEventListener("focus",()=>setTimeout(()=>input.select(),0));
   input.addEventListener("click",()=>setTimeout(()=>input.select(),0));
@@ -393,6 +564,7 @@ function wireAreaInput(input){
     }
     if(e.key==="Enter"){
       e.preventDefault();
+      pushUndo();
       input.value = autoFormat(input.value);
       calculateTotals();
       updateFilledState(input);
@@ -407,6 +579,7 @@ function wireAreaInput(input){
     if(!input.value.includes(":")){
       const digits = input.value.replace(/\D/g,"");
       if(digits.length === 3){
+        pushUndo();
         input.value = autoFormat(digits);
         calculateTotals();
         updateFilledState(input);
@@ -414,18 +587,22 @@ function wireAreaInput(input){
         return;
       }
     }
+
     calculateTotals();
     updateFilledState(input);
   });
 
   input.addEventListener("blur",()=>{
-    input.value = autoFormat(input.value);
+    if(input.value){
+      pushUndo();
+      input.value = autoFormat(input.value);
+    }
     calculateTotals();
     updateFilledState(input);
   });
 }
 
-/* ---------- GİRİLEN KUTULARI ---------- */
+/* ------------------ GİRİLEN KUTULARI ------------------ */
 function wireSubtractInput(input){
   input.addEventListener("focus",()=>setTimeout(()=>input.select(),0));
   input.addEventListener("click",()=>setTimeout(()=>input.select(),0));
@@ -439,6 +616,7 @@ function wireSubtractInput(input){
     }
     if(e.key==="Enter"){
       e.preventDefault();
+      pushUndo();
       input.value = autoFormat(input.value);
       calculateTotals();
       updateFilledState(input);
@@ -452,6 +630,7 @@ function wireSubtractInput(input){
     if(!input.value.includes(":")){
       const digits = input.value.replace(/\D/g,"");
       if(digits.length === 4){
+        pushUndo();
         input.value = autoFormat(digits);
       }
     }
@@ -461,57 +640,13 @@ function wireSubtractInput(input){
   });
 
   input.addEventListener("blur",()=>{
-    input.value = autoFormat(input.value);
+    if(input.value){
+      pushUndo();
+      input.value = autoFormat(input.value);
+    }
     calculateTotals();
     updateFilledState(input);
   });
 }
 
-/* ---------- TOPLAMLAR ---------- */
-function sumArea(id){
-  let t=0;
-  document.querySelectorAll(`#${id} input`).forEach(i=> t += toSeconds(i.value));
-  return t;
-}
-
-function calculateTotals(){
-  const a1 = sumArea("area1");
-  const a2 = sumArea("area2");
-
-  total1.textContent = fromSeconds(a1);
-  total2.textContent = fromSeconds(a2);
-  grandTotal.textContent = fromSeconds(a1+a2);
-
-  remain1.textContent = fromSeconds(a1 - toSeconds(sub1.value));
-  remain2.textContent = fromSeconds(a2 - toSeconds(sub2.value));
-}
-
-/* ---------- MOBİL SEKME ---------- */
-function setActiveArea(n){
-  document.querySelectorAll(".area").forEach(a=>a.classList.remove("active"));
-  document.querySelector(`.area[data-area="${n}"]`).classList.add("active");
-  tab1.classList.toggle("active",n===1);
-  tab2.classList.toggle("active",n===2);
-}
-tab1.onclick=()=>setActiveArea(1);
-tab2.onclick=()=>setActiveArea(2);
-
-/* ---------- BAŞLAT ---------- */
-createAreaInputs("area1",13);
-createAreaInputs("area2",8);
-
-// ok tuşu listesine girilenleri de ekle
-allInputs.push(sub1);
-allInputs.push(sub2);
-
-wireSubtractInput(sub1);
-wireSubtractInput(sub2);
-
-setActiveArea(1);
-calculateTotals();
-document.querySelectorAll("input").forEach(updateFilledState);
-if(allInputs.length && isVisible(allInputs[0])) allInputs[0].focus();
-</script>
-
-</body>
-</html>
+/*
