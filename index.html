@@ -144,35 +144,28 @@
     color:#000000;
   }
 
-  .action-btn{
-    border: 1px solid #ddd;
-    background: #fff;
-    font-weight: 800;
-    border-radius: 12px;
-    padding: 10px 12px;
-    white-space: nowrap;
-    cursor: pointer;
-  }
-  .action-btn:active{ transform: scale(0.98); }
-
-  .clear-all{
-    border-color:#f1b7b7;
-    color: var(--danger);
-  }
-
-  .clear-one{
+  /* ikon butonlar */
+  .icon-btn{
     width: 44px;
     height: 44px;
     border-radius: 14px;
     border: 1px solid #ddd;
     background: #fff;
-    font-size: 18px;
+    font-size: 20px;
     font-weight: 900;
     line-height: 1;
     cursor: pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
     flex: 0 0 auto;
   }
-  .clear-one:active{ transform: scale(0.97); }
+  .icon-btn:active{ transform: scale(0.97); }
+
+  /* Hepsini Temizle ikon: kırmızı çerçeve */
+  .icon-btn.clear-all{
+    border-color:#f1b7b7;
+  }
 
   .list{
     min-height: 0;
@@ -244,14 +237,12 @@
 
     .top-diff{ font-size: 30px; }
 
-    input{ width: 140px; font-size: 18px; padding: 10px; } /* Girilen üstte olacağı için sabit genişlik */
+    input{ width: 140px; font-size: 18px; padding: 10px; }
     .row{ padding: 6px 2px; }
     .idx{ width: 30px; font-size: 13px; }
     .list{ flex: 1 1 auto; -webkit-overflow-scrolling: touch; }
 
-    /* mobilde sağ kontrol satırı sıkışmasın */
     .right-controls{ gap:8px; flex-wrap: wrap; justify-content:flex-end; }
-    .action-btn{ padding:10px 10px; }
   }
 </style>
 </head>
@@ -278,8 +269,12 @@
         <div class="right-controls">
           <span class="mini-label">Girilen</span>
           <input id="sub1" placeholder="sn/dk" inputmode="numeric" pattern="[0-9]*" autocomplete="off" spellcheck="false">
-          <button class="clear-one" id="clearSub1" type="button" aria-label="Girilen temizle">✕</button>
-          <button class="action-btn clear-all" id="clearArea1" type="button">Hepsini Temizle</button>
+
+          <!-- Girilen temizle -->
+          <button class="icon-btn" id="clearSub1" type="button" aria-label="Girilen temizle" title="Girilen temizle">✕</button>
+
+          <!-- Hepsini temizle -->
+          <button class="icon-btn clear-all" id="clearArea1" type="button" aria-label="Hepsini temizle" title="Hepsini temizle">🧹</button>
         </div>
       </div>
     </div>
@@ -304,8 +299,12 @@
         <div class="right-controls">
           <span class="mini-label">Girilen</span>
           <input id="sub2" placeholder="sn/dk" inputmode="numeric" pattern="[0-9]*" autocomplete="off" spellcheck="false">
-          <button class="clear-one" id="clearSub2" type="button" aria-label="Girilen temizle">✕</button>
-          <button class="action-btn clear-all" id="clearArea2" type="button">Hepsini Temizle</button>
+
+          <!-- Girilen temizle -->
+          <button class="icon-btn" id="clearSub2" type="button" aria-label="Girilen temizle" title="Girilen temizle">✕</button>
+
+          <!-- Hepsini temizle -->
+          <button class="icon-btn clear-all" id="clearArea2" type="button" aria-label="Hepsini temizle" title="Hepsini temizle">🧹</button>
         </div>
       </div>
     </div>
@@ -422,10 +421,11 @@ function createAreaInputs(containerId, count){
     input.spellcheck = false;
 
     const clearBtn = document.createElement("button");
-    clearBtn.className = "clear-one";
+    clearBtn.className = "icon-btn";
     clearBtn.type = "button";
     clearBtn.textContent = "✕";
     clearBtn.setAttribute("aria-label", "Satırı temizle");
+    clearBtn.title = "Satırı temizle";
 
     wireAreaInput(input);
 
@@ -594,7 +594,6 @@ clearSub2.onclick = ()=>{
 createAreaInputs("area1",15);
 createAreaInputs("area2",10);
 
-// ok tuşu listesine girilenleri de ekle
 allInputs.push(sub1);
 allInputs.push(sub2);
 
