@@ -176,9 +176,11 @@
   }
   .icon-btn:active{ transform: scale(0.97); }
 
+  /* ✅ KRİTİK: list flex ile alanı doldursun (iOS üst üste binme fix) */
   .list{
+    flex: 1 1 auto;
     min-height: 0;
-    overflow: auto;
+    overflow: visible; /* scroll .area'da */
     border-top: 1px dashed #f0f0f0;
     border-bottom: 1px dashed #f0f0f0;
     padding: 6px 0;
@@ -203,11 +205,13 @@
     flex: 0 0 auto;
   }
 
-  /* ✅ TOPLAM BAR: sticky yok */
+  /* ✅ KRİTİK: footer overlay/sticky kalıntısı olmasın */
   .area-foot{
-    position: static;
-    bottom: auto;
-    z-index: auto;
+    flex: 0 0 auto;
+    position: relative !important;
+    top: auto !important;
+    bottom: auto !important;
+    z-index: 0 !important;
     padding-top: 10px;
     background: var(--card);
   }
@@ -253,21 +257,21 @@
       -webkit-overflow-scrolling: touch;
     }
 
-    /* list scroll değil (scroll .area’da) */
+    /* ✅ list + footer kesin fix (mobil override) */
     .list{
-      overflow: visible;
+      flex: 1 1 auto !important;
+      min-height: 0 !important;
+      overflow: visible !important;
     }
-
-    /* ✅ Mobilde Toplam ASLA üstüne binmesin */
     .area-foot{
-      position: static !important;
-      z-index: auto !important;
+      position: relative !important;
+      z-index: 0 !important;
     }
 
     /* satırda taşmayı önle */
     .row{ width:100%; overflow:hidden; }
 
-    /* mobilde input genişliği sabit taşmasın */
+    /* mobilde input genişliği taşmasın */
     .row input{
       width: 100% !important;
       max-width: 260px;
