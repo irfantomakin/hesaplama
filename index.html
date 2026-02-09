@@ -656,30 +656,29 @@ function calculateTotals(){
   const a1 = sumArea("area1");
   const a2 = sumArea("area2");
 
-  // Üstteki toplamlar (değişmiyor)
+  // Alan içi toplamlar (üstteki)
   total1.textContent = fromSeconds(a1);
   total2.textContent = fromSeconds(a2);
 
-  // Alan bazlı farklar (üst kırmızı alanlar)
+  // Alan içi farklar (üst kırmızı alanlar)
   const r1 = a1 - toSeconds(sub1.value);
   const r2 = a2 - toSeconds(sub2.value);
 
   remain1.textContent = fromSeconds(r1);
   remain2.textContent = fromSeconds(r2);
 
-  // 🔥 ALT SİYAH ŞERİT MANTIĞI
-  const activeArea = document.querySelector(".area.active")?.dataset.area || "1";
+  // 🔥 ALT SİYAH ŞERİT SADECE AKTİF ALANA BAKAR
+  const active = document.querySelector(".area.active")?.dataset.area || "1";
 
-  if(activeArea === "2"){
-    // Alan 2 aktif → sadece alan 2
-    remainActive.textContent = fromSeconds(r2);
-    grandTotal.textContent  = fromSeconds(a2);
-  }else{
-    // Alan 1 aktif → klasik davranış
+  if(active === "1"){
     remainActive.textContent = fromSeconds(r1);
     grandTotal.textContent  = fromSeconds(a1 + a2);
+  }else{
+    remainActive.textContent = fromSeconds(r2);
+    grandTotal.textContent  = fromSeconds(a2);
   }
 }
+
 
 
 /* ---------- MOBİL SEKME ---------- */
