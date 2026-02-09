@@ -15,6 +15,9 @@
     --dark:#2b2b2b;
     --safeTop: env(safe-area-inset-top, 0px);
     --safeBottom: env(safe-area-inset-bottom, 0px);
+
+    /* ✅ alttaki 2 siyah kuşak yüksekliği (yaklaşık) */
+    --bottomStackH: 120px;
   }
 
   html, body { height: 100%; }
@@ -222,8 +225,18 @@
     border-top: 1px solid #eee;
   }
 
-  .grand{
-    margin-top: 12px;
+  /* ✅ Altta 2 kuşak (üst: kırmızı alanın kopyası, alt: genel toplam) */
+  .bottom-stack{
+    position: fixed;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 0;
+    width: min(1100px, calc(100% - 20px));
+    z-index: 999;
+    padding-bottom: var(--safeBottom);
+    pointer-events: none; /* kuşaklar inputları engellemesin */
+  }
+  .strip{
     background:#111;
     color:#fff;
     border-radius: 18px;
@@ -231,9 +244,10 @@
     text-align:center;
     font-size: 20px;
     font-weight:900;
-    position: sticky;
-    bottom: 0;
-    z-index: 3;
+    box-shadow: 0 10px 24px rgba(0,0,0,.18);
+  }
+  .strip + .strip{
+    margin-top: 10px;
   }
 
   /* Mobil sığdırma */
@@ -272,6 +286,14 @@
       flex: 1 1 auto;
       overflow: auto;
       -webkit-overflow-scrolling: touch;
+
+      /* ✅ alttaki 2 kuşak alanı kadar içerik altta gizlenmesin */
+      padding-bottom: calc(var(--bottomStackH) + 30px);
+    }
+
+    .strip{
+      font-size: 18px;
+      padding: 12px 12px;
     }
   }
 </style>
@@ -348,8 +370,10 @@
 
 </div>
 
-<div class="grand">
-  GENEL TOPLAM: <span id="grandTotal">00:00</span>
+<!-- ✅ ALTTA 2 SİYAH KUŞAK -->
+<div class="bottom-stack">
+  <div class="strip">FARK: <span id="remainActive">-00:00</span></div>
+  <div class="strip">GENEL TOPLAM: <span id="grandTotal">00:00</span></div>
 </div>
 
 <script>
@@ -556,7 +580,6 @@ function wireSubtractInput(input){
   input.addEventListener("focus",()=>{
     setTimeout(()=>{
       input.select();
-      // Girilen kutusu list içinde değil ama sorun çıkarmaz:
       ensureVisibleInList(input);
     },0);
   });
@@ -598,6 +621,14 @@ function wireSubtractInput(input){
   });
 }
 
+/* ✅ aktif sekmenin kırmızı değerini alttaki siyah kuşağa yaz */
+function updateRemainActive(){
+  const active = document.querySelector(".area.active");
+  const n = active ? active.getAttribute("data-area") : "1";
+  const txt = (n === "2") ? document.getElementById("remain2").textContent : document.getElementById("remain1").textContent;
+  document.getElementById("remainActive").textContent = txt;
+}
+
 /* ---------- TOPLAMLAR ---------- */
 function sumArea(id){
   let t=0;
@@ -615,6 +646,8 @@ function calculateTotals(){
 
   remain1.textContent = fromSeconds(a1 - toSeconds(sub1.value));
   remain2.textContent = fromSeconds(a2 - toSeconds(sub2.value));
+
+  updateRemainActive();
 }
 
 /* ---------- MOBİL SEKME ---------- */
@@ -623,6 +656,7 @@ function setActiveArea(n){
   document.querySelector(`.area[data-area="${n}"]`).classList.add("active");
   tab1.classList.toggle("active",n===1);
   tab2.classList.toggle("active",n===2);
+  updateRemainActive();
 }
 tab1.onclick=()=>setActiveArea(1);
 tab2.onclick=()=>setActiveArea(2);
