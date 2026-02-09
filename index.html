@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>İrfan Süre Toplama</title>
+<title>Süre Toplama (dk:sn)</title>
 
 <style>
   body{
@@ -56,7 +56,7 @@
   }
 
   .top-diff{
-    font-size: 75px;
+    font-size: 36px;
     font-weight: 900;
     color:#c62828;
     margin: 4px 0 10px 0;
@@ -148,16 +148,17 @@
 
 <body>
 
+<h1>Süre Hesaplama (dk:sn)</h1>
 
 <div class="toolbar">
-  <button class="btn active" id="tab1" type="button">Reklamdan Önce</button>
-  <button class="btn" id="tab2" type="button">Reklamdan Sonra</button>
+  <button class="btn active" id="tab1" type="button">Alan 1</button>
+  <button class="btn" id="tab2" type="button">Alan 2</button>
 </div>
 
 <div class="areas">
 
   <div class="area" data-area="1">
-    <h2>Reklamdan Önce</h2>
+    <h2>Alan 1</h2>
     <div class="top-diff" id="remain1">-00:00</div>
 
     <div id="area1"></div>
@@ -167,12 +168,12 @@
     </div>
 
     <div class="subtract-row">
-      <b>Girilen</b><input id="sub1" placeholder="sn/dk">
+      <b>Girilen</b><input id="sub1" placeholder="sn/dk" inputmode="numeric" pattern="[0-9]*" autocomplete="off" spellcheck="false">
     </div>
   </div>
 
   <div class="area" data-area="2">
-    <h2>Reklamdan Sonra</h2>
+    <h2>Alan 2</h2>
     <div class="top-diff" id="remain2">-00:00</div>
 
     <div id="area2"></div>
@@ -182,7 +183,7 @@
     </div>
 
     <div class="subtract-row">
-      <b>Girilen</b><input id="sub2" placeholder="sn/dk">
+      <b>Girilen</b><input id="sub2" placeholder="sn/dk" inputmode="numeric" pattern="[0-9]*" autocomplete="off" spellcheck="false">
     </div>
   </div>
 
@@ -218,6 +219,12 @@ function createAreaInputs(containerId, count){
     const input=document.createElement("input");
     input.type="text";
     input.placeholder="sn/dk";
+
+    // ✅ Telefonda sayısal klavye
+    input.inputMode = "numeric";
+    input.pattern = "[0-9]*";
+    input.autocomplete = "off";
+    input.spellcheck = false;
 
     wireAreaInput(input);
 
@@ -282,7 +289,6 @@ function fromSeconds(sec){
 
 /* ---------- ODAK YARDIMCILARI ---------- */
 function isVisible(el){
-  // mobil sekmede görünmeyen alanın inputlarına gitmesin
   return !!(el.offsetParent);
 }
 
@@ -302,7 +308,7 @@ function focusNextVisible(cur){
   return false;
 }
 
-/* ---------- SAHA KUTULARI ---------- */
+/* ---------- SAHA KUTULARI (3 hane otomatik geçiş var) ---------- */
 function wireAreaInput(input){
   input.addEventListener("focus",()=>setTimeout(()=>input.select(),0));
   input.addEventListener("click",()=>setTimeout(()=>input.select(),0));
@@ -355,12 +361,12 @@ function wireAreaInput(input){
   });
 }
 
-/* ---------- GİRİLEN KUTULARI ---------- */
+/* ---------- GİRİLEN KUTULARI (alt kutuya geçiş yok; 4 hane format var) ---------- */
 function wireSubtractInput(input){
   input.addEventListener("focus",()=>setTimeout(()=>input.select(),0));
   input.addEventListener("click",()=>setTimeout(()=>input.select(),0));
 
-  // OK tuşlarıyla gezinme (↑↓←→) - Girilen kutuda da çalışsın
+  // OK tuşlarıyla gezinme (↑↓←→)
   input.addEventListener("keydown",(e)=>{
     if(e.key === "ArrowUp" || e.key === "ArrowLeft"){
       e.preventDefault();
@@ -436,7 +442,7 @@ tab2.onclick=()=>setActiveArea(2);
 createAreaInputs("area1",12);
 createAreaInputs("area2",7);
 
-// Girilen kutuları da navigation listesine ekleyelim ki ok tuşuyla geçilebilsin
+// Girilen kutularını da navigation listesine ekle
 allInputs.push(sub1);
 allInputs.push(sub2);
 
