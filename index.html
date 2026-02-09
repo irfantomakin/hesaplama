@@ -220,7 +220,7 @@
       <div class="titlebar">
         <div class="total-mini">
           <span class="tlabel">Toplam</span>
-          <span class="tvalue" id="total1">00:00</span>
+          <span class="tvalue" id="total1">—:—</span>
         </div>
         <div class="spacer"></div>
         <button class="clear-all" id="clearArea1" type="button">Hepsini Sil</button>
@@ -232,7 +232,6 @@
         <button class="icon-btn" id="clearSub1" type="button" aria-label="Girilen temizle" title="Girilen temizle">✕</button>
       </div>
 
-      <!-- ✅ Girilen boşken —:— -->
       <div class="top-diff" id="remain1">—:—</div>
     </div>
 
@@ -246,7 +245,7 @@
       <div class="titlebar">
         <div class="total-mini">
           <span class="tlabel">Toplam</span>
-          <span class="tvalue" id="total2">00:00</span>
+          <span class="tvalue" id="total2">—:—</span>
         </div>
         <div class="spacer"></div>
         <button class="clear-all" id="clearArea2" type="button">Hepsini Sil</button>
@@ -258,7 +257,6 @@
         <button class="icon-btn" id="clearSub2" type="button" aria-label="Girilen temizle" title="Girilen temizle">✕</button>
       </div>
 
-      <!-- ✅ Girilen boşken —:— -->
       <div class="top-diff" id="remain2">—:—</div>
     </div>
 
@@ -471,12 +469,18 @@
     return t;
   }
 
+  function hasAnyValue(areaId){
+    return Array.from(document.querySelectorAll(`#${areaId} input`))
+      .some(i => (i.value || "").trim() !== "");
+  }
+
   function calculateTotals(){
     const a1 = sumArea("area1");
     const a2 = sumArea("area2");
 
-    total1.textContent = fromSeconds(a1);
-    total2.textContent = fromSeconds(a2);
+    // ✅ Toplam: hiç değer yoksa —:—
+    total1.textContent = hasAnyValue("area1") ? fromSeconds(a1) : "—:—";
+    total2.textContent = hasAnyValue("area2") ? fromSeconds(a2) : "—:—";
 
     // ✅ Girilen boşsa —:—
     const raw1 = (sub1.value || "").trim();
