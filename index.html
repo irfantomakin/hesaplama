@@ -15,9 +15,6 @@
     --dark:#2b2b2b;
     --safeTop: env(safe-area-inset-top, 0px);
     --safeBottom: env(safe-area-inset-bottom, 0px);
-
-    /* ✅ alttaki tek siyah şerit yüksekliği (yaklaşık) */
-    --bottomBarH: 74px;
   }
 
   html, body { height: 100%; }
@@ -28,12 +25,6 @@
     max-width: 1100px;
     margin-inline:auto;
     background:var(--bg);
-  }
-
-  h1{
-    text-align:center;
-    margin: calc(6px + var(--safeTop)) 0 12px 0;
-    font-size: 20px;
   }
 
   /* Mobil sekmeler */
@@ -75,7 +66,7 @@
     position: sticky;
     top: 0;
     background: var(--card);
-    z-index: 20;
+    z-index: 2;
     padding-bottom: 10px;
   }
 
@@ -87,7 +78,7 @@
     margin-bottom: 8px;
   }
   .titlebar h2{ margin:0; font-size:18px; }
-  .titlebar .spacer{ flex: 1 1 auto; } /* boşluk alanı */
+  .titlebar .spacer{ flex: 1 1 auto; }
 
   .clear-all{
     border: 1px solid #f1b7b7;
@@ -109,12 +100,14 @@
     justify-content:space-between;
   }
 
+  /* Kırmızı fark alanı (min 60px) */
   .top-diff{
     font-size: 60px;
     font-weight: 900;
     color:var(--danger);
     margin: 0;
     line-height:1.05;
+
     min-height: 60px;
     display:flex;
     align-items:center;
@@ -209,7 +202,7 @@
     position: sticky;
     bottom: 0;
     background: var(--card);
-    z-index: 15;
+    z-index: 2;
     padding-top: 10px;
   }
 
@@ -223,44 +216,29 @@
     border-top: 1px solid #eee;
   }
 
-  /* ✅ TEK siyah şerit: FARK + TOPLAM */
-  .bottom-bar{
-    position: fixed;
-    left: 50%;
-    transform: translateX(-50%);
-    bottom: 0;
-    width: min(1100px, calc(100% - 20px));
-    z-index: 999;
-    background: #111;
+  /* ✅ Alt bar artık sticky değil */
+  .bottomBar{
+    margin-top: 12px;
+    background:#111;
     color:#fff;
     border-radius: 18px;
     padding: 12px 14px;
-    padding-bottom: calc(12px + var(--safeBottom));
-    box-shadow: 0 10px 24px rgba(0,0,0,.18);
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap: 14px;
-    pointer-events: none; /* alttaki alanlara dokunmayı engellemesin */
-  }
-  .bb-item{
-    font-weight: 900;
+    text-align:center;
     font-size: 20px;
-    white-space: nowrap;
+    font-weight:900;
+    position: static;
   }
 
   /* Mobil sığdırma */
   @media (max-width: 900px){
     body{ padding: 10px 10px calc(10px + var(--safeBottom)); }
-    h1{ font-size: 18px; margin: calc(6px + var(--safeTop)) 0 10px; }
-
     .toolbar{ display:flex; }
     .areas{ display:block; }
 
-    .area{ display:none; height: calc(100dvh - (138px + var(--safeTop) + var(--safeBottom))); }
+    .area{ display:none; height: calc(100dvh - (138px + env(safe-area-inset-top, 0px) + env(safe-area-inset-bottom, 0px))); }
     .area.active{ display:flex; }
 
-    .top-diff{ font-size: 30px; }
+    .top-diff{ font-size: 34px; }
 
     input{ width: 140px; font-size: 18px; padding: 10px; }
     .row{ padding: 6px 2px; }
@@ -275,25 +253,22 @@
       overflow: hidden;
     }
 
-    /* ✅ Sticky'nin çalışması için scroll container: .area */
+    /* ✅ Kaydırma alanın kendisinde: kırmızı alan hep görünür */
     .area{
       overflow: auto;
       -webkit-overflow-scrolling: touch;
-      box-sizing: border-box;
-
-      /* alttaki siyah şerit + toplam barı içeriği kapatmasın */
-      padding-bottom: calc(var(--bottomBarH) + 80px);
     }
 
-    /* list artık ana scroll değil (area scroll) */
+    /* ✅ list scroll değil */
     .list{
       overflow: visible;
-      flex: 1 1 auto;
-      padding-bottom: 0;
     }
 
-    .bb-item{
-      font-size: 18px;
+    /* ✅ Mobilde "Toplam" sticky olmasın (kutuların üstüne binmesin) */
+    .area-foot{
+      position: static;
+      bottom: auto;
+      z-index: auto;
     }
   }
 </style>
@@ -319,7 +294,7 @@
       </div>
 
       <div class="topbar">
-        <div class="top-diff" id="remain1">-00:00</div>
+        <div class="top-diff" id="remain1">00:00</div>
 
         <div class="right-controls">
           <span class="mini-label">Girilen</span>
@@ -349,7 +324,7 @@
       </div>
 
       <div class="topbar">
-        <div class="top-diff" id="remain2">-00:00</div>
+        <div class="top-diff" id="remain2">00:00</div>
 
         <div class="right-controls">
           <span class="mini-label">Girilen</span>
@@ -370,32 +345,13 @@
 
 </div>
 
-<!-- ✅ TEK siyah şerit -->
-<div class="bottom-bar" aria-hidden="true">
-  <div class="bb-item">FARK: <span id="bottomDiff">-00:00</span></div>
-  <div class="bb-item">TOPLAM: <span id="bottomTotal">00:00</span></div>
+<!-- ✅ Genel toplam yok: sadece aktif alanın FARK'ı -->
+<div class="bottomBar">
+  FARK: <span id="bottomDiff">00:00</span>
 </div>
 
 <script>
 let allInputs = [];
-
-/* input odaklanınca scroll container (area) içinde görünür tut */
-function ensureVisibleInArea(input){
-  const area = input.closest(".area");
-  if(!area) return;
-
-  const ir = input.getBoundingClientRect();
-  const ar = area.getBoundingClientRect();
-
-  const topPad = 10;
-  const bottomPad = 90; // altta sticky + siyah şerit toleransı
-
-  if(ir.top < ar.top + topPad){
-    area.scrollTop -= (ar.top + topPad - ir.top);
-  } else if(ir.bottom > ar.bottom - bottomPad){
-    area.scrollTop += (ir.bottom - (ar.bottom - bottomPad));
-  }
-}
 
 /* ---------- FILLED ---------- */
 function updateFilledState(input){
@@ -484,7 +440,7 @@ function createAreaInputs(containerId, count){
 
     const input = document.createElement("input");
     input.type = "text";
-    input.placeholder = "dk/sn";   /* ✅ */
+    input.placeholder = "dk/sn";
     input.inputMode = "numeric";
     input.pattern = "[0-9]*";
     input.autocomplete = "off";
@@ -518,18 +474,8 @@ function createAreaInputs(containerId, count){
 
 /* ---------- SAHA KUTULARI ---------- */
 function wireAreaInput(input){
-  input.addEventListener("focus",()=>{
-    setTimeout(()=>{
-      input.select();
-      ensureVisibleInArea(input);
-    },0);
-  });
-  input.addEventListener("click",()=>{
-    setTimeout(()=>{
-      input.select();
-      ensureVisibleInArea(input);
-    },0);
-  });
+  input.addEventListener("focus",()=>setTimeout(()=>input.select(),0));
+  input.addEventListener("click",()=>setTimeout(()=>input.select(),0));
 
   input.addEventListener("keydown",(e)=>{
     if(e.key === "ArrowUp" || e.key === "ArrowLeft"){
@@ -544,7 +490,6 @@ function wireAreaInput(input){
       calculateTotals();
       updateFilledState(input);
       focusNextVisible(input);
-      setTimeout(()=>ensureVisibleInArea(input), 0);
     }
   });
 
@@ -559,7 +504,6 @@ function wireAreaInput(input){
         calculateTotals();
         updateFilledState(input);
         focusNextVisible(input);
-        setTimeout(()=>ensureVisibleInArea(input), 0);
         return;
       }
     }
@@ -577,18 +521,8 @@ function wireAreaInput(input){
 
 /* ---------- GİRİLEN KUTULARI ---------- */
 function wireSubtractInput(input){
-  input.addEventListener("focus",()=>{
-    setTimeout(()=>{
-      input.select();
-      ensureVisibleInArea(input);
-    },0);
-  });
-  input.addEventListener("click",()=>{
-    setTimeout(()=>{
-      input.select();
-      ensureVisibleInArea(input);
-    },0);
-  });
+  input.addEventListener("focus",()=>setTimeout(()=>input.select(),0));
+  input.addEventListener("click",()=>setTimeout(()=>input.select(),0));
 
   input.addEventListener("keydown",(e)=>{
     if(e.key==="Enter"){
@@ -633,30 +567,21 @@ function getActiveArea(){
   return active ? active.getAttribute("data-area") : "1";
 }
 
-/* ✅ Alanlar ayrı: alt şeritte aktif alanın FARK ve TOPLAM'ı gösterilir */
 function calculateTotals(){
   const a1 = sumArea("area1");
   const a2 = sumArea("area2");
 
-  // üst toplamlar
   total1.textContent = fromSeconds(a1);
   total2.textContent = fromSeconds(a2);
 
-  // üst kırmızılar
-  const r1 = a1 - toSeconds(sub1.value);
-  const r2 = a2 - toSeconds(sub2.value);
-  remain1.textContent = fromSeconds(r1);
-  remain2.textContent = fromSeconds(r2);
+  const diff1 = a1 - toSeconds(sub1.value);
+  const diff2 = a2 - toSeconds(sub2.value);
 
-  // alt tek siyah şerit (aktif alana göre)
-  const act = getActiveArea();
-  if(act === "2"){
-    bottomDiff.textContent = fromSeconds(r2);
-    bottomTotal.textContent = fromSeconds(a2);
-  }else{
-    bottomDiff.textContent = fromSeconds(r1);
-    bottomTotal.textContent = fromSeconds(a1);
-  }
+  remain1.textContent = fromSeconds(diff1);
+  remain2.textContent = fromSeconds(diff2);
+
+  // ✅ Alt barda sadece aktif alanın farkı
+  bottomDiff.textContent = fromSeconds(getActiveArea()==="1" ? diff1 : diff2);
 }
 
 /* ---------- MOBİL SEKME ---------- */
