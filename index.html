@@ -2,29 +2,43 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>Süre Toplama (dk:sn)</title>
 
 <style>
+  :root{
+    --bg:#f6f7f9;
+    --card:#fff;
+    --border:#e6e6e6;
+    --shadow: 0 6px 16px rgba(0,0,0,.06);
+    --danger:#c62828;
+    --dark:#2b2b2b;
+    --safeTop: env(safe-area-inset-top, 0px);
+    --safeBottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  html, body { height: 100%; }
   body{
     font-family: Arial, sans-serif;
-    padding: 16px;
+    margin:0;
+    padding: 14px 14px calc(14px + var(--safeBottom));
     max-width: 1100px;
-    margin:auto;
-    background:#f6f7f9;
+    margin-inline:auto;
+    background:var(--bg);
   }
 
   h1{
     text-align:center;
-    margin: 10px 0 18px 0;
-    font-size: 22px;
+    margin: calc(6px + var(--safeTop)) 0 12px 0;
+    font-size: 20px;
   }
 
+  /* Mobil sekmeler */
   .toolbar{
     display:none;
     gap:10px;
     justify-content:center;
-    margin-bottom:12px;
+    margin-bottom:10px;
   }
   .btn{
     padding:10px 14px;
@@ -43,24 +57,44 @@
 
   .area{
     flex:1;
-    background:#fff;
-    border:1px solid #e6e6e6;
+    background:var(--card);
+    border:1px solid var(--border);
     border-radius:18px;
     padding:14px;
-    box-shadow: 0 6px 16px rgba(0,0,0,.06);
+    box-shadow: var(--shadow);
+    display:flex;
+    flex-direction:column;
+    min-height: 0; /* önemli: içeride scroll için */
+  }
+
+  .area-head{
+    position: sticky;
+    top: 0;
+    background: var(--card);
+    z-index: 2;
+    padding-bottom: 8px;
   }
 
   h2{
     margin: 0 0 4px 0;
-    font-size: 20px;
+    font-size: 18px;
   }
 
   .top-diff{
-    font-size: 55px;
+    font-size: 34px;
     font-weight: 900;
-    color:#c62828;
-    margin: 4px 0 10px 0;
+    color:var(--danger);
+    margin: 4px 0 8px 0;
     line-height:1.05;
+  }
+
+  /* Liste alanı: burada kaydıracağız */
+  .list{
+    min-height: 0;
+    overflow: auto;
+    border-top: 1px dashed #f0f0f0;
+    border-bottom: 1px dashed #f0f0f0;
+    padding: 6px 0;
   }
 
   .row{
@@ -77,6 +111,7 @@
     text-align:right;
     color:#666;
     font-weight:700;
+    flex: 0 0 auto;
   }
 
   input{
@@ -97,17 +132,25 @@
 
   /* İçi dolu kutu koyu */
   input.filled{
-    background:#2b2b2b;
+    background:var(--dark);
     color:#ffffff;
-    border-color:#2b2b2b;
+    border-color:var(--dark);
   }
   input.filled::selection{
     background:#ffffff;
     color:#000000;
   }
 
+  /* Alt özet: sabit kalsın */
+  .area-foot{
+    position: sticky;
+    bottom: 0;
+    background: var(--card);
+    z-index: 2;
+    padding-top: 10px;
+  }
+
   .total{
-    margin-top: 12px;
     font-weight:800;
     font-size: 18px;
     display:flex;
@@ -126,63 +169,96 @@
   }
 
   .grand{
-    margin-top: 16px;
+    margin-top: 12px;
     background:#111;
     color:#fff;
     border-radius: 18px;
-    padding: 14px 16px;
+    padding: 12px 14px;
     text-align:center;
-    font-size: 22px;
+    font-size: 20px;
     font-weight:900;
+    position: sticky;
+    bottom: 0;
+    z-index: 3;
   }
 
+  /* Mobil sığdırma modu */
   @media (max-width: 900px){
+    body{
+      /* ekranı daha verimli kullan */
+      padding: 10px 10px calc(10px + var(--safeBottom));
+    }
+    h1{ font-size: 18px; margin: calc(6px + var(--safeTop)) 0 10px; }
+
     .toolbar{ display:flex; }
     .areas{ display:block; }
-    .area{ display:none; }
-    .area.active{ display:block; }
-    input{ width: 100%; }
+
+    .area{ display:none; height: calc(100dvh - (110px + var(--safeTop) + var(--safeBottom))); }
+    .area.active{ display:flex; }
+
+    /* mobilde input daha dar, satır daha kompakt */
+    input{ width: 100%; font-size: 18px; padding: 10px; }
+    .row{ padding: 6px 2px; }
+    .idx{ width: 30px; font-size: 13px; }
+
+    /* fark biraz küçülsün ki daha çok satır görünsün */
+    .top-diff{ font-size: 30px; }
+
+    /* listeye kalan alanı ver */
+    .list{
+      flex: 1 1 auto;
+      -webkit-overflow-scrolling: touch;
+    }
   }
 </style>
 </head>
 
 <body>
 
+<h1>Süre Hesaplama (dk:sn)</h1>
 
 <div class="toolbar">
-  <button class="btn active" id="tab1" type="button">Birinci Blok</button>
-  <button class="btn" id="tab2" type="button">İkinci Blok</button>
+  <button class="btn active" id="tab1" type="button">Alan 1</button>
+  <button class="btn" id="tab2" type="button">Alan 2</button>
 </div>
 
 <div class="areas">
 
   <div class="area" data-area="1">
-    <h2>Birinci Blok</h2>
-    <div class="top-diff" id="remain1">-00:00</div>
-
-    <div id="area1"></div>
-
-    <div class="total">
-      <span>Toplam</span><span id="total1">00:00</span>
+    <div class="area-head">
+      <h2>Alan 1</h2>
+      <div class="top-diff" id="remain1">-00:00</div>
     </div>
 
-    <div class="subtract-row">
-      <b>Girilen</b><input id="sub1" placeholder="sn/dk" inputmode="numeric" pattern="[0-9]*" autocomplete="off" spellcheck="false">
+    <div class="list" id="area1"></div>
+
+    <div class="area-foot">
+      <div class="total">
+        <span>Toplam</span><span id="total1">00:00</span>
+      </div>
+      <div class="subtract-row">
+        <b>Girilen</b>
+        <input id="sub1" placeholder="sn/dk" inputmode="numeric" pattern="[0-9]*" autocomplete="off" spellcheck="false">
+      </div>
     </div>
   </div>
 
   <div class="area" data-area="2">
-    <h2>İkinci Blok</h2>
-    <div class="top-diff" id="remain2">-00:00</div>
-
-    <div id="area2"></div>
-
-    <div class="total">
-      <span>Toplam</span><span id="total2">00:00</span>
+    <div class="area-head">
+      <h2>Alan 2</h2>
+      <div class="top-diff" id="remain2">-00:00</div>
     </div>
 
-    <div class="subtract-row">
-      <b>Girilen</b><input id="sub2" placeholder="sn/dk" inputmode="numeric" pattern="[0-9]*" autocomplete="off" spellcheck="false">
+    <div class="list" id="area2"></div>
+
+    <div class="area-foot">
+      <div class="total">
+        <span>Toplam</span><span id="total2">00:00</span>
+      </div>
+      <div class="subtract-row">
+        <b>Girilen</b>
+        <input id="sub2" placeholder="sn/dk" inputmode="numeric" pattern="[0-9]*" autocomplete="off" spellcheck="false">
+      </div>
     </div>
   </div>
 
@@ -287,9 +363,7 @@ function fromSeconds(sec){
 }
 
 /* ---------- ODAK YARDIMCILARI ---------- */
-function isVisible(el){
-  return !!(el.offsetParent);
-}
+function isVisible(el){ return !!(el.offsetParent); }
 
 function focusPrevVisible(cur){
   const i = allInputs.indexOf(cur);
@@ -298,7 +372,6 @@ function focusPrevVisible(cur){
   }
   return false;
 }
-
 function focusNextVisible(cur){
   const i = allInputs.indexOf(cur);
   for(let j=i+1;j<allInputs.length;j++){
@@ -307,24 +380,18 @@ function focusNextVisible(cur){
   return false;
 }
 
-/* ---------- SAHA KUTULARI (3 hane otomatik geçiş var) ---------- */
+/* ---------- SAHA KUTULARI ---------- */
 function wireAreaInput(input){
   input.addEventListener("focus",()=>setTimeout(()=>input.select(),0));
   input.addEventListener("click",()=>setTimeout(()=>input.select(),0));
 
-  // OK tuşlarıyla gezinme (↑↓←→)
   input.addEventListener("keydown",(e)=>{
     if(e.key === "ArrowUp" || e.key === "ArrowLeft"){
-      e.preventDefault();
-      focusPrevVisible(input);
-      return;
+      e.preventDefault(); focusPrevVisible(input); return;
     }
     if(e.key === "ArrowDown" || e.key === "ArrowRight"){
-      e.preventDefault();
-      focusNextVisible(input);
-      return;
+      e.preventDefault(); focusNextVisible(input); return;
     }
-
     if(e.key==="Enter"){
       e.preventDefault();
       input.value = autoFormat(input.value);
@@ -337,7 +404,7 @@ function wireAreaInput(input){
   input.addEventListener("input",()=>{
     input.value = sanitize(input.value);
 
-    // 3 haneli (sadece rakam) → otomatik format + alt kutu
+    // 3 hane → format + alt kutu
     if(!input.value.includes(":")){
       const digits = input.value.replace(/\D/g,"");
       if(digits.length === 3){
@@ -348,7 +415,6 @@ function wireAreaInput(input){
         return;
       }
     }
-
     calculateTotals();
     updateFilledState(input);
   });
@@ -360,24 +426,18 @@ function wireAreaInput(input){
   });
 }
 
-/* ---------- GİRİLEN KUTULARI (alt kutuya geçiş yok; 4 hane format var) ---------- */
+/* ---------- GİRİLEN KUTULARI ---------- */
 function wireSubtractInput(input){
   input.addEventListener("focus",()=>setTimeout(()=>input.select(),0));
   input.addEventListener("click",()=>setTimeout(()=>input.select(),0));
 
-  // OK tuşlarıyla gezinme (↑↓←→)
   input.addEventListener("keydown",(e)=>{
     if(e.key === "ArrowUp" || e.key === "ArrowLeft"){
-      e.preventDefault();
-      focusPrevVisible(input);
-      return;
+      e.preventDefault(); focusPrevVisible(input); return;
     }
     if(e.key === "ArrowDown" || e.key === "ArrowRight"){
-      e.preventDefault();
-      focusNextVisible(input);
-      return;
+      e.preventDefault(); focusNextVisible(input); return;
     }
-
     if(e.key==="Enter"){
       e.preventDefault();
       input.value = autoFormat(input.value);
@@ -389,7 +449,7 @@ function wireSubtractInput(input){
   input.addEventListener("input",()=>{
     input.value = sanitize(input.value);
 
-    // 4 hane (sadece rakam) → otomatik format (kutuda kal)
+    // 4 hane → format (kutuda kal)
     if(!input.value.includes(":")){
       const digits = input.value.replace(/\D/g,"");
       if(digits.length === 4){
@@ -438,10 +498,10 @@ tab1.onclick=()=>setActiveArea(1);
 tab2.onclick=()=>setActiveArea(2);
 
 /* ---------- BAŞLAT ---------- */
-createAreaInputs("area1",12);
-createAreaInputs("area2",7);
+createAreaInputs("area1",15);
+createAreaInputs("area2",10);
 
-// Girilen kutularını da navigation listesine ekle
+// ok tuşu listesine girilenleri de ekle
 allInputs.push(sub1);
 allInputs.push(sub2);
 
@@ -451,8 +511,6 @@ wireSubtractInput(sub2);
 setActiveArea(1);
 calculateTotals();
 document.querySelectorAll("input").forEach(updateFilledState);
-
-// İlk kutuya odak
 if(allInputs.length && isVisible(allInputs[0])) allInputs[0].focus();
 </script>
 
