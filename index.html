@@ -100,14 +100,12 @@
     justify-content:space-between;
   }
 
-  /* Kırmızı fark alanı (min 60px) */
   .top-diff{
     font-size: 60px;
     font-weight: 900;
     color:var(--danger);
     margin: 0;
     line-height:1.05;
-
     min-height: 60px;
     display:flex;
     align-items:center;
@@ -144,7 +142,6 @@
     box-shadow: 0 0 0 4px rgba(0,0,0,.06);
   }
 
-  /* İçi dolu kutu koyu */
   input.filled{
     background:var(--dark);
     color:#ffffff;
@@ -155,7 +152,6 @@
     color:#000000;
   }
 
-  /* küçük ikon butonlar (satır sil ve girilen sil) */
   .icon-btn{
     width: 44px;
     height: 44px;
@@ -198,12 +194,13 @@
     flex: 0 0 auto;
   }
 
+  /* ✅ TOPLAM BAR: ARTIK STICKY YOK (hiçbir cihazda kutuların üstüne binmez) */
   .area-foot{
-    position: sticky;
-    bottom: 0;
-    background: var(--card);
-    z-index: 2;
+    position: static;
+    bottom: auto;
+    z-index: auto;
     padding-top: 10px;
+    background: var(--card);
   }
 
   .total{
@@ -216,26 +213,13 @@
     border-top: 1px solid #eee;
   }
 
-  /* ✅ Alt bar artık sticky değil */
-  .bottomBar{
-    margin-top: 12px;
-    background:#111;
-    color:#fff;
-    border-radius: 18px;
-    padding: 12px 14px;
-    text-align:center;
-    font-size: 20px;
-    font-weight:900;
-    position: static;
-  }
-
   /* Mobil sığdırma */
   @media (max-width: 900px){
     body{ padding: 10px 10px calc(10px + var(--safeBottom)); }
     .toolbar{ display:flex; }
     .areas{ display:block; }
 
-    .area{ display:none; height: calc(100dvh - (138px + env(safe-area-inset-top, 0px) + env(safe-area-inset-bottom, 0px))); }
+    .area{ display:none; height: calc(100dvh - (110px + var(--safeTop) + var(--safeBottom))); }
     .area.active{ display:flex; }
 
     .top-diff{ font-size: 34px; }
@@ -259,16 +243,9 @@
       -webkit-overflow-scrolling: touch;
     }
 
-    /* ✅ list scroll değil */
+    /* ✅ list scroll değil (scroll .area’da) */
     .list{
       overflow: visible;
-    }
-
-    /* ✅ Mobilde "Toplam" sticky olmasın (kutuların üstüne binmesin) */
-    .area-foot{
-      position: static;
-      bottom: auto;
-      z-index: auto;
     }
   }
 </style>
@@ -286,7 +263,6 @@
   <!-- ALAN 1 -->
   <div class="area active" data-area="1">
     <div class="area-head">
-
       <div class="titlebar">
         <h2>Reklamdan Önce</h2>
         <div class="spacer"></div>
@@ -316,7 +292,6 @@
   <!-- ALAN 2 -->
   <div class="area" data-area="2">
     <div class="area-head">
-
       <div class="titlebar">
         <h2>Reklamdan Sonra</h2>
         <div class="spacer"></div>
@@ -343,11 +318,6 @@
     </div>
   </div>
 
-</div>
-
-<!-- ✅ Genel toplam yok: sadece aktif alanın FARK'ı -->
-<div class="bottomBar">
-  FARK: <span id="bottomDiff">00:00</span>
 </div>
 
 <script>
@@ -562,11 +532,6 @@ function sumArea(id){
   return t;
 }
 
-function getActiveArea(){
-  const active = document.querySelector(".area.active");
-  return active ? active.getAttribute("data-area") : "1";
-}
-
 function calculateTotals(){
   const a1 = sumArea("area1");
   const a2 = sumArea("area2");
@@ -579,9 +544,6 @@ function calculateTotals(){
 
   remain1.textContent = fromSeconds(diff1);
   remain2.textContent = fromSeconds(diff2);
-
-  // ✅ Alt barda sadece aktif alanın farkı
-  bottomDiff.textContent = fromSeconds(getActiveArea()==="1" ? diff1 : diff2);
 }
 
 /* ---------- MOBİL SEKME ---------- */
