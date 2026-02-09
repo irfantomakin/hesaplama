@@ -1,19 +1,9 @@
-Aynen ✅ Redo (İleri Al) ekliyorum.
-	•	Undo yapınca (geri al), o anki durum redo yığınına gider.
-	•	Sonra Redo ile tekrar ileri alırsın.
-	•	Yeni bir değişiklik yapınca Redo sıfırlanır (standart davranış).
-	•	Kısayollar:
-	•	Undo: Ctrl/Cmd + Z
-	•	Redo: Ctrl/Cmd + Shift + Z  (ek olarak Ctrl + Y de)
-
-Aşağıdaki dosya tam son hal (index.html’ini bununla değiştir):
-
 <!DOCTYPE html>
 <html lang="tr">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>Süre Toplama (dk:sn)</title>
+<title>Süre Hesaplama (dk:sn)</title>
 
 <style>
   :root{
@@ -43,6 +33,7 @@ Aşağıdaki dosya tam son hal (index.html’ini bununla değiştir):
     font-size: 20px;
   }
 
+  /* Mobil sekmeler */
   .toolbar{
     display:none;
     gap:10px;
@@ -55,6 +46,7 @@ Aşağıdaki dosya tam son hal (index.html’ini bununla değiştir):
     border:1px solid #ddd;
     background:#fff;
     font-weight:700;
+    cursor:pointer;
   }
   .btn.active{ border-color:#111; }
 
@@ -96,12 +88,17 @@ Aşağıdaki dosya tam son hal (index.html’ini bununla değiştir):
     font-size: 18px;
   }
 
+  /* Kırmızı fark alanı (min 60px) */
   .top-diff{
     font-size: 34px;
     font-weight: 900;
     color:var(--danger);
     margin: 4px 0 0 0;
     line-height:1.05;
+
+    min-height: 60px;
+    display:flex;
+    align-items:center;
   }
 
   .head-actions{
@@ -245,6 +242,7 @@ Aşağıdaki dosya tam son hal (index.html’ini bununla değiştir):
     z-index: 3;
   }
 
+  /* Mobil sığdırma */
   @media (max-width: 900px){
     body{ padding: 10px 10px calc(10px + var(--safeBottom)); }
     h1{ font-size: 18px; margin: calc(6px + var(--safeTop)) 0 10px; }
@@ -252,7 +250,7 @@ Aşağıdaki dosya tam son hal (index.html’ini bununla değiştir):
     .toolbar{ display:flex; }
     .areas{ display:block; }
 
-    .area{ display:none; height: calc(100dvh - (130px + var(--safeTop) + var(--safeBottom))); }
+    .area{ display:none; height: calc(100dvh - (138px + var(--safeTop) + var(--safeBottom))); }
     .area.active{ display:flex; }
 
     input{ width: 100%; font-size: 18px; padding: 10px; }
@@ -278,7 +276,7 @@ Aşağıdaki dosya tam son hal (index.html’ini bununla değiştir):
 <div class="areas">
 
   <!-- ALAN 1 -->
-  <div class="area" data-area="1">
+  <div class="area active" data-area="1">
     <div class="area-head">
       <div class="head-row">
         <div>
@@ -350,6 +348,7 @@ Aşağıdaki dosya tam son hal (index.html’ini bununla değiştir):
 </div>
 
 <script>
+/* ------------------ GLOBAL ------------------ */
 let allInputs = [];
 
 /* ------------------ UNDO / REDO ------------------ */
@@ -384,7 +383,7 @@ function pushUndo(){
   undoStack.push(snap);
   if(undoStack.length > MAX_HISTORY) undoStack.shift();
 
-  // ✅ yeni aksiyon → redo temizlenir
+  // yeni aksiyon => redo temizlenir
   redoStack.length = 0;
 
   updateUndoRedoButtons();
@@ -424,14 +423,13 @@ function redo(){
 function updateUndoRedoButtons(){
   const uDisabled = undoStack.length === 0;
   const rDisabled = redoStack.length === 0;
-
   undoBtn1.disabled = uDisabled;
   undoBtn2.disabled = uDisabled;
   redoBtn1.disabled = rDisabled;
   redoBtn2.disabled = rDisabled;
 }
 
-/* ------------------ DOLU/BOŞ ------------------ */
+/* ------------------ FILLED ------------------ */
 function updateFilledState(input){
   if(input.value && input.value.trim() !== "") input.classList.add("filled");
   else input.classList.remove("filled");
@@ -649,4 +647,106 @@ function wireSubtractInput(input){
   });
 }
 
-/*
+/* ------------------ TOPLAMLAR ------------------ */
+function sumArea(id){
+  let t=0;
+  document.querySelectorAll(`#${id} input`).forEach(i=> t += toSeconds(i.value));
+  return t;
+}
+
+function calculateTotals(){
+  const a1 = sumArea("area1");
+  const a2 = sumArea("area2");
+
+  total1.textContent = fromSeconds(a1);
+  total2.textContent = fromSeconds(a2);
+  grandTotal.textContent = fromSeconds(a1+a2);
+
+  remain1.textContent = fromSeconds(a1 - toSeconds(sub1.value));
+  remain2.textContent = fromSeconds(a2 - toSeconds(sub2.value));
+}
+
+/* ------------------ MOBİL SEKME ------------------ */
+function setActiveArea(n){
+  document.querySelectorAll(".area").forEach(a=>a.classList.remove("active"));
+  document.querySelector(`.area[data-area="${n}"]`).classList.add("active");
+  tab1.classList.toggle("active",n===1);
+  tab2.classList.toggle("active",n===2);
+}
+tab1.onclick=()=>setActiveArea(1);
+tab2.onclick=()=>setActiveArea(2);
+
+/* ------------------ CLEAR BUTONLARI ------------------ */
+function clearArea(areaId){
+  const inputs = document.querySelectorAll(`#${areaId} input`);
+  const anyFilled = Array.from(inputs).some(i => i.value);
+  if(!anyFilled) return;
+
+  pushUndo();
+  inputs.forEach(i=>{
+    i.value = "";
+    updateFilledState(i);
+  });
+  calculateTotals();
+}
+
+clearArea1.onclick = ()=> clearArea("area1");
+clearArea2.onclick = ()=> clearArea("area2");
+
+// Girilen tek tek temizle (Hepsini Temizle bunları silmez)
+clearSub1.onclick = ()=>{
+  if(!sub1.value) return;
+  pushUndo();
+  sub1.value = "";
+  updateFilledState(sub1);
+  calculateTotals();
+  sub1.focus();
+};
+clearSub2.onclick = ()=>{
+  if(!sub2.value) return;
+  pushUndo();
+  sub2.value = "";
+  updateFilledState(sub2);
+  calculateTotals();
+  sub2.focus();
+};
+
+/* ------------------ UNDO/REDO BUTTONS & SHORTCUTS ------------------ */
+undoBtn1.onclick = undo;
+undoBtn2.onclick = undo;
+redoBtn1.onclick = redo;
+redoBtn2.onclick = redo;
+
+document.addEventListener("keydown",(e)=>{
+  const key = e.key.toLowerCase();
+  const mod = e.ctrlKey || e.metaKey;
+
+  if(mod && key === "z" && !e.shiftKey){
+    e.preventDefault(); undo(); return;
+  }
+  if(mod && key === "z" && e.shiftKey){
+    e.preventDefault(); redo(); return;
+  }
+  if(mod && key === "y"){
+    e.preventDefault(); redo(); return;
+  }
+});
+
+/* ------------------ BAŞLAT ------------------ */
+createAreaInputs("area1",15);
+createAreaInputs("area2",10);
+
+allInputs.push(sub1);
+allInputs.push(sub2);
+
+wireSubtractInput(sub1);
+wireSubtractInput(sub2);
+
+setActiveArea(1);
+calculateTotals();
+document.querySelectorAll("input").forEach(updateFilledState);
+updateUndoRedoButtons();
+</script>
+
+</body>
+</html>
