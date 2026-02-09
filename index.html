@@ -317,12 +317,16 @@
     return (parseInt(m,10)||0)*60 + (parseInt(s,10)||0);
   }
 
-  function fromSeconds(sec){
-    sec = Math.max(0, sec);
-    const m = Math.floor(sec/60);
-    const s = sec % 60;
-    return `${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
-  }
+function fromSeconds(sec){
+  const neg = sec < 0;
+  sec = Math.abs(sec);
+
+  const m = Math.floor(sec / 60);
+  const s = sec % 60;
+
+  return (neg ? "-" : "") +
+    `${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
+}
 
   function updateFilledState(input){
     if(input.value && input.value.trim() !== "") input.classList.add("filled");
