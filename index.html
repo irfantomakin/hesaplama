@@ -252,16 +252,32 @@
     input{ width: 140px; font-size: 18px; padding: 10px; }
     .row{ padding: 6px 2px; }
     .idx{ width: 30px; font-size: 13px; }
-    .list{ flex: 1 1 auto; -webkit-overflow-scrolling: touch; }
 
     .right-controls{ gap:8px; flex-wrap: wrap; justify-content:flex-end; }
     .clear-all{ padding: 10px 10px; }
+
+    /* ✅ iPhone klavye açılınca body kaymasın (kırmızı alan sabit kalsın) */
+    html, body{
+      height: 100dvh;
+      overflow: hidden;
+    }
+
+    /* aktif alan kendi içinde sabit, sadece list kayar */
+    .area{
+      overflow: hidden;
+    }
+
+    /* list zaten scroll; iOS'ta daha akıcı */
+    .list{
+      flex: 1 1 auto;
+      overflow: auto;
+      -webkit-overflow-scrolling: touch;
+    }
   }
 </style>
 </head>
 
 <body>
-
 
 <div class="toolbar">
   <button class="btn active" id="tab1" type="button">Reklamdan Önce</button>
@@ -338,6 +354,24 @@
 
 <script>
 let allInputs = [];
+
+/* ✅ input odaklanınca sadece list içinde görünür kalsın (kırmızı alan kaybolmasın) */
+function ensureVisibleInList(input){
+  const list = input.closest(".list");
+  if(!list) return;
+
+  const ir = input.getBoundingClientRect();
+  const lr = list.getBoundingClientRect();
+
+  const topPad = 8;
+  const bottomPad = 8;
+
+  if(ir.top < lr.top + topPad){
+    list.scrollTop -= (lr.top + topPad - ir.top);
+  } else if(ir.bottom > lr.bottom - bottomPad){
+    list.scrollTop += (ir.bottom - (lr.bottom - bottomPad));
+  }
+}
 
 /* ---------- FILLED ---------- */
 function updateFilledState(input){
@@ -460,8 +494,18 @@ function createAreaInputs(containerId, count){
 
 /* ---------- SAHA KUTULARI ---------- */
 function wireAreaInput(input){
-  input.addEventListener("focus",()=>setTimeout(()=>input.select(),0));
-  input.addEventListener("click",()=>setTimeout(()=>input.select(),0));
+  input.addEventListener("focus",()=>{
+    setTimeout(()=>{
+      input.select();
+      ensureVisibleInList(input);
+    },0);
+  });
+  input.addEventListener("click",()=>{
+    setTimeout(()=>{
+      input.select();
+      ensureVisibleInList(input);
+    },0);
+  });
 
   input.addEventListener("keydown",(e)=>{
     if(e.key === "ArrowUp" || e.key === "ArrowLeft"){
@@ -476,6 +520,7 @@ function wireAreaInput(input){
       calculateTotals();
       updateFilledState(input);
       focusNextVisible(input);
+      setTimeout(()=>ensureVisibleInList(input), 0);
     }
   });
 
@@ -490,6 +535,7 @@ function wireAreaInput(input){
         calculateTotals();
         updateFilledState(input);
         focusNextVisible(input);
+        setTimeout(()=>ensureVisibleInList(input), 0);
         return;
       }
     }
@@ -507,8 +553,19 @@ function wireAreaInput(input){
 
 /* ---------- GİRİLEN KUTULARI ---------- */
 function wireSubtractInput(input){
-  input.addEventListener("focus",()=>setTimeout(()=>input.select(),0));
-  input.addEventListener("click",()=>setTimeout(()=>input.select(),0));
+  input.addEventListener("focus",()=>{
+    setTimeout(()=>{
+      input.select();
+      // Girilen kutusu list içinde değil ama sorun çıkarmaz:
+      ensureVisibleInList(input);
+    },0);
+  });
+  input.addEventListener("click",()=>{
+    setTimeout(()=>{
+      input.select();
+      ensureVisibleInList(input);
+    },0);
+  });
 
   input.addEventListener("keydown",(e)=>{
     if(e.key==="Enter"){
