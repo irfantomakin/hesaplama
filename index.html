@@ -27,7 +27,7 @@
     background:var(--bg);
   }
 
-  /* Sekmeler (mobilde görünür) */
+  /* Mobil sekmeler */
   .toolbar{
     display:flex;
     gap:10px;
@@ -63,7 +63,7 @@
     min-height: 0;
   }
 
-  /* Kırmızı alan hep görünür */
+  /* Header sticky (kırmızı alan hep görünür) */
   .area-head{
     position: sticky;
     top: 0;
@@ -72,14 +72,34 @@
     padding-bottom: 10px;
   }
 
+  /* Başlık satırı: solda TOPLAM, sağda HEPSİNİ SİL */
   .titlebar{
     display:flex;
     align-items:center;
     gap:10px;
     margin-bottom: 8px;
   }
-  .titlebar h2{ margin:0; font-size:22px; font-weight:900; }
   .titlebar .spacer{ flex: 1 1 auto; }
+
+  .total-mini{
+    display:flex;
+    align-items:baseline;
+    gap:10px;
+    padding:10px 12px;
+    border-radius:14px;
+    border:1px solid #eee;
+    background:#fff;
+  }
+  .total-mini .tlabel{
+    font-weight:900;
+    font-size:18px;
+    color:#111;
+  }
+  .total-mini .tvalue{
+    font-weight:900;
+    font-size:22px;
+    color:#111;
+  }
 
   .clear-all{
     border: 1px solid #f1b7b7;
@@ -91,7 +111,9 @@
     cursor: pointer;
     white-space: nowrap;
   }
+  .clear-all:active{ transform: scale(0.98); }
 
+  /* Kırmızı fark + Girilen */
   .topbar{
     display:flex;
     gap:12px;
@@ -105,7 +127,7 @@
     color:var(--danger);
     margin: 0;
     line-height:1.05;
-    min-height: 60px;
+    min-height: 60px; /* en az 60px */
     display:flex;
     align-items:center;
     flex: 1 1 auto;
@@ -142,10 +164,15 @@
     box-shadow: 0 0 0 4px rgba(0,0,0,.06);
   }
 
+  /* İçi dolu kutu koyu */
   input.filled{
     background:var(--dark);
     color:#fff;
     border-color:var(--dark);
+  }
+  input.filled::selection{
+    background:#fff;
+    color:#000;
   }
 
   .icon-btn{
@@ -162,6 +189,7 @@
     justify-content:center;
     flex: 0 0 auto;
   }
+  .icon-btn:active{ transform: scale(0.97); }
 
   /* Liste alanı */
   .list{
@@ -189,30 +217,14 @@
     font-size:18px;
   }
 
-  /* ✅ KESİN: Toplam ASLA sticky/fixed olamaz */
-  .area-foot{
-    position: static !important;
-    top: auto !important;
-    bottom: auto !important;
-    left: auto !important;
-    right: auto !important;
-    z-index: auto !important;
-    background: transparent !important;
-    margin-top: 12px;
-    padding-top: 10px;
+  /* Desktop: iki alan yan yana, scroll list içinde olabilir */
+  @media (min-width: 901px){
+    .toolbar{ margin-bottom: 14px; }
+    .list{ overflow:auto; }
+    .area{ max-height: calc(100vh - 120px); }
   }
 
-  .total{
-    font-weight:900;
-    font-size: 22px;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    padding-top: 10px;
-    border-top: 2px solid #eee;
-  }
-
-  /* Mobil davranış: body kaymaz, scroll sadece area içinde */
+  /* Mobil: body kaymasın, scroll alanın içinde */
   @media (max-width: 900px){
     html, body{
       height: 100dvh;
@@ -230,15 +242,14 @@
     .area.active{ display:flex; }
 
     .top-diff{ font-size: 46px; }
-
     input{ width: 160px; font-size: 20px; }
     .mini-label{ font-size: 20px; }
 
-    /* list scroll değil (scroll area’da) */
+    /* Scroll area’da; list scroll değil */
     .list{ overflow: visible; padding-bottom: 24px; }
 
-    /* Toplam kesinlikle normal akışta */
-    .area-foot{ position: static !important; }
+    .total-mini .tlabel{ font-size:16px; }
+    .total-mini .tvalue{ font-size:20px; }
   }
 </style>
 </head>
@@ -255,8 +266,12 @@
   <!-- ALAN 1 -->
   <div class="area active" data-area="1" id="panel1">
     <div class="area-head">
+
       <div class="titlebar">
-        <h2>Reklamdan Önce</h2>
+        <div class="total-mini">
+          <span class="tlabel">Toplam</span>
+          <span class="tvalue" id="total1">00:00</span>
+        </div>
         <div class="spacer"></div>
         <button class="clear-all" id="clearArea1" type="button">Hepsini Sil</button>
       </div>
@@ -273,19 +288,17 @@
     </div>
 
     <div class="list" id="area1"></div>
-
-    <div class="area-foot">
-      <div class="total">
-        <span>Toplam</span><span id="total1">00:00</span>
-      </div>
-    </div>
   </div>
 
   <!-- ALAN 2 -->
   <div class="area" data-area="2" id="panel2">
     <div class="area-head">
+
       <div class="titlebar">
-        <h2>Reklamdan Sonra</h2>
+        <div class="total-mini">
+          <span class="tlabel">Toplam</span>
+          <span class="tvalue" id="total2">00:00</span>
+        </div>
         <div class="spacer"></div>
         <button class="clear-all" id="clearArea2" type="button">Hepsini Sil</button>
       </div>
@@ -302,12 +315,6 @@
     </div>
 
     <div class="list" id="area2"></div>
-
-    <div class="area-foot">
-      <div class="total">
-        <span>Toplam</span><span id="total2">00:00</span>
-      </div>
-    </div>
   </div>
 
 </div>
@@ -448,7 +455,7 @@ function wireSubtractInput(input){
   input.addEventListener("input",()=>{
     input.value = sanitize(input.value);
 
-    // 4 hane → format
+    // 4 hane → format (kutuda kal)
     if(!input.value.includes(":")){
       const digits = input.value.replace(/\D/g,"");
       if(digits.length === 4){
@@ -489,6 +496,7 @@ function createAreaInputs(containerId, count){
     clearBtn.className = "icon-btn";
     clearBtn.type = "button";
     clearBtn.textContent = "✕";
+    clearBtn.title = "Satırı temizle";
 
     wireAreaInput(input);
 
