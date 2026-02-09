@@ -76,19 +76,15 @@
     padding-bottom: 10px;
   }
 
-  /* Başlık satırı: Alan X + Hepsini Sil */
+  /* Başlık satırı: Alan X + (boşlukta) Hepsini Sil */
   .titlebar{
     display:flex;
     align-items:center;
-    justify-content:space-between;
     gap:10px;
     margin-bottom: 8px;
   }
-
-  h2{
-    margin: 0;
-    font-size: 18px;
-  }
+  .titlebar h2{ margin:0; font-size:18px; }
+  .titlebar .spacer{ flex: 1 1 auto; } /* boşluk alanı */
 
   .clear-all{
     border: 1px solid #f1b7b7;
@@ -165,7 +161,7 @@
     color:#000000;
   }
 
-  /* ikon butonlar */
+  /* küçük ikon butonlar (satır sil ve girilen sil) */
   .icon-btn{
     width: 44px;
     height: 44px;
@@ -281,6 +277,7 @@
 
       <div class="titlebar">
         <h2>Alan 1</h2>
+        <div class="spacer"></div>
         <button class="clear-all" id="clearArea1" type="button">Hepsini Sil</button>
       </div>
 
@@ -310,6 +307,7 @@
 
       <div class="titlebar">
         <h2>Alan 2</h2>
+        <div class="spacer"></div>
         <button class="clear-all" id="clearArea2" type="button">Hepsini Sil</button>
       </div>
 
