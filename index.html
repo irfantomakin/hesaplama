@@ -6,215 +6,178 @@
 <title>Süre Hesaplama</title>
 
 <style>
-  :root{
-    --bg:#f6f7f9;
-    --card:#fff;
-    --border:#e6e6e6;
-    --shadow: 0 6px 16px rgba(0,0,0,.06);
-    --danger:#c62828;
-    --dark:#2b2b2b;
-    --safeTop: env(safe-area-inset-top, 0px);
-    --safeBottom: env(safe-area-inset-bottom, 0px);
-  }
+:root{
+  --bg:#f6f7f9;
+  --card:#fff;
+  --border:#e6e6e6;
+  --shadow:0 6px 16px rgba(0,0,0,.06);
+  --danger:#c62828;
+  --dark:#2b2b2b;
+  --safeTop:env(safe-area-inset-top,0px);
+  --safeBottom:env(safe-area-inset-bottom,0px);
+}
 
-  html, body { height: 100%; }
-  body{
-    font-family: Arial, sans-serif;
-    margin:0;
-    padding: 12px 12px calc(12px + var(--safeBottom));
-    max-width: 1100px;
-    margin-inline:auto;
-    background:var(--bg);
-  }
+html,body{height:100%}
+body{
+  margin:0;
+  padding:12px 12px calc(12px + var(--safeBottom));
+  background:var(--bg);
+  font-family:Arial,sans-serif;
+}
 
-  /* Mobil sekmeler */
-  .toolbar{
-    display:flex;
-    gap:10px;
-    justify-content:center;
-    margin: calc(6px + var(--safeTop)) 0 10px;
-  }
-  .btn{
-    padding:10px 14px;
-    border-radius:14px;
-    border:1px solid #ddd;
-    background:#fff;
-    font-weight:800;
-    cursor:pointer;
-    min-width: 170px;
-  }
-  .btn.active{ border-color:#111; }
+/* ====== SEKME ====== */
+.toolbar{
+  display:flex;
+  gap:10px;
+  justify-content:center;
+  margin:calc(6px + var(--safeTop)) 0 10px;
+}
+.btn{
+  padding:10px 16px;
+  border-radius:14px;
+  border:1px solid #ddd;
+  background:#fff;
+  font-weight:800;
+  cursor:pointer;
+}
+.btn.active{border-color:#111}
 
-  .areas{
-    display:flex;
-    gap:16px;
-    align-items:flex-start;
-  }
+/* ====== LAYOUT ====== */
+.areas{display:flex;gap:16px}
+.area{
+  flex:1;
+  background:#fff;
+  border:1px solid var(--border);
+  border-radius:18px;
+  padding:14px;
+  box-shadow:var(--shadow);
+  display:flex;
+  flex-direction:column;
+}
 
+/* ====== HEADER ====== */
+.area-head{
+  position:sticky;
+  top:0;
+  background:#fff;
+  z-index:5;
+  padding-bottom:10px;
+}
+
+.titlebar{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-bottom:10px;
+}
+.titlebar .spacer{flex:1}
+
+.total-mini{
+  display:flex;
+  gap:10px;
+  align-items:baseline;
+  padding:8px 12px;
+  border:1px solid #eee;
+  border-radius:14px;
+}
+.total-mini span:first-child{font-weight:900}
+.total-mini span:last-child{font-weight:900;font-size:22px}
+
+.clear-all{
+  border:1px solid #f1b7b7;
+  background:#fff;
+  color:var(--danger);
+  font-weight:900;
+  border-radius:14px;
+  padding:8px 14px;
+  cursor:pointer;
+}
+
+/* ====== ÜST KONTROLLER (KIRMIZININ ÜSTÜNDE) ====== */
+.above-diff{
+  display:grid;
+  grid-template-columns:32px 1fr 52px;
+  gap:10px;
+  align-items:center;
+  margin-bottom:6px;
+}
+
+.time-icon{
+  font-size:22px;
+  text-align:center;
+}
+
+.above-diff input{
+  width:100%;
+  padding:10px;
+  font-size:18px;
+  text-align:center;
+  border-radius:14px;
+  border:1px solid #dcdcdc;
+}
+
+.icon-btn{
+  width:52px;
+  height:52px;
+  border-radius:14px;
+  border:1px solid #ddd;
+  background:#fff;
+  font-size:22px;
+  font-weight:900;
+  cursor:pointer;
+}
+
+/* ====== KIRMIZI FARK ====== */
+.top-diff{
+  font-size:54px;
+  font-weight:900;
+  color:var(--danger);
+  min-height:60px;
+  display:flex;
+  align-items:center;
+}
+
+/* ====== INPUT ====== */
+input.filled{
+  background:var(--dark);
+  color:#fff;
+  border-color:var(--dark);
+}
+
+/* ====== LİSTE ====== */
+.list{
+  border-top:1px dashed #eee;
+  border-bottom:1px dashed #eee;
+  padding:6px 0 18px;
+}
+.row{
+  display:flex;
+  gap:10px;
+  align-items:center;
+  padding:8px 0;
+  border-bottom:1px dashed #eee;
+}
+.row:last-child{border-bottom:none}
+.idx{
+  width:30px;
+  text-align:right;
+  font-weight:800;
+  color:#666;
+}
+
+/* ====== MOBİL ====== */
+@media(max-width:900px){
+  html,body{height:100dvh;overflow:hidden}
+  .areas{display:block}
   .area{
-    flex:1;
-    background:var(--card);
-    border:1px solid var(--border);
-    border-radius:18px;
-    padding:14px;
-    box-shadow: var(--shadow);
-    display:flex;
-    flex-direction:column;
-    min-height: 0;
+    display:none;
+    height:calc(100dvh - (90px + var(--safeTop) + var(--safeBottom)));
+    overflow:auto;
+    -webkit-overflow-scrolling:touch;
   }
-
-  /* Header sticky */
-  .area-head{
-    position: sticky;
-    top: 0;
-    background: var(--card);
-    z-index: 5;
-    padding-bottom: 10px;
-  }
-
-  /* Başlık satırı */
-  .titlebar{
-    display:flex;
-    align-items:center;
-    gap:10px;
-    margin-bottom: 8px;
-  }
-  .titlebar .spacer{ flex: 1 1 auto; }
-
-  .total-mini{
-    display:flex;
-    align-items:baseline;
-    gap:10px;
-    padding:10px 12px;
-    border-radius:14px;
-    border:1px solid #eee;
-    background:#fff;
-  }
-  .total-mini .tlabel{
-    font-weight:900;
-    font-size:18px;
-  }
-  .total-mini .tvalue{
-    font-weight:900;
-    font-size:22px;
-  }
-
-  .clear-all{
-    border: 1px solid #f1b7b7;
-    background: #fff;
-    color: var(--danger);
-    font-weight: 900;
-    border-radius: 14px;
-    padding: 10px 14px;
-    cursor: pointer;
-  }
-
-  /* Kırmızı fark + Girilen */
-  .topbar{
-    display:flex;
-    gap:12px;
-    align-items:center;
-    justify-content:space-between;
-  }
-
-  .top-diff{
-    font-size: 54px;
-    font-weight: 900;
-    color:var(--danger);
-    min-height: 60px;
-    display:flex;
-    align-items:center;
-    flex:1;
-  }
-
-  /* SABİT sağ blok */
-  .right-controls{
-    width: 250px;
-    display:flex;
-    gap:10px;
-    align-items:center;
-    justify-content:flex-end;
-  }
-
-  .time-icon{
-    width:28px;
-    min-width:28px;
-    text-align:center;
-    font-size:22px;
-  }
-
-  input{
-    width: 150px;
-    padding:12px;
-    text-align:center;
-    font-size: 20px;
-    border-radius: 16px;
-    border:1px solid #dcdcdc;
-    background:#fff;
-  }
-
-  input:focus{
-    border-color:#111;
-    box-shadow: 0 0 0 4px rgba(0,0,0,.06);
-  }
-
-  input.filled{
-    background:var(--dark);
-    color:#fff;
-    border-color:var(--dark);
-  }
-
-  .icon-btn{
-    width: 48px;
-    height: 48px;
-    border-radius: 14px;
-    border: 1px solid #ddd;
-    background:#fff;
-    font-size:22px;
-    font-weight:900;
-    cursor:pointer;
-  }
-
-  .list{
-    border-top:1px dashed #eee;
-    border-bottom:1px dashed #eee;
-    padding:8px 0 18px;
-  }
-
-  .row{
-    display:flex;
-    align-items:center;
-    gap:10px;
-    padding:10px 4px;
-    border-bottom:1px dashed #eee;
-  }
-  .row:last-child{ border-bottom:none; }
-
-  .idx{
-    width:34px;
-    text-align:right;
-    font-weight:800;
-    color:#666;
-  }
-
-  /* Mobil davranış */
-  @media (max-width:900px){
-    html, body{
-      height:100dvh;
-      overflow:hidden;
-    }
-    .areas{ display:block; }
-    .area{
-      display:none;
-      height: calc(100dvh - (86px + var(--safeTop) + var(--safeBottom)));
-      overflow:auto;
-      -webkit-overflow-scrolling:touch;
-    }
-    .area.active{ display:flex; }
-    .top-diff{ font-size:46px; }
-    input{ width:140px; }
-    .right-controls{ width:230px; }
-  }
+  .area.active{display:flex}
+  .top-diff{font-size:46px}
+}
 </style>
 </head>
 
@@ -227,57 +190,56 @@
 
 <div class="areas">
 
-  <!-- ALAN 1 -->
-  <div class="area active" data-area="1">
-    <div class="area-head">
+<!-- ALAN 1 -->
+<div class="area active" data-area="1">
+  <div class="area-head">
 
-      <div class="titlebar">
-        <div class="total-mini">
-          <span class="tlabel">Toplam</span>
-          <span class="tvalue" id="total1">00:00</span>
-        </div>
-        <div class="spacer"></div>
-        <button class="clear-all" id="clearArea1">Hepsini Sil</button>
+    <div class="titlebar">
+      <div class="total-mini">
+        <span>Toplam</span>
+        <span id="total1">00:00</span>
       </div>
-
-      <div class="topbar">
-        <div class="top-diff" id="remain1">-00:00</div>
-        <div class="right-controls">
-          <span class="time-icon">🕒</span>
-          <input id="sub1" placeholder="dk/sn" inputmode="numeric">
-          <button class="icon-btn" id="clearSub1">✕</button>
-        </div>
-      </div>
+      <div class="spacer"></div>
+      <button class="clear-all" id="clearArea1">Hepsini Sil</button>
     </div>
 
-    <div class="list" id="area1"></div>
-  </div>
-
-  <!-- ALAN 2 -->
-  <div class="area" data-area="2">
-    <div class="area-head">
-
-      <div class="titlebar">
-        <div class="total-mini">
-          <span class="tlabel">Toplam</span>
-          <span class="tvalue" id="total2">00:00</span>
-        </div>
-        <div class="spacer"></div>
-        <button class="clear-all" id="clearArea2">Hepsini Sil</button>
-      </div>
-
-      <div class="topbar">
-        <div class="top-diff" id="remain2">-00:00</div>
-        <div class="right-controls">
-          <span class="time-icon">🕒</span>
-          <input id="sub2" placeholder="dk/sn" inputmode="numeric">
-          <button class="icon-btn" id="clearSub2">✕</button>
-        </div>
-      </div>
+    <!-- 🔼 KIRMIZININ ÜSTÜ -->
+    <div class="above-diff">
+      <div class="time-icon">🕒</div>
+      <input id="sub1" placeholder="dk/sn" inputmode="numeric">
+      <button class="icon-btn" id="clearSub1">✕</button>
     </div>
 
-    <div class="list" id="area2"></div>
+    <div class="top-diff" id="remain1">-00:00</div>
   </div>
+
+  <div class="list" id="area1"></div>
+</div>
+
+<!-- ALAN 2 -->
+<div class="area" data-area="2">
+  <div class="area-head">
+
+    <div class="titlebar">
+      <div class="total-mini">
+        <span>Toplam</span>
+        <span id="total2">00:00</span>
+      </div>
+      <div class="spacer"></div>
+      <button class="clear-all" id="clearArea2">Hepsini Sil</button>
+    </div>
+
+    <div class="above-diff">
+      <div class="time-icon">🕒</div>
+      <input id="sub2" placeholder="dk/sn" inputmode="numeric">
+      <button class="icon-btn" id="clearSub2">✕</button>
+    </div>
+
+    <div class="top-diff" id="remain2">-00:00</div>
+  </div>
+
+  <div class="list" id="area2"></div>
+</div>
 
 </div>
 
@@ -298,30 +260,26 @@ function autoFormat(v){
 }
 function toSec(v){let[f,s]=autoFormat(v).split(":");return(+f||0)*60+(+s||0)}
 function fromSec(s){let n=s<0?"-":"";s=Math.abs(s);return`${n}${String(Math.floor(s/60)).padStart(2,"0")}:${String(s%60).padStart(2,"0")}`}
-function updateFilled(i){i.value?i.classList.add("filled"):i.classList.remove("filled")}
+function upd(i){i.value?i.classList.add("filled"):i.classList.remove("filled")}
 
-function wireInput(i){
+function wire(i){
   i.addEventListener("focus",()=>setTimeout(()=>i.select(),0));
-  i.addEventListener("keydown",e=>{
-    if(e.key==="Enter"){i.value=autoFormat(i.value);calc();updateFilled(i)}
-  });
   i.addEventListener("input",()=>{
     i.value=sanitize(i.value);
-    if(!i.value.includes(":")&&i.value.replace(/\D/g,"").length===3){
-      i.value=autoFormat(i.value)
-    }
-    calc();updateFilled(i);
+    if(!i.value.includes(":")&&i.value.replace(/\D/g,"").length===3)i.value=autoFormat(i.value);
+    calc();upd(i);
   });
 }
 
 function create(id,c){
   let a=document.getElementById(id);
   for(let i=1;i<=c;i++){
-    let r=document.createElement("div");r.className="row";
+    let r=document.createElement("div");
+    r.className="row";
     r.innerHTML=`<div class="idx">${i}.</div><input placeholder="dk/sn"><button class="icon-btn">✕</button>`;
     let inp=r.querySelector("input"),btn=r.querySelector("button");
-    inp.inputMode="numeric";wireInput(inp);
-    btn.onclick=()=>{inp.value="";updateFilled(inp);calc()};
+    inp.inputMode="numeric";wire(inp);
+    btn.onclick=()=>{inp.value="";upd(inp);calc()};
     a.appendChild(r);allInputs.push(inp);
   }
 }
@@ -329,18 +287,20 @@ function create(id,c){
 function sum(id){let t=0;document.querySelectorAll(`#${id} input`).forEach(i=>t+=toSec(i.value));return t}
 function calc(){
   let a1=sum("area1"),a2=sum("area2");
-  total1.textContent=fromSec(a1); total2.textContent=fromSec(a2);
+  total1.textContent=fromSec(a1);
+  total2.textContent=fromSec(a2);
   remain1.textContent=fromSec(a1-toSec(sub1.value));
   remain2.textContent=fromSec(a2-toSec(sub2.value));
 }
 
-create("area1",13); create("area2",7);
-[sub1,sub2].forEach(wireInput);
+create("area1",13);
+create("area2",7);
+[sub1,sub2].forEach(wire);
 
-clearArea1.onclick=()=>{document.querySelectorAll("#area1 input").forEach(i=>{i.value="";updateFilled(i)});calc()}
-clearArea2.onclick=()=>{document.querySelectorAll("#area2 input").forEach(i=>{i.value="";updateFilled(i)});calc()}
-clearSub1.onclick=()=>{sub1.value="";updateFilled(sub1);calc()}
-clearSub2.onclick=()=>{sub2.value="";updateFilled(sub2);calc()}
+clearArea1.onclick=()=>{document.querySelectorAll("#area1 input").forEach(i=>{i.value="";upd(i)});calc()}
+clearArea2.onclick=()=>{document.querySelectorAll("#area2 input").forEach(i=>{i.value="";upd(i)});calc()}
+clearSub1.onclick=()=>{sub1.value="";upd(sub1);calc()}
+clearSub2.onclick=()=>{sub2.value="";upd(sub2);calc()}
 
 tab1.onclick=()=>{document.querySelectorAll(".area").forEach(a=>a.classList.remove("active"));document.querySelector('[data-area="1"]').classList.add("active");tab1.classList.add("active");tab2.classList.remove("active")}
 tab2.onclick=()=>{document.querySelectorAll(".area").forEach(a=>a.classList.remove("active"));document.querySelector('[data-area="2"]').classList.add("active");tab2.classList.add("active");tab1.classList.remove("active")}
