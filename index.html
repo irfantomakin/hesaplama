@@ -12,6 +12,7 @@
 <title>🕒 Süre Hesaplama</title>
 <style>
   :root{
+    --ok:#1b8f3a; /* yayın için temiz yeşil */
     --bg:#f6f7f9;
     --card:#fff;
     --border:#e6e6e6;
@@ -156,14 +157,21 @@
     flex:0 0 auto;
   }
 
-  .top-diff{
-    font-size:150px;
-    font-weight:900;
-    color:var(--danger);
-    min-height:60px;
-    display:flex;
-    align-items:center;
-  }
+ .top-diff{
+  font-size:150px;
+  font-weight:900;
+  min-height:60px;
+  display:flex;
+  align-items:center;
+}
+
+.top-diff.ok{
+  color: var(--ok);
+}
+
+.top-diff.bad{
+  color: var(--danger);
+}
 
   .list{
     border-top:1px dashed #eee;
@@ -486,32 +494,43 @@ function fromSeconds(sec){
       .some(i => (i.value || "").trim() !== "");
   }
 
-  function calculateTotals(){
-    const a1 = sumArea("area1");
-    const a2 = sumArea("area2");
+function calculateTotals(){
+  const a1 = sumArea("area1");
+  const a2 = sumArea("area2");
 
-    // ✅ Toplam: hiç değer yoksa —:—
-    total1.textContent = hasAnyValue("area1") ? fromSeconds(a1) : "—:—";
-    total2.textContent = hasAnyValue("area2") ? fromSeconds(a2) : "—:—";
+  // TOPLAM (hiç değer yoksa —:—)
+  total1.textContent = hasAnyValue("area1") ? fromSeconds(a1) : "—:—";
+  total2.textContent = hasAnyValue("area2") ? fromSeconds(a2) : "—:—";
 
-    // ✅ Girilen boşsa —:—
-    const raw1 = (sub1.value || "").trim();
-    const raw2 = (sub2.value || "").trim();
+  // === ALAN 1 FARK ===
+  const raw1 = (sub1.value || "").trim();
 
-    if(!raw1){
-      remain1.textContent = "—:—";
-    }else{
-      const s1 = toSeconds(sub1.value);
-      remain1.textContent = fromSeconds(s1 - a1);
-    }
+  if(!raw1){
+    remain1.textContent = "—:—";
+    remain1.className = "top-diff";
+  }else{
+    const s1 = toSeconds(sub1.value);
+    const diff1 = s1 - a1;
 
-    if(!raw2){
-      remain2.textContent = "—:—";
-    }else{
-      const s2 = toSeconds(sub2.value);
-      remain2.textContent = fromSeconds(s2 - a2);
-    }
+    remain1.textContent = fromSeconds(diff1);
+    remain1.className = "top-diff " + (diff1 < 0 ? "bad" : "ok");
   }
+
+  // === ALAN 2 FARK ===
+  const raw2 = (sub2.value || "").trim();
+
+  if(!raw2){
+    remain2.textContent = "—:—";
+    remain2.className = "top-diff";
+  }else{
+    const s2 = toSeconds(sub2.value);
+    const diff2 = s2 - a2;
+
+    remain2.textContent = fromSeconds(diff2);
+    remain2.className = "top-diff " + (diff2 < 0 ? "bad" : "ok");
+  }
+}
+
 
   function clearArea(areaId){
     document.querySelectorAll(`#${areaId} input`).forEach(i=>{
