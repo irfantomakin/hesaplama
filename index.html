@@ -249,7 +249,17 @@
   .strip + .strip{
     margin-top: 10px;
   }
+.strip-dual{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:16px;
+}
 
+.strip-item{
+  font-weight:900;
+  white-space:nowrap;
+}
   /* Mobil sığdırma */
   @media (max-width: 900px){
     body{ padding: 10px 10px calc(10px + var(--safeBottom)); }
