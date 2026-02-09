@@ -1,0 +1,2 @@
+# hesaplama
+Süre Hesaplama
