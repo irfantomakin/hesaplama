@@ -59,7 +59,7 @@
     min-height:0;
   }
 
-  /* Sticky header (kırmızı alan kaybolmasın) */
+  /* Sticky header (mobilde klavye açılınca kaybolmasın) */
   .area-head{
     position: sticky;
     top: 0;
@@ -68,7 +68,6 @@
     padding-bottom: 10px;
   }
 
-  /* Title row */
   .titlebar{
     display:flex;
     align-items:center;
@@ -99,9 +98,8 @@
     cursor: pointer;
     white-space: nowrap;
   }
-  .clear-all:active{transform:scale(.99)}
 
-  /* Above controls (kırmızının üstünde) */
+  /* Girilen satırı (kırmızının üstünde) */
   .above-diff{
     display:flex;
     align-items:center;
@@ -116,7 +114,7 @@
     line-height:1;
   }
 
-  /* Input base */
+  /* Ortak input stili */
   .time-input{
     width:150px;
     padding:12px;
@@ -127,12 +125,13 @@
     outline:none;
     background:#fff;
     color:#111;
+    box-sizing:border-box;
   }
 
-  /* Seçili kutu: dolu/boş fark etmeksizin kırmızı kalın stroke */
+  /* Seçili kutu (dolu/boş fark etmez) — boyutu bozmamak için outline */
   .time-input:focus{
-    border-color: var(--danger);
-    border-width: 4px;
+    outline: 4px solid var(--danger);
+    outline-offset: 0px;
     box-shadow: 0 0 0 4px rgba(198,40,40,.12);
   }
 
@@ -142,10 +141,7 @@
     color:#fff;
     border-color:var(--dark);
   }
-  /* Dolu + seçili iken kırmızı stroke baskın olsun */
-  .time-input.filled:focus{
-    border-color: var(--danger);
-  }
+  /* Dolu + focus'ta da kırmızı outline zaten görünür */
   .time-input.filled::selection{ background:#fff; color:#000; }
 
   .icon-btn{
@@ -162,9 +158,8 @@
     justify-content:center;
     flex:0 0 auto;
   }
-  .icon-btn:active{transform:scale(.98)}
 
-  /* Red diff */
+  /* Kırmızı fark */
   .top-diff{
     font-size:54px;
     font-weight:900;
@@ -174,14 +169,13 @@
     align-items:center;
   }
 
-  /* List rows */
+  /* Liste */
   .list{
     border-top:1px dashed #eee;
     border-bottom:1px dashed #eee;
     padding:6px 0 18px;
     min-height:0;
   }
-
   .row{
     display:flex;
     align-items:center;
@@ -190,7 +184,6 @@
     border-bottom:1px dashed #eee;
   }
   .row:last-child{border-bottom:none}
-
   .idx{
     width:34px;
     text-align:right;
@@ -199,7 +192,7 @@
     flex:0 0 auto;
   }
 
-  /* Desktop: list kendi scroll olabilir */
+  /* Desktop: list kendi scroll */
   @media (min-width:901px){
     .area{ max-height: calc(100vh - 120px); }
     .list{ overflow:auto; }
@@ -217,7 +210,6 @@
     }
     .area.active{ display:flex; }
     .top-diff{ font-size:46px; }
-
     .time-input{ width:140px; font-size:20px; }
     .icon-btn{ width:50px; height:50px; }
   }
@@ -252,7 +244,7 @@
         <button class="icon-btn" id="clearSub1" type="button" aria-label="Girilen temizle" title="Girilen temizle">✕</button>
       </div>
 
-      <div class="top-diff" id="remain1">-00:00</div>
+      <div class="top-diff" id="remain1">00:00</div>
     </div>
 
     <div class="list" id="area1"></div>
@@ -277,7 +269,7 @@
         <button class="icon-btn" id="clearSub2" type="button" aria-label="Girilen temizle" title="Girilen temizle">✕</button>
       </div>
 
-      <div class="top-diff" id="remain2">-00:00</div>
+      <div class="top-diff" id="remain2">00:00</div>
     </div>
 
     <div class="list" id="area2"></div>
@@ -301,6 +293,7 @@
     v = sanitize(v);
     if(!v) return "";
 
+    // dk:sn yazıldıysa
     if(v.includes(":")){
       let [m,s] = v.split(":");
       m = parseInt(m || "0",10) || 0;
@@ -310,6 +303,7 @@
       return `${m}:${String(s).padStart(2,"0")}`;
     }
 
+    // sadece rakam: son 2 hane saniye
     const d = v.replace(/\D/g,"");
     if(!d) return "";
     if(d.length <= 2) return `0:${d.padStart(2,"0")}`;
@@ -330,11 +324,10 @@
   }
 
   function fromSeconds(sec){
-    const neg = sec < 0;
-    sec = Math.abs(sec);
+    sec = Math.max(0, sec); // girilen daha büyük dedin: negatif göstermeyelim
     const m = Math.floor(sec/60);
     const s = sec % 60;
-    return `${neg?"-":""}${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
+    return `${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
   }
 
   function updateFilledState(input){
@@ -496,11 +489,15 @@
     const a1 = sumArea("area1");
     const a2 = sumArea("area2");
 
-    document.getElementById("total1").textContent = fromSeconds(a1);
-    document.getElementById("total2").textContent = fromSeconds(a2);
+    total1.textContent = fromSeconds(a1);
+    total2.textContent = fromSeconds(a2);
 
-    document.getElementById("remain1").textContent = fromSeconds(a1 - toSeconds(document.getElementById("sub1").value));
-    document.getElementById("remain2").textContent = fromSeconds(a2 - toSeconds(document.getElementById("sub2").value));
+    const s1 = toSeconds(sub1.value);
+    const s2 = toSeconds(sub2.value);
+
+    // ✅ Doğru mantık: Girilen - Toplam
+    remain1.textContent = fromSeconds(s1 - a1);
+    remain2.textContent = fromSeconds(s2 - a2);
   }
 
   function clearArea(areaId){
@@ -511,40 +508,45 @@
     calculateTotals();
   }
 
-  // Init
+  // Init (kutular geri geldi)
   createAreaInputs("area1", 13);
   createAreaInputs("area2", 7);
 
-  // Wire subtract inputs
-  wireSubtractInput(document.getElementById("sub1"));
-  wireSubtractInput(document.getElementById("sub2"));
+  wireSubtractInput(sub1);
+  wireSubtractInput(sub2);
 
-  // Clear buttons
-  document.getElementById("clearArea1").onclick = ()=> clearArea("area1");
-  document.getElementById("clearArea2").onclick = ()=> clearArea("area2");
+  clearArea1.onclick = ()=> clearArea("area1");
+  clearArea2.onclick = ()=> clearArea("area2");
 
-  document.getElementById("clearSub1").onclick = ()=>{
-    const s = document.getElementById("sub1");
-    if(!s.value) return;
-    s.value = "";
-    updateFilledState(s);
+  clearSub1.onclick = ()=>{
+    if(!sub1.value) return;
+    sub1.value = "";
+    updateFilledState(sub1);
     calculateTotals();
-    s.focus();
+    sub1.focus();
   };
-  document.getElementById("clearSub2").onclick = ()=>{
-    const s = document.getElementById("sub2");
-    if(!s.value) return;
-    s.value = "";
-    updateFilledState(s);
+  clearSub2.onclick = ()=>{
+    if(!sub2.value) return;
+    sub2.value = "";
+    updateFilledState(sub2);
     calculateTotals();
-    s.focus();
+    sub2.focus();
   };
 
-  // Tabs
+  // Tabs (mobil)
   function setActiveArea(n){
     document.querySelectorAll(".area").forEach(a=>a.classList.remove("active"));
     document.querySelector(`.area[data-area="${n}"]`).classList.add("active");
-    document.getElementById("tab1").classList.toggle("active", n===1);
-    document.getElementById("tab2").classList.toggle("active", n===2);
+    tab1.classList.toggle("active", n===1);
+    tab2.classList.toggle("active", n===2);
   }
-  document.getElementById("tab1").onclick =
+  tab1.onclick = ()=> setActiveArea(1);
+  tab2.onclick = ()=> setActiveArea(2);
+
+  // İlk hesap
+  calculateTotals();
+  document.querySelectorAll(".time-input").forEach(updateFilledState);
+</script>
+
+</body>
+</html>
