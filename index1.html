@@ -407,33 +407,34 @@
     return `${pad2(h)}:${pad2(m)}:${pad2(s)}`;
   }
 
-  function parseHMS(v){
-    if(!v) return null;
-    v = (v || "").replace(/[^0-9:]/g,"");
+function parseHMS(v){
+  if(!v) return null;
+  v = v.replace(/[^0-9:]/g,"");
 
-    // HH:MM:SS / HH:MM / HMMSS / HHMMSS gibi girişleri toparla
-    if(!v.includes(":")){
-      const d = v.replace(/\D/g,"");
-      if(d.length === 6){
-        return (parseInt(d.slice(0,2),10)||0)*3600 +
-               (parseInt(d.slice(2,4),10)||0)*60 +
-               (parseInt(d.slice(4,6),10)||0);
-      }
-      if(d.length === 4){ // HHMM
-        return (parseInt(d.slice(0,2),10)||0)*3600 +
-               (parseInt(d.slice(2,4),10)||0)*60;
-      }
-      return null;
+  if(!v.includes(":")){
+    const d = v.replace(/\D/g,"");
+    if(d.length === 6){
+      const h = parseInt(d.slice(0,2),10);
+      const m = parseInt(d.slice(2,4),10);
+      const s = parseInt(d.slice(4,6),10);
+      if(m < 60 && s < 60) return h*3600 + m*60 + s;
     }
-
-    const parts = v.split(":").filter(Boolean);
-    if(parts.length < 2) return null;
-
-    const h = parseInt(parts[0],10) || 0;
-    const m = parseInt(parts[1],10) || 0;
-    const s = parseInt(parts[2] ?? "0",10) || 0;
-    return h*3600 + m*60 + s;
+    if(d.length === 4){
+      const h = parseInt(d.slice(0,2),10);
+      const m = parseInt(d.slice(2,4),10);
+      if(m < 60) return h*3600 + m*60;
+    }
+    return null;
   }
+
+  const parts = v.split(":");
+  const h = parseInt(parts[0]||"0",10) || 0;
+  const m = parseInt(parts[1]||"0",10) || 0;
+  const s = parseInt(parts[2]||"0",10) || 0;
+  if(m >= 60 || s >= 60) return null;
+  return h*3600 + m*60 + s;
+}
+
 
   function nowSec(){
     const n = new Date();
@@ -450,6 +451,12 @@
     input.addEventListener("click",()=>setTimeout(()=>input.select(),0));
 
     input.addEventListener("keydown",(e)=>{
+      if(e.key === "ArrowUp" || e.key === "ArrowLeft"){
+        e.preventDefault(); focusPrevVisible(input); return;
+      }
+      if(e.key === "ArrowDown" || e.key === "ArrowRight"){
+        e.preventDefault(); focusNextVisible(input); return;
+      }
       if(e.key==="Enter"){
         e.preventDefault();
         input.value = autoFormatMMSS(input.value);
@@ -458,7 +465,6 @@
         focusNextVisible(input);
       }
     });
-
     input.addEventListener("input",()=>{
       input.value = sanitizeMMSS(input.value);
 
@@ -511,17 +517,64 @@
     });
   }
 
-  function wireManualInput(input){
-    input.addEventListener("focus",()=>setTimeout(()=>input.select(),0));
-    input.addEventListener("click",()=>setTimeout(()=>input.select(),0));
-    input.addEventListener("input",()=>{
-      input.value = (input.value || "").replace(/[^0-9:]/g,"");
-      calculateTotals();
-    });
-    input.addEventListener("blur",()=>calculateTotals());
+function formatHMSOnBlur(v){
+  if(!v) return "";
+  v = v.replace(/[^0-9:]/g,"");
+
+  // Noktasız giriş: 193500 / 1935
+  if(!v.includes(":")){
+    const d = v.replace(/\D/g,"");
+    if(d.length === 6) return `${d.slice(0,2)}:${d.slice(2,4)}:${d.slice(4,6)}`;
+    if(d.length === 4) return `${d.slice(0,2)}:${d.slice(2,4)}:00`;
+    return v;
   }
 
-  function isVisible(el){ return !!(el.offsetParent); }
+  // Noktalı giriş: 19:35 / 19:35:2 / 19:35:20
+  const parts = v.split(":");
+  if(parts.length === 2){
+    // HH:MM -> HH:MM:00
+    const h = parts[0].padStart(2,"0").slice(-2);
+    const m = parts[1].padStart(2,"0").slice(-2);
+    return `${h}:${m}:00`;
+  }
+  if(parts.length >= 3){
+    const h = (parts[0] || "0").padStart(2,"0").slice(-2);
+    const m = (parts[1] || "0").padStart(2,"0").slice(-2);
+    const sRaw = (parts[2] || "0").replace(/\D/g,"");
+    const s = sRaw.padStart(2,"0").slice(-2);
+    return `${h}:${m}:${s}`;
+  }
+  return v;
+}
+
+function wireManualInput(input){
+  input.addEventListener("focus",()=>setTimeout(()=>input.select(),0));
+  input.addEventListener("click",()=>setTimeout(()=>input.select(),0));
+
+  input.addEventListener("input",()=>{
+    // sadece izin verilen karakterler (formatlamayı burada ZORLAMAYACAK)
+    input.value = input.value.replace(/[^0-9:]/g,"");
+    calculateTotals();
+  });
+
+  input.addEventListener("blur",()=>{
+    // burada düzgün formata oturt
+    input.value = formatHMSOnBlur(input.value);
+    calculateTotals();
+  });
+}
+
+  // ----------------- Focus helpers (Enter + otomatik aşağı geçiş) -----------------
+  function isVisible(el){ return !!(el && el.offsetParent); }
+
+  function focusPrevVisible(cur){
+    const i = allInputs.indexOf(cur);
+    for(let j=i-1;j>=0;j--){
+      if(isVisible(allInputs[j])){ allInputs[j].focus(); return true; }
+    }
+    return false;
+  }
+
   function focusNextVisible(cur){
     const i = allInputs.indexOf(cur);
     for(let j=i+1;j<allInputs.length;j++){
