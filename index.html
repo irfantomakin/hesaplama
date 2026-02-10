@@ -1,70 +1,91 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>🕒 Süre Hesaplama</title>
 
 <link rel="apple-touch-icon" href="image/icon.png">
 <link rel="icon" type="image/png" href="image/icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Süre">
 
 <style>
 :root{
   --bg:#f6f7f9;
   --card:#fff;
   --border:#e6e6e6;
+  --shadow:0 6px 16px rgba(0,0,0,.06);
   --danger:#c62828;
   --ok:#1b8f3a;
   --dark:#2b2b2b;
+}
+
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#0f0f10;
+    --card:#151517;
+    --border:#2a2a2f;
+    --shadow:0 10px 22px rgba(0,0,0,.35);
+    --danger:#ff3b30;
+    --ok:#30d158;
+    --dark:#0b0b0c;
+  }
+  body{ color:#f2f2f2; }
 }
 
 html,body{height:100%}
 body{
   margin:0;
   background:var(--bg);
-  font-family:Arial,sans-serif;
+  font-family: Arial, sans-serif;
   max-width:1100px;
   margin-inline:auto;
 }
 
 @media (max-width:900px){
-  html,body{height:100dvh;overflow:hidden}
+  html,body{
+    height:100dvh;
+    overflow:hidden;
+  }
 }
 
 .toolbar{
   display:flex;
-  justify-content:center;
   gap:10px;
+  justify-content:center;
   padding:12px;
 }
 @media (min-width:901px){
-  .toolbar{display:none}
+  .toolbar{ display:none; }
 }
 
 .btn{
   padding:10px 16px;
   border-radius:14px;
-  border:1px solid #ccc;
+  border:1px solid #ddd;
   background:#fff;
   font-weight:800;
+  cursor:pointer;
+  min-width:160px;
 }
-.btn.active{border-color:#000}
+.btn.active{ border-color:#000; }
 
-.areas{display:flex;gap:16px;padding:12px}
+.areas{display:flex; gap:16px; padding:12px;}
 .area{
   flex:1;
   background:var(--card);
   border:1px solid var(--border);
   border-radius:18px;
+  box-shadow:var(--shadow);
   display:flex;
   flex-direction:column;
 }
 @media (max-width:900px){
-  .areas{display:block}
-  .area{display:none;height:calc(100dvh - 90px)}
-  .area.active{display:flex}
+  .areas{ display:block; }
+  .area{ display:none; height:calc(100dvh - 90px); }
+  .area.active{ display:flex; }
 }
 
 .area-head{
@@ -75,39 +96,59 @@ body{
   z-index:5;
 }
 
-.big{
-  font-size:52px;
-  font-weight:900;
-  min-height:60px;
-}
-
-.small{
-  font-size:22px;
-  font-weight:800;
-}
-
-.ok{color:var(--ok)}
-.bad{color:var(--danger)}
-
-.above{
+.titlebar{
   display:flex;
   align-items:center;
   gap:10px;
-  margin-bottom:6px;
+  margin-bottom:8px;
+}
+.spacer{flex:1}
+
+.total-mini{
+  display:flex;
+  gap:10px;
+  padding:8px 12px;
+  border-radius:14px;
+  border:1px solid var(--border);
+}
+.tlabel{font-weight:900}
+.tvalue{font-weight:900;font-size:20px}
+
+.clear-all{
+  border:1px solid #f1b7b7;
+  background:#fff;
+  color:var(--danger);
+  font-weight:900;
+  border-radius:14px;
+  padding:8px 12px;
+}
+
+.above-diff{
+  display:flex;
+  gap:10px;
+  align-items:center;
+}
+.time-icon{
+  width:28px;
+  text-align:center;
+  font-size:22px;
 }
 
 .time-input{
   width:140px;
   padding:12px;
   border-radius:16px;
-  border:2px solid #ddd;
-  text-align:center;
+  border:2px solid #dcdcdc;
   font-size:20px;
+  text-align:center;
 }
 .time-input.filled{
   background:var(--dark);
   color:#fff;
   border-color:var(--dark);
+}
+.time-input:focus{
+  outline:4px solid var(--danger);
 }
 
 .icon-btn{
@@ -118,6 +159,16 @@ body{
   background:#fff;
   font-size:22px;
 }
+
+.top-diff{
+  font-size:52px;
+  font-weight:900;
+  min-height:60px;
+  display:flex;
+  align-items:center;
+}
+.top-diff.ok{ color:var(--ok); }
+.top-diff.bad{ color:var(--danger); }
 
 .list{
   overflow:auto;
@@ -131,7 +182,7 @@ body{
   padding:8px 0;
   border-bottom:1px dashed var(--border);
 }
-.idx{width:28px;text-align:right;font-weight:700;color:#777}
+.idx{ width:28px; text-align:right; font-weight:700; color:#777; }
 </style>
 </head>
 
@@ -147,18 +198,19 @@ body{
 <!-- ALAN 1 -->
 <div class="area active" data-area="1">
   <div class="area-head">
+    <div class="titlebar">
+      <div class="total-mini"><span class="tlabel">Toplam</span><span id="total1">—:—</span></div>
+      <div class="spacer"></div>
+      <button class="clear-all" id="clearArea1">Hepsini Sil</button>
+    </div>
 
-    <!-- BÜYÜK ALAN (ARTIK TOPLAM) -->
-    <div class="big" id="big1">—:—</div>
-
-    <div class="above">
-      🕒
+    <div class="above-diff">
+      <div class="time-icon">🕒</div>
       <input id="sub1" class="time-input" placeholder="dk/sn" inputmode="numeric">
       <button class="icon-btn" id="clearSub1">✕</button>
     </div>
 
-    <!-- KÜÇÜK YEŞİL/KIRMIZI (ARTIK KALAN) -->
-    <div class="small" id="small1">—:—</div>
+    <div class="top-diff" id="remain1">—:—</div>
   </div>
 
   <div class="list" id="area1"></div>
@@ -167,16 +219,19 @@ body{
 <!-- ALAN 2 -->
 <div class="area" data-area="2">
   <div class="area-head">
+    <div class="titlebar">
+      <div class="total-mini"><span class="tlabel">Toplam</span><span id="total2">—:—</span></div>
+      <div class="spacer"></div>
+      <button class="clear-all" id="clearArea2">Hepsini Sil</button>
+    </div>
 
-    <div class="big" id="big2">—:—</div>
-
-    <div class="above">
-      🕒
+    <div class="above-diff">
+      <div class="time-icon">🕒</div>
       <input id="sub2" class="time-input" placeholder="dk/sn" inputmode="numeric">
       <button class="icon-btn" id="clearSub2">✕</button>
     </div>
 
-    <div class="small" id="small2">—:—</div>
+    <div class="top-diff" id="remain2">—:—</div>
   </div>
 
   <div class="list" id="area2"></div>
@@ -185,22 +240,24 @@ body{
 </div>
 
 <script>
-const allInputs=[];
+const allInputs = [];
 
-const toSec=v=>{
-  if(!v||!v.includes(":"))return 0;
-  const[m,s]=v.split(":");
-  return(+m||0)*60+(+s||0);
-};
-const fmt=s=>{
-  const n=s<0; s=Math.abs(s);
-  return(n?"-":"")+String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0");
-};
-const auto=v=>{
+function toSec(v){
+  if(!v) return 0;
+  if(!v.includes(":")) return 0;
+  const [m,s]=v.split(":");
+  return (+m||0)*60+(+s||0);
+}
+function fmt(sec){
+  const neg=sec<0; sec=Math.abs(sec);
+  const m=Math.floor(sec/60), s=sec%60;
+  return (neg?"-":"")+String(m).padStart(2,"0")+":"+String(s).padStart(2,"0");
+}
+function format(v){
   v=v.replace(/\D/g,"");
-  if(v.length<=2)return"0:"+v.padStart(2,"0");
-  return(+v.slice(0,-2))+":"+v.slice(-2);
-};
+  if(v.length<=2) return "0:"+v.padStart(2,"0");
+  return (+v.slice(0,-2))+":"+v.slice(-2);
+}
 
 function create(area,count){
   const c=document.getElementById(area);
@@ -213,43 +270,46 @@ function create(area,count){
     const inp=r.querySelector("input");
     const btn=r.querySelector("button");
 
-    inp.onfocus=()=>setTimeout(()=>inp.select(),inp.oninput = () => {
-  // sadece rakam tut
-  inp.value = inp.value.replace(/\D/g,"");
-
-  // 3 hane girince otomatik format + aşağı geç
-  if(inp.value.length === 3){
-    inp.value = auto(inp.value);
-    inp.classList.toggle("filled", !!inp.value);
-    calc();
-    next(inp);
-    return;
-  }
-
-  inp.classList.toggle("filled", !!inp.value);
-  calc();
-};
-
-inp.onkeydown = (e) => {
-  if(e.key === "Enter"){
-    e.preventDefault();
-    inp.value = auto(inp.value);
-    inp.classList.toggle("filled", !!inp.value);
-    calc();
-    next(inp);
-  }
-
-  // ok tuşları (desktop/harici klavye)
-  if(e.key === "ArrowDown"){ e.preventDefault(); next(inp); }
-  if(e.key === "ArrowUp"){ e.preventDefault(); prev(inp); }
-};
-    inp.onkeydown=e=>{
-      if(e.key==="Enter"){inp.value=auto(inp.value);next(inp);}
+    inp.onfocus=()=>setTimeout(()=>inp.select(),0);
+    inp.oninput=()=>{
+      if(inp.value.length===3){ inp.value=format(inp.value); next(inp); }
+      inp.classList.toggle("filled",!!inp.value);
+      calc();
     };
-    btn.onclick=()=>{inp.value="";inp.classList.remove("filled");calc();};
+    inp.onkeydown=e=>{
+      if(e.key==="Enter"){ inp.value=format(inp.value); next(inp); }
+      if(e.key==="ArrowDown") next(inp);
+      if(e.key==="ArrowUp") prev(inp);
+    };
+    btn.onclick=()=>{ inp.value=""; inp.classList.remove("filled"); calc(); };
 
     c.appendChild(r);
     allInputs.push(inp);
+  }
+}
+
+function next(cur){
+  const i=allInputs.indexOf(cur);
+  for(let j=i+1;j<allInputs.length;j++){
+    const n=allInputs[j];
+    if(n.offsetParent){
+      n.focus({preventScroll:true});
+      const list=n.closest(".list");
+      if(list) list.scrollTo({top:n.offsetTop-list.clientHeight/2,behavior:"smooth"});
+      return;
+    }
+  }
+}
+function prev(cur){
+  const i=allInputs.indexOf(cur);
+  for(let j=i-1;j>=0;j--){
+    const p=allInputs[j];
+    if(p.offsetParent){
+      p.focus({preventScroll:true});
+      const list=p.closest(".list");
+      if(list) list.scrollTo({top:p.offsetTop-list.clientHeight/2,behavior:"smooth"});
+      return;
+    }
   }
 }
 
@@ -259,46 +319,42 @@ function sum(id){
   return t;
 }
 function has(id){
-  return[...document.querySelectorAll("#"+id+" input")].some(i=>i.value);
+  return [...document.querySelectorAll("#"+id+" input")].some(i=>i.value);
 }
 
 function calc(){
   const a1=sum("area1"), a2=sum("area2");
+  total1.textContent=has("area1")?fmt(a1):"—:—";
+  total2.textContent=has("area2")?fmt(a2):"—:—";
 
-  // BÜYÜK = TOPLAM
-  big1.textContent=has("area1")?fmt(a1):"—:—";
-  big2.textContent=has("area2")?fmt(a2):"—:—";
-
-  // KÜÇÜK = KALAN
-  if(!sub1.value){
-    small1.textContent="—:—";
-    small1.className="small";
-  }else{
+  if(!sub1.value){ remain1.textContent="—:—"; remain1.className="top-diff"; }
+  else{
     const d=toSec(sub1.value)-a1;
-    small1.textContent=fmt(d);
-    small1.className="small "+(d<0?"bad":"ok");
+    remain1.textContent=fmt(d);
+    remain1.className="top-diff "+(d<0?"bad":"ok");
   }
 
-  if(!sub2.value){
-    small2.textContent="—:—";
-    small2.className="small";
-  }else{
+  if(!sub2.value){ remain2.textContent="—:—"; remain2.className="top-diff"; }
+  else{
     const d=toSec(sub2.value)-a2;
-    small2.textContent=fmt(d);
-    small2.className="small "+(d<0?"bad":"ok");
+    remain2.textContent=fmt(d);
+    remain2.className="top-diff "+(d<0?"bad":"ok");
   }
 }
 
 create("area1",13);
 create("area2",7);
 
-sub1.oninput=()=>{if(sub1.value.length===4)sub1.value=auto(sub1.value);calc()};
-sub2.oninput=()=>{if(sub2.value.length===4)sub2.value=auto(sub2.value);calc()};
-clearSub1.onclick=()=>{sub1.value="";calc()};
-clearSub2.onclick=()=>{sub2.value="";calc()};
+sub1.oninput=()=>{ if(sub1.value.length===4) sub1.value=format(sub1.value); calc(); };
+sub2.oninput=()=>{ if(sub2.value.length===4) sub2.value=format(sub2.value); calc(); };
 
-tab1.onclick=()=>{document.querySelector('[data-area="1"]').classList.add("active");document.querySelector('[data-area="2"]').classList.remove("active");tab1.classList.add("active");tab2.classList.remove("active")};
-tab2.onclick=()=>{document.querySelector('[data-area="2"]').classList.add("active");document.querySelector('[data-area="1"]').classList.remove("active");tab2.classList.add("active");tab1.classList.remove("active")};
+clearArea1.onclick=()=>{ document.querySelectorAll("#area1 input").forEach(i=>i.value=""); calc(); };
+clearArea2.onclick=()=>{ document.querySelectorAll("#area2 input").forEach(i=>i.value=""); calc(); };
+clearSub1.onclick=()=>{ sub1.value=""; calc(); };
+clearSub2.onclick=()=>{ sub2.value=""; calc(); };
+
+tab1.onclick=()=>{ document.querySelector('[data-area="1"]').classList.add("active"); document.querySelector('[data-area="2"]').classList.remove("active"); tab1.classList.add("active"); tab2.classList.remove("active"); };
+tab2.onclick=()=>{ document.querySelector('[data-area="2"]').classList.add("active"); document.querySelector('[data-area="1"]').classList.remove("active"); tab2.classList.add("active"); tab1.classList.remove("active"); };
 
 calc();
 </script>
