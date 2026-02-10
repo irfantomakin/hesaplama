@@ -213,12 +213,36 @@ function create(area,count){
     const inp=r.querySelector("input");
     const btn=r.querySelector("button");
 
-    inp.onfocus=()=>setTimeout(()=>inp.select(),0);
-    inp.oninput=()=>{
-      if(inp.value.length===3){inp.value=auto(inp.value);next(inp);}
-      inp.classList.toggle("filled",!!inp.value);
-      calc();
-    };
+    inp.onfocus=()=>setTimeout(()=>inp.select(),inp.oninput = () => {
+  // sadece rakam tut
+  inp.value = inp.value.replace(/\D/g,"");
+
+  // 3 hane girince otomatik format + aşağı geç
+  if(inp.value.length === 3){
+    inp.value = auto(inp.value);
+    inp.classList.toggle("filled", !!inp.value);
+    calc();
+    next(inp);
+    return;
+  }
+
+  inp.classList.toggle("filled", !!inp.value);
+  calc();
+};
+
+inp.onkeydown = (e) => {
+  if(e.key === "Enter"){
+    e.preventDefault();
+    inp.value = auto(inp.value);
+    inp.classList.toggle("filled", !!inp.value);
+    calc();
+    next(inp);
+  }
+
+  // ok tuşları (desktop/harici klavye)
+  if(e.key === "ArrowDown"){ e.preventDefault(); next(inp); }
+  if(e.key === "ArrowUp"){ e.preventDefault(); prev(inp); }
+};
     inp.onkeydown=e=>{
       if(e.key==="Enter"){inp.value=auto(inp.value);next(inp);}
     };
