@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<link rel="apple-touch-icon" href="image/icon2.png">
+<link rel="icon" type="image/png" href="image/icon2.png">
+
+<meta name="apple-mobile-web-app-title" content="Süre">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>🕒 Süre Hesaplama</title>
+<style>
+  :root{
+    --bg:#f6f7f9;
+    --card:#fff;
+    --border:#e6e6e6;
+    --shadow:0 6px 16px rgba(0,0,0,.06);
+    --danger:#c62828;
+    --dark:#2b2b2b;
+    --safeTop: env(safe-area-inset-top, 0px);
+    --safeBottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  html,body{height:100%}
+  body{
+    margin:0;
+    padding:12px 12px calc(12px + var(--safeBottom));
+    background:var(--bg);
+    font-family: Arial, sans-serif;
+    max-width:1100px;
+    margin-inline:auto;
+  }
+
+  .toolbar{
+    display:flex;
+    gap:10px;
+    justify-content:center;
+    margin: calc(6px + var(--safeTop)) 0 10px;
+  }
+  .btn{
+    padding:10px 16px;
+    border-radius:14px;
+    border:1px solid #ddd;
+    background:#fff;
+    font-weight:800;
+    cursor:pointer;
+    min-width:170px;
+  }
+  .btn.active{border-color:#111}
+
+  .areas{display:flex; gap:16px; align-items:flex-start;}
+  .area{
+    flex:1;
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:18px;
+    padding:14px;
+    box-shadow:var(--shadow);
+    display:flex;
+    flex-direction:column;
+    min-height:0;
+  }
+
+  .area-head{
+    position: sticky;
+    top: 0;
+    background: var(--card);
+    z-index: 5;
+    padding-bottom: 10px;
+  }
+
+  .titlebar{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:10px;
+  }
+  .spacer{flex:1}
+
+  .total-mini{
+    display:flex;
+    align-items:baseline;
+    gap:10px;
+    padding:10px 12px;
+    border:1px solid #eee;
+    border-radius:14px;
+    background:#fff;
+  }
+  .tlabel{font-weight:900; font-size:18px;}
+  .tvalue{font-weight:900; font-size:45px;}
+
+  .clear-all{
+    border: 1px solid #f1b7b7;
+    background: #fff;
+    color: var(--danger);
+    font-weight: 900;
+    border-radius: 14px;
+    padding: 10px 14px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  .above-diff{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:6px;
+  }
+  .time-icon{
+    width:32px;
+    min-width:32px;
+    text-align:center;
+    font-size:22px;
+    line-height:1;
+  }
+
+  .time-input{
+    width:150px;
+    padding:12px;
+    text-align:center;
+    font-size:20px;
+    border-radius:16px;
+    border:2px solid #dcdcdc;
+    outline:none;
+    background:#fff;
+    color:#111;
+    box-sizing:border-box;
+  }
+
+  .time-input:focus{
+    outline: 4px solid var(--danger);
+    outline-offset: 0px;
+    box-shadow: 0 0 0 4px rgba(198,40,40,.12);
+  }
+
+  .time-input.filled{
+    background:var(--dark);
+    color:#fff;
+    border-color:var(--dark);
+  }
+  .time-input.filled::selection{ background:#fff; color:#000; }
+
+  .icon-btn{
+    width:52px;
+    height:52px;
+    border-radius:16px;
+    border:1px solid #ddd;
+    background:#fff;
+    font-size:22px;
+    font-weight:900;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex:0 0 auto;
+  }
+
+  /* remain satırı + yorum */
+  .diff-row{
+    display:flex;
+    align-items:baseline;
+    gap:12px;
+    flex-wrap:wrap;
+  }
+
+  .top-diff{
+    font-size:54px;
+    font-weight:900;
+    color:var(--danger);
+    min-height:60px;
+    display:flex;
+    align-items:center;
+  }
+
+  .comment-pill{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    padding:10px 12px;
+    border:1px solid #eee;
+    border-radius:14px;
+    background:#fff;
+    font-weight:900;
+    font-size:30px;
+    line-height:1;
+    white-space:nowrap;
+  }
+  .comment-pill .tag{
+    opacity:.7;
+    font-weight:900;
+  }
+
+  .list{
+    border-top:1px dashed #eee;
+    border-bottom:1px dashed #eee;
+    padding:6px 0 18px;
+    min-height:0;
+  }
+  .row{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:8px 0;
+    border-bottom:1px dashed #eee;
+  }
+  .row:last-child{border-bottom:none}
+  .idx{
+    width:34px;
+    text-align:right;
+    font-weight:800;
+    color:#666;
+    flex:0 0 auto;
+  }
+
+@media (min-width: 901px){
+  .toolbar{ display: none; }
+}
+
+  @media (max-width:900px){
+    html,body{ height:100dvh; overflow:hidden; }
+    .areas{ display:block; }
+    .area{
+      display:none;
+      height: calc(100dvh - (86px + var(--safeTop) + var(--safeBottom)));
+      overflow:auto;
+      -webkit-overflow-scrolling:touch;
+    }
+    .area.active{ display:flex; }
+    .top-diff{ font-size:46px; }
+    .time-input{ width:140px; font-size:20px; }
+    .icon-btn{ width:50px; height:50px; }
+    .comment-pill{ font-size:16px; padding:8px 10px; }
+  }
+</style>
+</head>
+
+<body>
+
+<div class="toolbar">
+  <button class="btn active" id="tab1" type="button">Reklamdan Önce</button>
+  <button class="btn" id="tab2" type="button">Reklamdan Sonra</button>
+</div>
+
+<div class="areas">
+
+  <!-- ALAN 1 -->
+  <div class="area active" data-area="1">
+    <div class="area-head">
+
+      <div class="titlebar">
+        <div class="total-mini">
+          <span class="tlabel">Toplam</span>
+          <span class="tvalue" id="total1">—:—</span>
+        </div>
+        <div class="spacer"></div>
+        <button class="clear-all" id="clearArea1" type="button">Hepsini Sil</button>
+      </div>
+
+      <div class="above-diff">
+        <div class="time-icon" aria-hidden="true">🕒</div>
+        <input id="sub1" class="time-input" placeholder="dk/sn" inputmode="numeric" pattern="[0-9]*" autocomplete="off" spellcheck="false">
+        <button class="icon-btn" id="clearSub1" type="button" aria-label="Girilen temizle" title="Girilen temizle">✕</button>
+      </div>
+
+      <div class="diff-row">
+        <div class="top-diff" id="remain1">—:—</div>
+        <div class="comment-pill" id="comment1">
+          <span class="tag">haber + saat</span>
+          <span id="commentVal1">—:—</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="list" id="area1"></div>
+  </div>
+
+  <!-- ALAN 2 -->
+  <div class="area" data-area="2">
+    <div class="area-head">
+
+      <div class="titlebar">
+        <div class="total-mini">
+          <span class="tlabel">Toplam</span>
+          <span class="tvalue" id="total2">—:—</span>
+        </div>
+        <div class="spacer"></div>
+        <button class="clear-all" id="clearArea2" type="button">Hepsini Sil</button>
+      </div>
+
+      <div class="above-diff">
+        <div class="time-icon" aria-hidden="true">🕒</div>
+        <input id="sub2" class="time-input" placeholder="dk/sn" inputmode="numeric" pattern="[0-9]*" autocomplete="off" spellcheck="false">
+        <button class="icon-btn" id="clearSub2" type="button" aria-label="Girilen temizle" title="Girilen temizle">✕</button>
+      </div>
+
+      <div class="diff-row">
+        <div class="top-diff" id="remain2">—:—</div>
+        <div class="comment-pill" id="comment2">
+          <span class="tag">yorum</span>
+          <span id="commentVal2">—:—</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="list" id="area2"></div>
+  </div>
+
+</div>
+
+<script>
+  const allInputs = [];
+
+  function sanitize(value){
+    value = (value || "").replace(/[^0-9:]/g,"");
+    const parts = value.split(":");
+    if(parts.length > 2){
+      value = parts[0] + ":" + parts.slice(1).join("").replace(/:/g,"");
+    }
+    return value;
+  }
+
+  function autoFormat(v){
+    v = sanitize(v);
+    if(!v) return "";
+
+    if(v.includes(":")){
+      let [m,s] = v.split(":");
+      m = parseInt(m || "0",10) || 0;
+      s = parseInt(s || "0",10) || 0;
+      m += Math.floor(s/60);
+      s = s % 60;
+      return `${m}:${String(s).padStart(2,"0")}`;
+    }
+
+    const d = v.replace(/\D/g,"");
+    if(!d) return "";
+    if(d.length <= 2) return `0:${d.padStart(2,"0")}`;
+
+    let m = parseInt(d.slice(0,-2),10) || 0;
+    let s = parseInt(d.slice(-2),10) || 0;
+    m += Math.floor(s/60);
+    s = s % 60;
+    return `${m}:${String(s).padStart(2,"0")}`;
+  }
+
+  function toSeconds(v){
+    if(!v) return 0;
+    const f = autoFormat(v);
+    if(!f.includes(":")) return 0;
+    const [m,s] = f.split(":");
+    return (parseInt(m,10)||0)*60 + (parseInt(s,10)||0);
+  }
+
+  // Mevcut davranış: negatifleri 00:00'a kırpıyor (remain/total bozulmasın)
+  function fromSeconds(sec){
+    sec = Math.max(0, sec);
+    const m = Math.floor(sec/60);
+    const s = sec % 60;
+    return `${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
+  }
+
+  function updateFilledState(input){
+    if(input.value && input.value.trim() !== "") input.classList.add("filled");
+    else input.classList.remove("filled");
+  }
+
+  function isVisible(el){ return !!(el.offsetParent); }
+
+  function focusPrevVisible(cur){
+    const i = allInputs.indexOf(cur);
+    for(let j=i-1;j>=0;j--){
+      if(isVisible(allInputs[j])){ allInputs[j].focus(); return true; }
+    }
+    return false;
+  }
+
+  function focusNextVisible(cur){
+    const i = allInputs.indexOf(cur);
+    for(let j=i+1;j<allInputs.length;j++){
+      if(isVisible(allInputs[j])){ allInputs[j].focus(); return true; }
+    }
+    return false;
+  }
+
+  function wireAreaInput(input){
+    input.addEventListener("focus",()=>setTimeout(()=>input.select(),0));
+    input.addEventListener("click",()=>setTimeout(()=>input.select(),0));
+
+    input.addEventListener("keydown",(e)=>{
+      if(e.key === "ArrowUp" || e.key === "ArrowLeft"){
+        e.preventDefault(); focusPrevVisible(input); return;
+      }
+      if(e.key === "ArrowDown" || e.key === "ArrowRight"){
+        e.preventDefault(); focusNextVisible(input); return;
+      }
+      if(e.key==="Enter"){
+        e.preventDefault();
+        input.value = autoFormat(input.value);
+        calculateTotals();
+        updateFilledState(input);
+        focusNextVisible(input);
+      }
+    });
+
+    input.addEventListener("input",()=>{
+      input.value = sanitize(input.value);
+
+      if(!input.value.includes(":")){
+        const digits = input.value.replace(/\D/g,"");
+        if(digits.length === 3){
+          input.value = autoFormat(digits);
+          calculateTotals();
+          updateFilledState(input);
+          focusNextVisible(input);
+          return;
+        }
+      }
+
+      calculateTotals();
+      updateFilledState(input);
+    });
+
+    input.addEventListener("blur",()=>{
+      if(input.value) input.value = autoFormat(input.value);
+      calculateTotals();
+      updateFilledState(input);
+    });
+  }
+
+  function wireSubtractInput(input){
+    input.addEventListener("focus",()=>setTimeout(()=>input.select(),0));
+    input.addEventListener("click",()=>setTimeout(()=>input.select(),0));
+
+    input.addEventListener("keydown",(e)=>{
+      if(e.key==="Enter"){
+        e.preventDefault();
+        input.value = autoFormat(input.value);
+        calculateTotals();
+        updateFilledState(input);
+      }
+    });
+
+    input.addEventListener("input",()=>{
+      input.value = sanitize(input.value);
+
+      if(!input.value.includes(":")){
+        const digits = input.value.replace(/\D/g,"");
+        if(digits.length === 4){
+          input.value = autoFormat(digits);
+        }
+      }
+
+      calculateTotals();
+      updateFilledState(input);
+    });
+
+    input.addEventListener("blur",()=>{
+      if(input.value) input.value = autoFormat(input.value);
+      calculateTotals();
+      updateFilledState(input);
+    });
+  }
+
+  function createAreaInputs(containerId, count){
+    const c = document.getElementById(containerId);
+
+    for(let i=1;i<=count;i++){
+      const row = document.createElement("div");
+      row.className = "row";
+
+      const idx = document.createElement("div");
+      idx.className = "idx";
+      idx.textContent = i + ".";
+
+      const input = document.createElement("input");
+      input.className = "time-input";
+      input.type = "text";
+      input.placeholder = "dk/sn";
+      input.inputMode = "numeric";
+      input.pattern = "[0-9]*";
+      input.autocomplete = "off";
+      input.spellcheck = false;
+
+      const clearBtn = document.createElement("button");
+      clearBtn.className = "icon-btn";
+      clearBtn.type = "button";
+      clearBtn.textContent = "✕";
+      clearBtn.title = "Satırı temizle";
+
+      wireAreaInput(input);
+
+      clearBtn.addEventListener("click",()=>{
+        if(!input.value) return;
+        input.value = "";
+        updateFilledState(input);
+        calculateTotals();
+        input.focus();
+      });
+
+      row.appendChild(idx);
+      row.appendChild(input);
+      row.appendChild(clearBtn);
+      c.appendChild(row);
+
+      allInputs.push(input);
+    }
+  }
+
+  function sumArea(id){
+    let t=0;
+    document.querySelectorAll(`#${id} input`).forEach(i=> t += toSeconds(i.value));
+    return t;
+  }
+
+  function hasAnyValue(areaId){
+    return Array.from(document.querySelectorAll(`#${areaId} input`))
+      .some(i => (i.value || "").trim() !== "");
+  }
+
+  function pad2(n){ return String(n).padStart(2,"0"); }
+
+  function secondsToClockHMS(sec){
+  sec = ((sec % 86400) + 86400) % 86400; // 24 saat döngü
+  const h = Math.floor(sec / 3600);
+  const m = Math.floor((sec % 3600) / 60);
+  const s = sec % 60;
+  return `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
+}
+
+function nowPlusSecondsHMS(addSec){
+  const now = new Date();
+  const nowSec =
+    now.getHours() * 3600 +
+    now.getMinutes() * 60 +
+    now.getSeconds();
+
+  return secondsToClockHMS(nowSec + (addSec || 0));
+}
+
+  // ✅ Anlık saat (HH:MM) + totalSeconds => HH:MM (24 saat döner)
+  function addToNowClock(totalSeconds){
+    const now = new Date();
+    const nowSec = now.getHours()*3600 + now.getMinutes()*60 + now.getSeconds();
+    let out = (nowSec + (totalSeconds||0)) % 86400;
+    if(out < 0) out += 86400;
+    const hh = Math.floor(out/3600);
+    const mm = Math.floor((out%3600)/60);
+    return `${pad2(hh)}:${pad2(mm)}`;
+  }
+
+  function calculateTotals(){
+    const a1 = sumArea("area1");
+    const a2 = sumArea("area2");
+
+    // Toplam
+    total1.textContent = hasAnyValue("area1") ? fromSeconds(a1) : "—:—";
+    total2.textContent = hasAnyValue("area2") ? fromSeconds(a2) : "—:—";
+
+    // Girilen boşsa —:—
+    const raw1 = (sub1.value || "").trim();
+    const raw2 = (sub2.value || "").trim();
+
+    if(!raw1){
+      remain1.textContent = "—:—";
+    }else{
+      const s1 = toSeconds(sub1.value);
+      remain1.textContent = fromSeconds(s1 - a1);
+    }
+
+    if(!raw2){
+      remain2.textContent = "—:—";
+    }else{
+      const s2 = toSeconds(sub2.value);
+      remain2.textContent = fromSeconds(s2 - a2);
+    }
+
+   // ✅ YORUM: anlık saat + total (HH:MM:SS)
+commentVal1.textContent = hasAnyValue("area1")
+  ? nowPlusSecondsHMS(a1)
+  : "—:—";
+
+commentVal2.textContent = hasAnyValue("area2")
+  ? nowPlusSecondsHMS(a2)
+  : "—:—";
+}
+  function clearArea(areaId){
+    document.querySelectorAll(`#${areaId} input`).forEach(i=>{
+      i.value = "";
+      updateFilledState(i);
+    });
+    calculateTotals();
+  }
+
+  // Init
+  createAreaInputs("area1", 13);
+  createAreaInputs("area2", 7);
+
+  wireSubtractInput(sub1);
+  wireSubtractInput(sub2);
+
+  clearArea1.onclick = ()=> clearArea("area1");
+  clearArea2.onclick = ()=> clearArea("area2");
+
+  clearSub1.onclick = ()=>{
+    if(!sub1.value) return;
+    sub1.value = "";
+    updateFilledState(sub1);
+    calculateTotals();
+    sub1.focus();
+  };
+  clearSub2.onclick = ()=>{
+    if(!sub2.value) return;
+    sub2.value = "";
+    updateFilledState(sub2);
+    calculateTotals();
+    sub2.focus();
+  };
+
+  function setActiveArea(n){
+    document.querySelectorAll(".area").forEach(a=>a.classList.remove("active"));
+    document.querySelector(`.area[data-area="${n}"]`).classList.add("active");
+    tab1.classList.toggle("active", n===1);
+    tab2.classList.toggle("active", n===2);
+  }
+  tab1.onclick = ()=> setActiveArea(1);
+  tab2.onclick = ()=> setActiveArea(2);
+
+  calculateTotals();
+  document.querySelectorAll(".time-input").forEach(updateFilledState);
+
+  // Saat her dakika/saniye değiştiği için yorumu canlı tut
+  setInterval(calculateTotals, 1000);
+</script>
+
+</body>
+</html>
