@@ -247,6 +247,10 @@
     .comment-pill{ font-size:16px; padding:8px 10px; }
     .manual-input{ width:150px; font-size:16px; }
   }
+
+  .status-ok{ color:#1b5e20; }
+  .status-bad{ color: var(--danger); }
+
 </style>
 </head>
 
@@ -672,17 +676,39 @@ function wireManualInput(input){
     const m1 = parseHMS(manual1.value);
     if(m1 == null){
       manualVal1.textContent = "—:—";
+      manualVal1.classList.remove("status-ok","status-bad");
     }else{
       const commentSec1 = (nowSec() + a1) % 86400;
-      manualVal1.textContent = secondsToHMS(m1 - commentSec1);
+      const delta1 = m1 - commentSec1; // manuel - haberlerle
+      if(delta1 >= 0){
+        manualVal1.textContent = secondsToHMS(delta1);
+        manualVal1.classList.add("status-ok");
+        manualVal1.classList.remove("status-bad");
+      }else{
+        // geçti -> 00:00:00'dan yukarı say (mutlak değer)
+        manualVal1.textContent = secondsToHMS(Math.abs(delta1));
+        manualVal1.classList.add("status-bad");
+        manualVal1.classList.remove("status-ok");
+      }
     }
 
     const m2 = parseHMS(manual2.value);
     if(m2 == null){
       manualVal2.textContent = "—:—";
+      manualVal2.classList.remove("status-ok","status-bad");
     }else{
       const commentSec2 = (nowSec() + a2) % 86400;
-      manualVal2.textContent = secondsToHMS(m2 - commentSec2);
+      const delta2 = m2 - commentSec2; // manuel - haberlerle
+      if(delta2 >= 0){
+        manualVal2.textContent = secondsToHMS(delta2);
+        manualVal2.classList.add("status-ok");
+        manualVal2.classList.remove("status-bad");
+      }else{
+        // geçti -> 00:00:00'dan yukarı say (mutlak değer)
+        manualVal2.textContent = secondsToHMS(Math.abs(delta2));
+        manualVal2.classList.add("status-bad");
+        manualVal2.classList.remove("status-ok");
+      }
     }
   }
 
