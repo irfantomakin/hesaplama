@@ -355,7 +355,7 @@
 /* kırmızı büyük sayı üst satıra taşınmış gibi */
 .above-diff .top-diff{
   order: 3;
-  font-size: 20px;
+  font-size: 30px;
   margin-left: 8px;
 }
 
@@ -454,6 +454,56 @@
   .manual-input{ max-width: 100%; }
 }
 
+
+/* === MOBİL DÜZELTME: Saat ikonunu kaldır === */
+.time-icon{
+  display:none !important;
+}
+
+/* İkon kalkınca grid'i sıkıştır */
+.above-diff{
+  grid-template-columns: 1fr 52px 1fr;
+}
+
+/* Mobilde kırmızı alan yukarı sığsın */
+@media (max-width:900px){
+  .above-diff{
+    grid-template-columns: 1fr 52px;
+    grid-template-areas:
+      "input clear"
+      "remain remain";
+  }
+}
+
+
+/* === MOBİL: Kırmızı süre aşağı düşmesin (aynı satır) === */
+@media (max-width:900px){
+  .above-diff{
+    display:grid;
+    grid-template-columns: 1fr auto 52px;
+    grid-template-areas: "input remain clear";
+    align-items:center;
+    column-gap:10px;
+    row-gap:0;
+  }
+  /* ikon gizli olduğu için alan atamaları */
+  .above-diff #sub1, .above-diff #sub2{ grid-area: input; }
+  .above-diff .top-diff{ 
+    grid-area: remain; 
+    white-space: nowrap;
+    min-width: 0;
+    font-size: 40px; /* biraz küçülterek satıra sığdır */
+    margin: 0;
+  }
+  .above-diff #clearSub1, .above-diff #clearSub2{ grid-area: clear; }
+
+  /* girilen kutusu çok uzamasın */
+  .above-diff input{
+    width: 100%;
+    max-width: 180px;
+  }
+}
+
 </style>
 </head>
 
@@ -486,7 +536,7 @@
 
       <div class="above-diff">
         <div class="time-icon" aria-hidden="true">🕒</div>
-        <input id="sub1" class="time-input" placeholder="MM:SS" inputmode="numeric" pattern="[0-9]*" autocomplete="off" spellcheck="false">
+        <input id="sub1" class="time-input" placeholder="DK:SN" inputmode="numeric" pattern="[0-9]*" autocomplete="off" spellcheck="false">
         <button class="icon-btn" id="clearSub1" type="button" aria-label="Girilen temizle" title="Girilen temizle">✕</button>
 		<div class="top-diff" id="remain1">—:—</div>
       </div>
