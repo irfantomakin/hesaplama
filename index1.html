@@ -3,12 +3,6 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<link rel="apple-touch-icon" href="image/icon2.png">
-<link rel="icon" type="image/png" href="image/icon2.png">
-
-<meta name="apple-mobile-web-app-title" content="Süre Hesapla">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">	
 <title>🕒 Süre Hesaplama</title>
 
 <style>
@@ -386,6 +380,73 @@
 
   .comment-pill.status-ok{ border-color:#1b5e20; }
   .comment-pill.status-bad{ border-color: var(--danger); }
+
+
+/* === HİZALAMA DÜZELTMESİ (eşit ve dengeli görünüm) === */
+.area-head{
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+}
+
+/* Üst satır: ikon + girilen + sil + kırmızı süre aynı hizaya */
+.above-diff{
+  display:grid;
+  grid-template-columns: 32px 150px 52px 1fr;
+  align-items:center;
+  gap:12px;
+}
+
+/* Kırmızı büyük süre (remain) sabit hizalı */
+.top-diff{
+  justify-self:start;
+  min-width:120px;
+  line-height:1;
+}
+
+/* Haberlerle + Yorum kutuları dengeli */
+.diff-row{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap:14px;
+  align-items:stretch;
+}
+
+/* Kart genişlikleri eşitlensin */
+.comment-pill{
+  width:100%;
+  box-sizing:border-box;
+}
+
+/* Manuel saat alanı: taşma olmasın */
+.manual-input{
+  width:100%;
+  max-width:180px;
+  box-sizing:border-box;
+}
+
+/* Mobilde grid genişliklerini esnet */
+@media (max-width:900px){
+  .above-diff{
+    grid-template-columns: 32px 1fr 50px;
+    grid-template-areas:
+      "icon input clear"
+      "remain remain remain";
+    row-gap:10px;
+  }
+  .above-diff .time-icon{ grid-area: icon; }
+  .above-diff #sub1, .above-diff #sub2{ grid-area: input; }
+  .above-diff #clearSub1, .above-diff #clearSub2{ grid-area: clear; }
+  .above-diff .top-diff{
+    grid-area: remain;
+    margin-left:0;
+  }
+
+  .diff-row{
+    grid-template-columns: 1fr;
+  }
+  .manual-input{ max-width: 100%; }
+}
 
 </style>
 </head>
@@ -960,5 +1021,3 @@ function calculateTotals(){
 
 </body>
 </html>
-
-
