@@ -277,7 +277,7 @@
 
       <div class="above-diff">
         <div class="time-icon" aria-hidden="true">🕒</div>
-        <input id="sub1" class="time-input" placeholder="DK:SN" inputmode="numeric" pattern="[0-9]*" autocomplete="off" spellcheck="false">
+        <input id="sub1" class="time-input" placeholder="MM:SS" inputmode="numeric" pattern="[0-9]*" autocomplete="off" spellcheck="false">
         <button class="icon-btn" id="clearSub1" type="button" aria-label="Girilen temizle" title="Girilen temizle">✕</button>
       </div>
 
@@ -316,7 +316,7 @@
 
       <div class="above-diff">
         <div class="time-icon" aria-hidden="true">🕒</div>
-        <input id="sub2" class="time-input" placeholder="DK:SN" inputmode="numeric" pattern="[0-9]*" autocomplete="off" spellcheck="false">
+        <input id="sub2" class="time-input" placeholder="MM:SS" inputmode="numeric" pattern="[0-9]*" autocomplete="off" spellcheck="false">
         <button class="icon-btn" id="clearSub2" type="button" aria-label="Girilen temizle" title="Girilen temizle">✕</button>
       </div>
 
@@ -600,7 +600,7 @@ function wireManualInput(input){
       const input = document.createElement("input");
       input.className = "time-input";
       input.type = "text";
-      input.placeholder = "DK:SN";
+      input.placeholder = "MM:SS";
       input.inputMode = "numeric";
       input.pattern = "[0-9]*";
       input.autocomplete = "off";
@@ -643,7 +643,15 @@ function wireManualInput(input){
   }
 
   // ----------------- Core -----------------
-  function calculateTotals(){
+  
+  function secondsToMMSS(sec){
+    sec = Math.abs(sec|0);
+    const m = Math.floor(sec/60);
+    const s = sec % 60;
+    return `${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
+  }
+
+function calculateTotals(){
     const a1 = sumArea("area1"); // seconds
     const a2 = sumArea("area2"); // seconds
 
@@ -681,7 +689,7 @@ function wireManualInput(input){
       const commentSec1 = (nowSec() + a1) % 86400;
       const delta1 = m1 - commentSec1; // manuel - haberlerle
       if(delta1 >= 0){
-        manualVal1.textContent = secondsToHMS(delta1);
+        manualVal1.textContent = secondsToMMSS(delta1);
         manualVal1.classList.add("status-ok");
         manualVal1.classList.remove("status-bad");
       }else{
@@ -700,7 +708,7 @@ function wireManualInput(input){
       const commentSec2 = (nowSec() + a2) % 86400;
       const delta2 = m2 - commentSec2; // manuel - haberlerle
       if(delta2 >= 0){
-        manualVal2.textContent = secondsToHMS(delta2);
+        manualVal2.textContent = secondsToMMSS(delta2);
         manualVal2.classList.add("status-ok");
         manualVal2.classList.remove("status-bad");
       }else{
