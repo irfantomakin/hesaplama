@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <link rel="apple-touch-icon" href="image/icon2.png">
 <link rel="icon" type="image/png" href="image/icon2.png">
 
@@ -536,7 +537,7 @@
 
       <div class="above-diff">
         <div class="time-icon" aria-hidden="true">🕒</div>
-        <input id="sub1" class="time-input" placeholder="DK:SN" inputmode="numeric" pattern="[0-9]*" autocomplete="off" spellcheck="false">
+        <input id="sub1" class="time-input" placeholder="MM:SS" inputmode="numeric" pattern="[0-9]*" autocomplete="off" spellcheck="false">
         <button class="icon-btn" id="clearSub1" type="button" aria-label="Girilen temizle" title="Girilen temizle">✕</button>
 		<div class="top-diff" id="remain1">—:—</div>
       </div>
@@ -1031,7 +1032,91 @@ function calculateTotals(){
     calculateTotals();
   }
 
-  // ----------------- Init -----------------
+  
+  // ===================== KALICI KAYIT (localStorage) =====================
+  const STORAGE_KEY = "sureHesapState_v2";
+  let saveTimer = null;
+
+  function collectState(){
+    const area1Inputs = Array.from(document.querySelectorAll("#area1 input.time-input"));
+    const area2Inputs = Array.from(document.querySelectorAll("#area2 input.time-input"));
+    return {
+      sub1: sub1.value || "",
+      sub2: sub2.value || "",
+      manual1: manual1.value || "",
+      manual2: manual2.value || "",
+      area1: area1Inputs.map(i => i.value || ""),
+      area2: area2Inputs.map(i => i.value || ""),
+      activeTab: (tab2 && tab2.classList.contains("active")) ? 2 : 1,
+    };
+  }
+
+  function applyState(state){
+    if(!state || typeof state !== "object") return;
+
+    if(typeof state.sub1 === "string") sub1.value = state.sub1;
+    if(typeof state.sub2 === "string") sub2.value = state.sub2;
+    if(typeof state.manual1 === "string") manual1.value = state.manual1;
+    if(typeof state.manual2 === "string") manual2.value = state.manual2;
+
+    const area1Inputs = Array.from(document.querySelectorAll("#area1 input.time-input"));
+    const area2Inputs = Array.from(document.querySelectorAll("#area2 input.time-input"));
+
+    if(Array.isArray(state.area1)){
+      state.area1.forEach((v, i) => { if(area1Inputs[i]) area1Inputs[i].value = v || ""; });
+    }
+    if(Array.isArray(state.area2)){
+      state.area2.forEach((v, i) => { if(area2Inputs[i]) area2Inputs[i].value = v || ""; });
+    }
+
+    // Filled state güncelle
+    [...area1Inputs, ...area2Inputs, sub1, sub2, manual1, manual2].forEach(inp => {
+      if(inp) updateFilledState(inp);
+    });
+
+    // Sekme (mobil)
+    if(state.activeTab === 2 && tab2){
+      tab2.click();
+    }else if(tab1){
+      tab1.click();
+    }
+  }
+
+  function saveStateNow(){
+    try{
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(collectState()));
+    }catch(e){}
+  }
+
+  function scheduleSave(){
+    if(saveTimer) clearTimeout(saveTimer);
+    saveTimer = setTimeout(saveStateNow, 120);
+  }
+
+  function loadStateNow(){
+    try{
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if(!raw) return;
+      applyState(JSON.parse(raw));
+    }catch(e){}
+  }
+
+  // calculateTotals çağrıldıkça kaydet
+  const _calculateTotals = calculateTotals;
+  calculateTotals = function(){
+    _calculateTotals();
+    scheduleSave();
+  };
+
+  // Sayfa gizlenince / kapanınca da kaydet
+  window.addEventListener("pagehide", saveStateNow);
+  window.addEventListener("beforeunload", saveStateNow);
+  document.addEventListener("visibilitychange", ()=> {
+    if(document.visibilityState === "hidden") saveStateNow();
+  });
+  // =======================================================================
+
+// ----------------- Init -----------------
   createAreaInputs("area1", 13);
   createAreaInputs("area2", 7);
 
@@ -1051,7 +1136,12 @@ function calculateTotals(){
     calculateTotals();
     if(document.activeElement && document.activeElement.tagName==="INPUT"){ document.activeElement.blur(); }
   };
-  clearSub2.onclick = ()=>{
+  
+
+  // İlk açılışta son kayıtları geri yükle
+  loadStateNow();
+  calculateTotals();
+clearSub2.onclick = ()=>{
     if(!sub2.value) return;
     sub2.value = "";
     updateFilledState(sub2);
