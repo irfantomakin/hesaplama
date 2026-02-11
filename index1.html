@@ -154,7 +154,7 @@
   }
 
   .top-diff{
-    font-size:40px;
+    font-size:54px;
     font-weight:900;
     color:var(--danger);
     min-height:60px;
@@ -263,7 +263,7 @@
     opacity: .75;
   }
   .tvalue{
-    font-size: 40px;
+    font-size: 56px;
     line-height: 1;
   }
 
@@ -286,7 +286,7 @@
     line-height: 1;
   }
   #manualVal1, #manualVal2{
-    font-size: 75px;
+    font-size: 24px;
     font-weight: 900;
     line-height: 1;
   }
@@ -305,6 +305,82 @@
     #manualVal1, #manualVal2{ font-size: 22px; }
   }
 
+
+/* === YENİ GÖRSEL DÜZEN === */
+
+/* Saat ikonlu satır: kırmızı büyük sayı yanına */
+.above-diff{
+  align-items: center;
+  gap: 14px;
+}
+
+/* Kırmızı ana fark (remain) ikonlu satıra yaklaştır */
+.top-diff{
+  font-size: 48px;
+  margin-left: 8px;
+}
+
+/* Haberlerle + saat biraz daha büyük */
+#commentVal1, #commentVal2{
+  font-size: 26px;
+}
+
+/* YORUM alanı en büyük */
+#manualVal1, #manualVal2{
+  font-size: 42px;
+}
+
+/* YORUM kapsayıcıyı öne çıkar */
+.comment-pill{
+  background: #f7f9fc;
+  border-width: 2px;
+}
+
+
+/* === DÜZELTME: KIRMIZI ALANI YUKARI AL + YORUM ÇERÇEVE RENKLERİ === */
+
+/* above-diff içinde kırmızı fark da hizalansın */
+.above-diff{
+  display:flex;
+  align-items:center;
+  gap:14px;
+}
+
+/* kırmızı büyük sayı üst satıra taşınmış gibi */
+.above-diff .top-diff{
+  order: 3;
+  font-size: 48px;
+  margin-left: 8px;
+}
+
+/* YORUM kapsayıcı varsayılan (yeşil) */
+.comment-pill{
+  border: 2px solid #1b5e20;
+  background:#f7f9fc;
+}
+
+/* YORUM yeşil durum */
+.status-ok{
+  color:#1b5e20;
+}
+.status-ok.comment-pill,
+.comment-pill .status-ok{
+  border-color:#1b5e20;
+}
+
+/* YORUM kırmızı durum (süre geçti) */
+.status-bad{
+  color: var(--danger);
+}
+.status-bad.comment-pill,
+.comment-pill .status-bad{
+  border-color: var(--danger);
+}
+
+
+  .comment-pill.status-ok{ border-color:#1b5e20; }
+  .comment-pill.status-bad{ border-color: var(--danger); }
+
 </style>
 </head>
 
@@ -322,11 +398,11 @@
     <div class="area-head">
       <div class="titlebar">
         <div class="total-mini">
-          <span class="tlabel">HABER TOPLAMI:</span>
+          <span class="tlabel">Haber Toplamı:</span>
           <span class="tvalue" id="total1">—:—</span>
         </div>
         <div class="spacer"></div>
-        <button class="clear-all" id="clearArea1" type="button">HEPSİNİ SİL</button>
+        <button class="clear-all" id="clearArea1" type="button">Hepsini Sil</button>
       </div>
 
       <div class="above-diff">
@@ -339,7 +415,7 @@
         <div class="top-diff" id="remain1">—:—</div>
 
         <div class="comment-pill">
-          <span class="tag">HABERLER + SAAT</span>
+          <span class="tag">Haberlerle</span>
           <span id="commentVal1">—:—</span>
         </div>
       </div>
@@ -361,11 +437,11 @@
     <div class="area-head">
       <div class="titlebar">
         <div class="total-mini">
-          <span class="tlabel">HABER TOPLAMI:</span>
+          <span class="tlabel">Haber Toplamı:</span>
           <span class="tvalue" id="total2">—:—</span>
         </div>
         <div class="spacer"></div>
-        <button class="clear-all" id="clearArea2" type="button">HEPSİNİ SİL</button>
+        <button class="clear-all" id="clearArea2" type="button">Hepsini Sil</button>
       </div>
 
       <div class="above-diff">
@@ -378,7 +454,7 @@
         <div class="top-diff" id="remain2">—:—</div>
 
         <div class="comment-pill">
-          <span class="tag">HABERLER + SAAT</span>
+          <span class="tag">Haberlerle</span>
           <span id="commentVal2">—:—</span>
         </div>
       </div>
@@ -736,9 +812,11 @@ function calculateTotals(){
 
     // çıkar (HH:MM:SS) = manual - (now + total)
     const m1 = parseHMS(manual1.value);
+    const box1 = manualVal1.closest(".comment-pill");
     if(m1 == null){
       manualVal1.textContent = "—:—";
       manualVal1.classList.remove("status-ok","status-bad");
+      if(box1) box1.classList.remove("status-ok","status-bad");
     }else{
       const commentSec1 = (nowSec() + a1) % 86400;
       const delta1 = m1 - commentSec1; // manuel - haberlerle
@@ -746,18 +824,22 @@ function calculateTotals(){
         manualVal1.textContent = secondsToMMSS(delta1);
         manualVal1.classList.add("status-ok");
         manualVal1.classList.remove("status-bad");
+        if(box1){ box1.classList.add("status-ok"); box1.classList.remove("status-bad"); }
       }else{
         // geçti -> 00:00:00'dan yukarı say (mutlak değer)
-        manualVal1.textContent = secondsToHMS(Math.abs(delta1));
+        manualVal1.textContent = secondsToMMSS(delta1);
         manualVal1.classList.add("status-bad");
         manualVal1.classList.remove("status-ok");
+        if(box1){ box1.classList.add("status-bad"); box1.classList.remove("status-ok"); }
       }
     }
 
     const m2 = parseHMS(manual2.value);
+    const box2 = manualVal2.closest(".comment-pill");
     if(m2 == null){
       manualVal2.textContent = "—:—";
       manualVal2.classList.remove("status-ok","status-bad");
+      if(box2) box2.classList.remove("status-ok","status-bad");
     }else{
       const commentSec2 = (nowSec() + a2) % 86400;
       const delta2 = m2 - commentSec2; // manuel - haberlerle
@@ -765,11 +847,13 @@ function calculateTotals(){
         manualVal2.textContent = secondsToMMSS(delta2);
         manualVal2.classList.add("status-ok");
         manualVal2.classList.remove("status-bad");
+        if(box2){ box2.classList.add("status-ok"); box2.classList.remove("status-bad"); }
       }else{
         // geçti -> 00:00:00'dan yukarı say (mutlak değer)
-        manualVal2.textContent = secondsToHMS(Math.abs(delta2));
+        manualVal2.textContent = secondsToMMSS(delta2);
         manualVal2.classList.add("status-bad");
         manualVal2.classList.remove("status-ok");
+        if(box2){ box2.classList.add("status-bad"); box2.classList.remove("status-ok"); }
       }
     }
   }
