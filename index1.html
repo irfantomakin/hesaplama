@@ -399,11 +399,11 @@
       <div class="titlebar">
         <div class="total-mini">
 		
-          <span class="tlabel">Haber Toplamı:</span>
+          <span class="tlabel">HABER TOPLAM:</span>
           <span class="tvalue" id="total1">—:—</span>
         </div>
 		        <div class="comment-pill">
-          <span class="tag">Haberlerle</span>
+          <span class="tag">HABER + SAAT</span>
           <span id="commentVal1">—:—</span>
 		  
         </div>
@@ -442,11 +442,11 @@
     <div class="area-head">
       <div class="titlebar">
         <div class="total-mini">
-          <span class="tlabel">Haber Toplamı:</span>
+          <span class="tlabel">HABER TOPLAM:</span>
           <span class="tvalue" id="total2">—:—</span>
         </div>
 		        <div class="comment-pill">
-          <span class="tag">Haberlerle</span>
+          <span class="tag">HABER + SAAT</span>
           <span id="commentVal2">—:—</span>
         </div>
  
@@ -455,7 +455,7 @@
 
       <div class="above-diff">
         <div class="time-icon" aria-hidden="true">🕒</div>
-        <input id="sub2" class="time-input" placeholder="MM:SS" inputmode="numeric" pattern="[0-9]*" autocomplete="off" spellcheck="false">
+        <input id="sub2" class="time-input" placeholder="DK:SN" inputmode="numeric" pattern="[0-9]*" autocomplete="off" spellcheck="false">
         <button class="icon-btn" id="clearSub2" type="button" aria-label="Girilen temizle" title="Girilen temizle">✕</button>
 		<div class="top-diff" id="remain2">—:—</div>
       </div>
@@ -767,7 +767,7 @@ function wireManualInput(input){
       const input = document.createElement("input");
       input.className = "time-input";
       input.type = "text";
-      input.placeholder = "MM:SS";
+      input.placeholder = "DK:SN";
       input.inputMode = "numeric";
       input.pattern = "[0-9]*";
       input.autocomplete = "off";
