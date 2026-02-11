@@ -744,14 +744,19 @@ function wireManualInput(input){
 
       wireAreaInput(input);
 
-      clearBtn.addEventListener("click",()=>{
+      clearBtn.addEventListener("click",(e)=>{
+        // iOS'ta klavyeyi tekrar açmamak için: input'a focus verme
+        e.preventDefault();
+        e.stopPropagation();
         if(!input.value) return;
         input.value = "";
         updateFilledState(input);
         calculateTotals();
-        input.focus();
+        // Eğer aktif odak bir input ise kapat
+        if(document.activeElement && document.activeElement.tagName === "INPUT"){
+          document.activeElement.blur();
+        }
       });
-
       row.appendChild(idx);
       row.appendChild(input);
       row.appendChild(clearBtn);
@@ -884,14 +889,14 @@ function calculateTotals(){
     sub1.value = "";
     updateFilledState(sub1);
     calculateTotals();
-    sub1.focus();
+    if(document.activeElement && document.activeElement.tagName==="INPUT"){ document.activeElement.blur(); }
   };
   clearSub2.onclick = ()=>{
     if(!sub2.value) return;
     sub2.value = "";
     updateFilledState(sub2);
     calculateTotals();
-    sub2.focus();
+    if(document.activeElement && document.activeElement.tagName==="INPUT"){ document.activeElement.blur(); }
   };
 
   function setActiveArea(n){
