@@ -169,6 +169,13 @@
     align-items:center;
     font-variant-numeric: tabular-nums;
   }
+/* Görseldeki kırmızı alanları gizlemek için */
+.top-diff {
+  display: none !important;
+}/* sub1, sub2 alanlarını ve temizleme butonlarını gizle */
+#sub1, #sub2, #clearSub1, #clearSub2 {
+  display: none !important;
+}
 
   .comment-pill{
     display:inline-flex;
@@ -329,12 +336,12 @@
 
 /* Haberlerle + saat biraz daha büyük */
 #commentVal1, #commentVal2{
-  font-size: 35px;
+  font-size: 26px;
 }
 
 /* YORUM alanı en büyük */
 #manualVal1, #manualVal2{
-  font-size: 45px;
+  font-size: 70px;
 }
 
 /* YORUM kapsayıcıyı öne çıkar */
@@ -537,7 +544,7 @@
 
       <div class="above-diff">
         <div class="time-icon" aria-hidden="true">🕒</div>
-        <input id="sub1" class="time-input" placeholder="DK:SN" inputmode="numeric" pattern="[0-9]*" autocomplete="off" spellcheck="false">
+        <input id="sub1" class="time-input" placeholder="MM:SS" inputmode="numeric" pattern="[0-9]*" autocomplete="off" spellcheck="false">
         <button class="icon-btn" id="clearSub1" type="button" aria-label="Girilen temizle" title="Girilen temizle">✕</button>
 		<div class="top-diff" id="remain1">—:—</div>
       </div>
@@ -1117,7 +1124,7 @@ function calculateTotals(){
   // =======================================================================
 
 // ----------------- Init -----------------
-  createAreaInputs("area1", 15);
+  createAreaInputs("area1", 13);
   createAreaInputs("area2", 7);
 
   wireSubInput(sub1);
@@ -1167,8 +1174,3 @@ clearSub2.onclick = ()=>{
 
 </body>
 </html>
-
-
-
-
-
