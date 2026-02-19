@@ -3,1174 +3,354 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <link rel="apple-touch-icon" href="image/icon2.png">
 <link rel="icon" type="image/png" href="image/icon2.png">
-
 <meta name="apple-mobile-web-app-title" content="Süre">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>🕒 Süre Hesaplama</title>
+<title>🕒 Süre Hesaplama - Pro Dashboard</title>
 
 <style>
-  :root{
-    --bg:#f6f7f9;
-    --card:#fff;
-    --border:#e6e6e6;
-    --shadow:0 6px 16px rgba(0,0,0,.06);
-    --danger:#c62828;
-    --dark:#2b2b2b;
+  :root {
+    --bg: #f0f2f5;
+    --card: #ffffff;
+    --border: #e2e8f0;
+    --danger: #ef4444;
+    --success: #1b5e20;
+    --accent: #2563eb;
+    --dark: #1e293b;
+    --text-muted: #64748b;
     --safeTop: env(safe-area-inset-top, 0px);
     --safeBottom: env(safe-area-inset-bottom, 0px);
   }
-  html,body{height:100%}
-  body{
-    margin:0;
-    padding:12px 12px calc(12px + var(--safeBottom));
-    background:var(--bg);
-    font-family: Arial, sans-serif;
-    max-width:1100px;
-    margin-inline:auto;
-  }
 
-  /* Mobil sekmeler */
-  .toolbar{
-    display:flex;
-    gap:10px;
-    justify-content:center;
-    margin: calc(6px + var(--safeTop)) 0 10px;
-  }
-  .btn{
-    padding:10px 16px;
-    border-radius:14px;
-    border:1px solid #ddd;
-    background:#fff;
-    font-weight:800;
-    cursor:pointer;
-    min-width:170px;
-  }
-  .btn.active{border-color:#111}
-
-  .areas{display:flex; gap:16px; align-items:flex-start;}
-  .area{
-    flex:1;
-    background:var(--card);
-    border:1px solid var(--border);
-    border-radius:18px;
-    padding:14px;
-    box-shadow:var(--shadow);
-    display:flex;
-    flex-direction:column;
-    min-height:0;
-  }
-  .area-head{
-    position: sticky;
-    top: 0;
-    background: var(--card);
-    z-index: 5;
-    padding-bottom: 10px;
-  }
-
-  .titlebar{
-    display:flex;
-    align-items:center;
-    gap:10px;
-    margin-bottom:10px;
-  }
-  .spacer{flex:1}
-  .total-mini{
-    display:flex;
-    align-items:baseline;
-    gap:10px;
-    padding:10px 12px;
-    border:1px solid #eee;
-    border-radius:14px;
-    background:#fff;
-  }
-  .tlabel{font-weight:900; font-size:18px;}
-  .tvalue{font-weight:900; font-size:45px;}
-  .clear-all{
-    border: 1px solid #f1b7b7;
-    background: #fff;
-    color: var(--danger);
-    font-weight: 900;
-    border-radius: 14px;
-    padding: 10px 14px;
-    cursor: pointer;
-    white-space: nowrap;
-  }
-
-  .above-diff{
-    display:flex;
-    align-items:center;
-    gap:10px;
-    margin-bottom:10px;
-  }
-  .time-icon{
-    width:32px;
-    min-width:32px;
-    text-align:center;
-    font-size:22px;
-    line-height:1;
-    opacity:.85;
-  }
-  .time-input{
-    width:150px;
-    padding:12px;
-    text-align:center;
-    font-size:20px;
-    border-radius:16px;
-    border:2px solid #dcdcdc;
-    outline:none;
-    background:#fff;
-    color:#111;
-    box-sizing:border-box;
-    font-variant-numeric: tabular-nums;
-  }
-  .time-input:focus{
-    outline: 4px solid var(--danger);
-    outline-offset: 0px;
-    box-shadow: 0 0 0 4px rgba(198,40,40,.12);
-  }
-  .time-input.filled{
-    background:var(--dark);
-    color:#fff;
-    border-color:var(--dark);
-  }
-
-  .icon-btn{
-    width:42px;
-    height:42px;
-    border-radius:16px;
-    border:1px solid #ddd;
-    background:#fff;
-    font-size:22px;
-    font-weight:900;
-    cursor:pointer;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    flex:0 0 auto;
-  }
-
-  .diff-row{
-    display:flex;
-    align-items:baseline;
-    gap:12px;
-    flex-wrap:wrap;
-  }
-
-  .top-diff{
-    font-size:54px;
-    font-weight:900;
-    color:var(--danger);
-    min-height:60px;
-    display:flex;
-    align-items:center;
-    font-variant-numeric: tabular-nums;
-  }
-/* Görseldeki kırmızı alanları gizlemek için */
-.top-diff {
-  display: none !important;
-}/* sub1, sub2 alanlarını ve temizleme butonlarını gizle */
-#sub1, #sub2, #clearSub1, #clearSub2 {
-  display: none !important;
-}
-
-  .comment-pill{
-    display:inline-flex;
-    align-items:center;
-    gap:8px;
-    padding:10px 12px;
-    border:1px solid #eee;
-    border-radius:14px;
-    background:#fff;
-    font-weight:900;
-    font-size:18px;
-    line-height:1;
-    white-space:nowrap;
-    font-variant-numeric: tabular-nums;
-  }
-  .comment-pill .tag{opacity:.7;font-weight:900;}
-
-  .manual-row{
-    display:flex;
-    align-items:center;
-    gap:10px;
-    margin-top:10px;
-    flex-wrap:wrap;
-  }
-  .manual-input{
-    width:140px;
-    padding:10px 12px;
-    text-align:center;
-    font-size:18px;
-    border-radius:14px;
-    border:2px solid #dcdcdc;
-    outline:none;
-    background:#fff;
-    font-weight:900;
-    font-variant-numeric: tabular-nums;
-  }
-  .manual-input:focus{
-    outline: 4px solid rgba(0,0,0,.08);
-    outline-offset: 0px;
-  }
-
-  .list{
-    border-top:1px dashed #eee;
-    border-bottom:1px dashed #eee;
-    padding:6px 0 18px;
-    min-height:0;
-    overflow:auto;
-    -webkit-overflow-scrolling:touch;
-  }
-  .row{
-    display:flex;
-    align-items:center;
-    gap:10px;
-    padding:8px 0;
-    border-bottom:1px dashed #eee;
-  }
-  .row:last-child{border-bottom:none}
-  .idx{
-    width:34px;
-    text-align:right;
-    font-weight:800;
-    color:#666;
-    flex:0 0 auto;
-  }
-
-  @media (min-width: 901px){
-    .toolbar{ display:none; }
-  }
-
-  @media (max-width:900px){
-    html,body{ height:100dvh; overflow:hidden; }
-    .areas{ display:block; }
-    .area{
-      display:none;
-      height: calc(100dvh - (86px + var(--safeTop) + var(--safeBottom)));
-      overflow:auto;
-      -webkit-overflow-scrolling:touch;
-    }
-    .area.active{ display:flex; }
-    .top-diff{ font-size:46px; }
-    .time-input{ width:140px; font-size:20px; }
-    .icon-btn{ width:50px; height:50px; }
-    .comment-pill{ font-size:16px; padding:8px 10px; }
-    .manual-input{ width:150px; font-size:16px; }
-  }
-
-  .status-ok{ color:#1b5e20; }
-  .status-bad{ color: var(--danger); }
-
-
-  /* --- Görsel ayrım: Etiket üstte, sayı altta --- */
-  .total-mini{
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 4px;
-  }
-  .tlabel{
-    font-size: 10px;
-    opacity: .75;
-  }
-  .tvalue{
-    font-size: 25px;
-    line-height: 1;
-  }
-
-  .comment-pill{
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 6px;
-    padding: 10px 14px;
-  }
-  .comment-pill .tag{
-    font-size: 13px;
-    letter-spacing: .3px;
-    text-transform: none;
-    opacity: .65;
-  }
-  /* comment-pill içindeki değerleri büyüt */
-  #commentVal1, #commentVal2{
-    font-size: 22px;
-    font-weight: 900;
-    line-height: 1;
-  }
-  #manualVal1, #manualVal2{
-    font-size: 24px;
-    font-weight: 900;
-    line-height: 1;
-  }
-
-  /* Manuel saat kutusunu da biraz büyüt */
-  .manual-input{
-    font-size: 20px;
-    padding: 12px 14px;
-    border-radius: 16px;
-  }
-
-  /* Mobilde aşırı taşmayı önle */
-  @media (max-width:900px){
-    .tvalue{ font-size: 25px; }
-    #commentVal1, #commentVal2{ font-size: 20px; }
-    #manualVal1, #manualVal2{ font-size: 22px; }
-  }
-
-
-/* === YENİ GÖRSEL DÜZEN === */
-
-/* Saat ikonlu satır: kırmızı büyük sayı yanına */
-.above-diff{
-  align-items: center;
-  gap: 14px;
-}
-
-/* Kırmızı ana fark (remain) ikonlu satıra yaklaştır */
-.top-diff{
-  font-size: 48px;
-  margin-left: 8px;
-}
-
-/* Haberlerle + saat biraz daha büyük */
-#commentVal1, #commentVal2{
-  font-size: 50px;
-}
-
-/* YORUM alanı en büyük */
-#manualVal1, #manualVal2{
-  font-size: 70px;
-}
-
-/* YORUM kapsayıcıyı öne çıkar */
-.comment-pill{
-  background: #f7f9fc;
-  border-width: 2px;
-}
-
-
-/* === DÜZELTME: KIRMIZI ALANI YUKARI AL + YORUM ÇERÇEVE RENKLERİ === */
-
-/* above-diff içinde kırmızı fark da hizalansın */
-.above-diff{
-  display:flex;
-  align-items:center;
-  gap:14px;
-}
-
-/* kırmızı büyük sayı üst satıra taşınmış gibi */
-.above-diff .top-diff{
-  order: 3;
-  font-size: 30px;
-  margin-left: 8px;
-}
-
-/* YORUM kapsayıcı varsayılan (yeşil) */
-.comment-pill{
-  border: 2px solid #1b5e20;
-  background:#f7f9fc;
-}
-
-/* YORUM yeşil durum */
-.status-ok{
-  color:#1b5e20;
-}
-.status-ok.comment-pill,
-.comment-pill .status-ok{
-  border-color:#1b5e20;
-}
-
-/* YORUM kırmızı durum (süre geçti) */
-.status-bad{
-  color: var(--danger);
-}
-.status-bad.comment-pill,
-.comment-pill .status-bad{
-  border-color: var(--danger);
-}
-
-
-  .comment-pill.status-ok{ border-color:#1b5e20; }
-  .comment-pill.status-bad{ border-color: var(--danger); }
-
-
-/* === HİZALAMA DÜZELTMESİ (eşit ve dengeli görünüm) === */
-.area-head{
-  display:flex;
-  flex-direction:column;
-  gap:14px;
-}
-
-/* Üst satır: ikon + girilen + sil + kırmızı süre aynı hizaya */
-.above-diff{
-  display:grid;
-  grid-template-columns: 32px 150px 52px 1fr;
-  align-items:center;
-  gap:12px;
-}
-
-/* Kırmızı büyük süre (remain) sabit hizalı */
-.top-diff{
-  justify-self:start;
-  min-width:120px;
-  line-height:1;
-}
-
-/* Haberlerle + Yorum kutuları dengeli */
-.diff-row{
-  display:grid;
-  grid-template-columns: 1fr 1fr;
-  gap:14px;
-  align-items:stretch;
-}
-
-/* Kart genişlikleri eşitlensin */
-.comment-pill{
-  width:100%;
-  box-sizing:border-box;
-}
-
-/* Manuel saat alanı: taşma olmasın */
-.manual-input{
-  width:100%;
-  max-width:180px;
-  box-sizing:border-box;
-}
-
-/* Mobilde grid genişliklerini esnet */
-@media (max-width:900px){
-  .above-diff{
-    grid-template-columns: 32px 1fr 50px;
-    grid-template-areas:
-      "icon input clear"
-      "remain remain remain";
-    row-gap:10px;
-  }
-  .above-diff .time-icon{ grid-area: icon; }
-  .above-diff #sub1, .above-diff #sub2{ grid-area: input; }
-  .above-diff #clearSub1, .above-diff #clearSub2{ grid-area: clear; }
-  .above-diff .top-diff{
-    grid-area: remain;
-    margin-left:0;
-  }
-
-  .diff-row{
-    grid-template-columns: 1fr;
-  }
-  .manual-input{ max-width: 100%; }
-}
-
-
-/* === MOBİL DÜZELTME: Saat ikonunu kaldır === */
-.time-icon{
-  display:none !important;
-}
-
-/* İkon kalkınca grid'i sıkıştır */
-.above-diff{
-  grid-template-columns: 1fr 52px 1fr;
-}
-
-/* Mobilde kırmızı alan yukarı sığsın */
-@media (max-width:900px){
-  .above-diff{
-    grid-template-columns: 1fr 52px;
-    grid-template-areas:
-      "input clear"
-      "remain remain";
-  }
-}
-
-
-/* === MOBİL: Kırmızı süre aşağı düşmesin (aynı satır) === */
-@media (max-width:900px){
-  .above-diff{
-    display:grid;
-    grid-template-columns: 1fr auto 52px;
-    grid-template-areas: "input remain clear";
-    align-items:center;
-    column-gap:10px;
-    row-gap:0;
-  }
-  /* ikon gizli olduğu için alan atamaları */
-  .above-diff #sub1, .above-diff #sub2{ grid-area: input; }
-  .above-diff .top-diff{ 
-    grid-area: remain; 
-    white-space: nowrap;
-    min-width: 0;
-    font-size: 40px; /* biraz küçülterek satıra sığdır */
+  body {
     margin: 0;
+    padding: 12px 12px calc(12px + var(--safeBottom));
+    background: var(--bg);
+    font-family: 'Inter', -apple-system, sans-serif;
+    max-width: 1100px;
+    margin-inline: auto;
+    color: var(--dark);
   }
-  .above-diff #clearSub1, .above-diff #clearSub2{ grid-area: clear; }
 
-  /* girilen kutusu çok uzamasın */
-  .above-diff input{
+  /* GİZLİ ALANLAR */
+  #sub1, #sub2, #clearSub1, #clearSub2, .top-diff, .time-icon {
+    display: none !important;
+  }
+
+  .toolbar {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin: calc(6px + var(--safeTop)) 0 20px;
+  }
+  .btn {
+    padding: 12px 24px;
+    border-radius: 14px;
+    border: 1px solid var(--border);
+    background: #fff;
+    font-weight: 800;
+    cursor: pointer;
+    min-width: 170px;
+    transition: all 0.2s ease;
+    color: var(--text-muted);
+  }
+  .btn.active { background: var(--dark); color: #fff; border-color: var(--dark); }
+
+  .areas { display: flex; gap: 20px; align-items: flex-start; }
+  .area {
+    flex: 1;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 20px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .titlebar {
+    display: grid;
+    grid-template-columns: 100px 1fr;
+    gap: 12px;
+    margin-bottom: 15px;
+  }
+
+  .total-mini, .comment-pill {
+    display: flex;
+    flex-direction: column;
+    padding: 15px;
+    border-radius: 18px;
+    background: #f8fafc;
+    border: 8px solid #f1f5f9;
+    transition: all 0.3s ease;
+  }
+
+  /* DURUM RENKLERİ */
+  .status-ok { border-color: var(--success) !important; color: var(--success) !important; }
+  .status-bad { border-color: var(--danger) !important; color: var(--danger) !important; }
+
+  .tlabel, .tag { font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px; }
+  .tvalue { font-size: 25px; font-weight: 900; color: var(--accent); line-height: 1; }
+
+  #commentVal1, #commentVal2, #manualVal1, #manualVal2 {
+    font-size: 45px;
+    font-weight: 900;
+    line-height: 1;
+    color: inherit;
+  }
+
+  .diff-row { display: flex; flex-direction: column; gap: 12px; margin-bottom: 15px; }
+
+  .manual-input {
     width: 100%;
-    max-width: 180px;
+    padding: 12px;
+    font-size: 20px;
+    font-weight: 800;
+    border-radius: 16px;
+    border: 2px solid #e2e8f0;
+    background: #fff;
+    text-align: center;
+    box-sizing: border-box;
   }
-}
 
+  .list { margin-top: 15px; max-height: 400px; overflow-y: auto; border-top: 1px solid #f1f5f9; padding-right: 5px; }
+  .row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px dashed #edf2f7; }
+  .idx { width: 30px; font-weight: 800; color: #cbd5e1; }
+  
+  .time-input {
+    flex: 1;
+    padding: 10px;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+    font-size: 18px;
+    font-weight: 700;
+    text-align: center;
+    transition: all 0.2s;
+  }
+  
+  /* DOLU KUTU SİYAH OLSUN */
+  .time-input.filled { background: var(--dark) !important; color: #fff !important; border-color: var(--dark) !important; }
+
+  .icon-btn { width: 40px; height: 40px; border-radius: 12px; border: 1px solid #e2e8f0; background: #fff; font-size: 18px; font-weight: 900; cursor: pointer; }
+  .clear-all { background: #fff; color: var(--danger); border: 1px solid #fecdd3; padding: 12px; border-radius: 14px; font-weight: 900; cursor: pointer; margin-bottom: 10px; }
+
+  @media (max-width:900px){
+    .areas { display: block; }
+    .area { display: none; border-radius: 0; min-height: 80vh; }
+    .area.active { display: flex; }
+    .titlebar { grid-template-columns: 1fr; }
+    #commentVal1, #commentVal2, #manualVal1, #manualVal2 { font-size: 68px; }
+  }
 </style>
 </head>
 
 <body>
 
 <div class="toolbar">
-  <button class="btn active" id="tab1" type="button">Reklamdan Önce</button>
-  <button class="btn" id="tab2" type="button">Reklamdan Sonra</button>
+  <button class="btn active" id="tab1">Reklamdan Önce</button>
+  <button class="btn" id="tab2">Reklamdan Sonra</button>
 </div>
 
 <div class="areas">
-
-  <!-- ALAN 1 -->
   <div class="area active" data-area="1">
-    <div class="area-head">
-      <div class="titlebar">
-        <div class="total-mini">
-		
-          <span class="tlabel">HABER TOPLAM:</span>
-          <span class="tvalue" id="total1">—:—</span>
-        </div>
-		        <div class="comment-pill">
-          <span class="tag">HABER + SAAT</span>
-          <span id="commentVal1">—:—</span>
-		  
-        </div>
-       
-        
+    <div class="titlebar">
+      <div class="total-mini">
+        <span class="tlabel">TOPLAM:</span>
+        <span class="tvalue" id="total1">—:—</span>
       </div>
-<button class="clear-all" id="clearArea1" type="button">Hepsini Sil</button>
-      <div class="above-diff">
-        <div class="time-icon" aria-hidden="true">🕒</div>
-        <input id="sub1" class="time-input" placeholder="MM:SS" inputmode="numeric" pattern="[0-9]*" autocomplete="off" spellcheck="false">
-        <button class="icon-btn" id="clearSub1" type="button" aria-label="Girilen temizle" title="Girilen temizle">✕</button>
-		<div class="top-diff" id="remain1">—:—</div>
-      </div>
-
-      <div class="diff-row">
-        
-
-
-		<input id="manual1" class="manual-input" placeholder="HH:MM:SS" inputmode="numeric" autocomplete="off" spellcheck="false">
-		        <div class="comment-pill">
-          <span class="tag">YORUM</span>
-          <span id="manualVal1">—:—</span>
-        </div>
-      </div>
-
-      <div class="manual-row">
-
+      <div class="comment-pill" id="pill1">
+        <span class="tag">HABER + SAAT</span>
+        <span id="commentVal1">—:—</span>
       </div>
     </div>
-
+    <button class="clear-all" id="clearArea1">Hepsini Sil</button>
+    <div class="diff-row">
+      <input id="manual1" class="manual-input" placeholder="HH:MM:SS" inputmode="numeric">
+      <div class="comment-pill" id="manualPill1">
+        <span class="tag">YORUM</span>
+        <span id="manualVal1">—:—</span>
+      </div>
+    </div>
     <div class="list" id="area1"></div>
   </div>
 
-  <!-- ALAN 2 -->
   <div class="area" data-area="2">
-    <div class="area-head">
-      <div class="titlebar">
-        <div class="total-mini">
-          <span class="tlabel">HABER TOPLAM:</span>
-          <span class="tvalue" id="total2">—:—</span>
-        </div>
-		        <div class="comment-pill">
-          <span class="tag">HABER + SAAT</span>
-          <span id="commentVal2">—:—</span>
-        </div>
- 
-        
+    <div class="titlebar">
+      <div class="total-mini">
+        <span class="tlabel">TOPLAM:</span>
+        <span class="tvalue" id="total2">—:—</span>
       </div>
-<button class="clear-all" id="clearArea2" type="button">Hepsini Sil</button>
-      <div class="above-diff">
-        <div class="time-icon" aria-hidden="true">🕒</div>
-        <input id="sub2" class="time-input" placeholder="DK:SN" inputmode="numeric" pattern="[0-9]*" autocomplete="off" spellcheck="false">
-        <button class="icon-btn" id="clearSub2" type="button" aria-label="Girilen temizle" title="Girilen temizle">✕</button>
-		<div class="top-diff" id="remain2">—:—</div>
-      </div>
-
-      <div class="diff-row">
-        
-
-
-		<input id="manual2" class="manual-input" placeholder="HH:MM:SS" inputmode="numeric" autocomplete="off" spellcheck="false">
-      <div class="comment-pill">
-          <span class="tag">YORUM</span>
-          <span id="manualVal2">—:—</span>
-        </div>
-      </div>
-  
-      <div class="manual-row">
-
+      <div class="comment-pill" id="pill2">
+        <span class="tag">HABER + SAAT</span>
+        <span id="commentVal2">—:—</span>
       </div>
     </div>
-
+    <button class="clear-all" id="clearArea2">Hepsini Sil</button>
+    <div class="diff-row">
+      <input id="manual2" class="manual-input" placeholder="HH:MM:SS" inputmode="numeric">
+      <div class="comment-pill" id="manualPill2">
+        <span class="tag">YORUM</span>
+        <span id="manualVal2">—:—</span>
+      </div>
+    </div>
     <div class="list" id="area2"></div>
   </div>
-
 </div>
 
 <script>
-  
-  // ✅ iOS Safari'de ID'ler otomatik global değişken olmaz. Hepsini elle bağlayalım.
-  const tab1 = document.getElementById("tab1");
-  const tab2 = document.getElementById("tab2");
+  const total1 = document.getElementById("total1"), total2 = document.getElementById("total2");
+  const manual1 = document.getElementById("manual1"), manual2 = document.getElementById("manual2");
+  const manualVal1 = document.getElementById("manualVal1"), manualVal2 = document.getElementById("manualVal2");
+  const allInputs = [];
 
-  const total1 = document.getElementById("total1");
-  const total2 = document.getElementById("total2");
-
-  const sub1 = document.getElementById("sub1");
-  const sub2 = document.getElementById("sub2");
-
-  const clearSub1 = document.getElementById("clearSub1");
-  const clearSub2 = document.getElementById("clearSub2");
-
-  const clearArea1 = document.getElementById("clearArea1");
-  const clearArea2 = document.getElementById("clearArea2");
-
-  const remain1 = document.getElementById("remain1");
-  const remain2 = document.getElementById("remain2");
-
-  const commentVal1 = document.getElementById("commentVal1");
-  const commentVal2 = document.getElementById("commentVal2");
-
-  const manual1 = document.getElementById("manual1");
-  const manual2 = document.getElementById("manual2");
-
-  const manualVal1 = document.getElementById("manualVal1");
-  const manualVal2 = document.getElementById("manualVal2");
-
-const allInputs = [];
-
-  // ----------------- MM:SS helpers -----------------
-  function sanitizeMMSS(value){
-    value = (value || "").replace(/[^0-9:]/g,"");
-    const parts = value.split(":");
-    if(parts.length > 2){
-      value = parts[0] + ":" + parts.slice(1).join("").replace(/:/g,"");
-    }
-    return value;
-  }
-
-  function autoFormatMMSS(v){
-    v = sanitizeMMSS(v);
-    if(!v) return "";
-
-    if(v.includes(":")){
-      let [m,s] = v.split(":");
-      m = parseInt(m || "0",10) || 0;
-      s = parseInt(s || "0",10) || 0;
-      m += Math.floor(s/60);
-      s = s % 60;
-      return `${m}:${String(s).padStart(2,"0")}`;
-    }
-
-    const d = v.replace(/\D/g,"");
-    if(!d) return "";
-    if(d.length <= 2) return `0:${d.padStart(2,"0")}`;
-
-    let m = parseInt(d.slice(0,-2),10) || 0;
-    let s = parseInt(d.slice(-2),10) || 0;
-    m += Math.floor(s/60);
-    s = s % 60;
-    return `${m}:${String(s).padStart(2,"0")}`;
-  }
-
-  function toSecondsMMSS(v){
-    if(!v) return 0;
-    const f = autoFormatMMSS(v);
-    if(!f.includes(":")) return 0;
-    const [m,s] = f.split(":");
-    return (parseInt(m,10)||0)*60 + (parseInt(s,10)||0);
-  }
-
-  function fromSecondsMMSS(sec){
-    sec = Math.max(0, sec);
-    const m = Math.floor(sec/60);
-    const s = sec % 60;
-    return `${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
-  }
-
-  function updateFilledState(input){
+  // Dolu input kontrolü (Siyah arka plan için)
+  function updateFilledState(input) {
     if(input.value && input.value.trim() !== "") input.classList.add("filled");
     else input.classList.remove("filled");
   }
 
-  // ----------------- HH:MM:SS helpers -----------------
-  function pad2(n){ return String(n).padStart(2,"0"); }
-
-  function secondsToHMS(sec){
-    sec = ((sec % 86400) + 86400) % 86400;
-    const h = Math.floor(sec / 3600);
-    const m = Math.floor((sec % 3600) / 60);
-    const s = sec % 60;
-    return `${pad2(h)}:${pad2(m)}:${pad2(s)}`;
+  // MM:SS Otomatik Format
+  function autoFormatMMSS(v) {
+    v = v.replace(/\D/g,"");
+    if(!v) return "";
+    if(v.length <= 2) return `0:${v.padStart(2,"0")}`;
+    let m = parseInt(v.slice(0,-2),10) || 0, s = parseInt(v.slice(-2),10) || 0;
+    m += Math.floor(s/60); s = s % 60;
+    return `${m}:${String(s).padStart(2,"0")}`;
   }
 
-function parseHMS(v){
-  if(!v) return null;
-  v = v.replace(/[^0-9:]/g,"");
-
-  if(!v.includes(":")){
-    const d = v.replace(/\D/g,"");
-    if(d.length === 6){
-      const h = parseInt(d.slice(0,2),10);
-      const m = parseInt(d.slice(2,4),10);
-      const s = parseInt(d.slice(4,6),10);
-      if(m < 60 && s < 60) return h*3600 + m*60 + s;
-    }
-    if(d.length === 4){
-      const h = parseInt(d.slice(0,2),10);
-      const m = parseInt(d.slice(2,4),10);
-      if(m < 60) return h*3600 + m*60;
-    }
-    return null;
-  }
-
-  const parts = v.split(":");
-  const h = parseInt(parts[0]||"0",10) || 0;
-  const m = parseInt(parts[1]||"0",10) || 0;
-  const s = parseInt(parts[2]||"0",10) || 0;
-  if(m >= 60 || s >= 60) return null;
-  return h*3600 + m*60 + s;
-}
-
-
-  function nowSec(){
-    const n = new Date();
-    return n.getHours()*3600 + n.getMinutes()*60 + n.getSeconds();
-  }
-
-  function nowPlusSecondsHMS(addSec){
-    return secondsToHMS(nowSec() + (addSec || 0));
-  }
-
-  // ----------------- UI building -----------------
-  function wireAreaInput(input){
-    input.addEventListener("focus",()=>setTimeout(()=>input.select(),0));
-    input.addEventListener("click",()=>setTimeout(()=>input.select(),0));
-
-    input.addEventListener("keydown",(e)=>{
-      if(e.key === "ArrowUp" || e.key === "ArrowLeft"){
-        e.preventDefault(); focusPrevVisible(input); return;
-      }
-      if(e.key === "ArrowDown" || e.key === "ArrowRight"){
-        e.preventDefault(); focusNextVisible(input); return;
-      }
-      if(e.key==="Enter"){
-        e.preventDefault();
-        input.value = autoFormatMMSS(input.value);
-        calculateTotals();
-        updateFilledState(input);
-        focusNextVisible(input);
-      }
-    });
-    input.addEventListener("input",()=>{
-      input.value = sanitizeMMSS(input.value);
-
-      // 3 hane => otomatik format + aşağı at
-      if(!input.value.includes(":")){
-        const digits = input.value.replace(/\D/g,"");
-        if(digits.length === 3){
-          input.value = autoFormatMMSS(digits);
-          calculateTotals();
-          updateFilledState(input);
-          focusNextVisible(input);
-          return;
-        }
-      }
-
-      calculateTotals();
-      updateFilledState(input);
-    });
-
-    input.addEventListener("blur",()=>{
-      if(input.value) input.value = autoFormatMMSS(input.value);
-      calculateTotals();
-      updateFilledState(input);
-    });
-  }
-
-  function wireSubInput(input){
-    input.addEventListener("focus",()=>setTimeout(()=>input.select(),0));
-    input.addEventListener("click",()=>setTimeout(()=>input.select(),0));
-
-    input.addEventListener("input",()=>{
-      input.value = sanitizeMMSS(input.value);
-
-      // 4 hane => otomatik format
-      if(!input.value.includes(":")){
-        const d = input.value.replace(/\D/g,"");
-        if(d.length === 4){
-          input.value = autoFormatMMSS(d);
-        }
-      }
-
-      calculateTotals();
-      updateFilledState(input);
-    });
-
-    input.addEventListener("blur",()=>{
-      if(input.value) input.value = autoFormatMMSS(input.value);
-      calculateTotals();
-      updateFilledState(input);
-    });
-  }
-
-function formatHMSOnBlur(v){
-  if(!v) return "";
-  v = v.replace(/[^0-9:]/g,"");
-
-  // Noktasız giriş: 193500 / 1935
-  if(!v.includes(":")){
-    const d = v.replace(/\D/g,"");
-    if(d.length === 6) return `${d.slice(0,2)}:${d.slice(2,4)}:${d.slice(4,6)}`;
-    if(d.length === 4) return `${d.slice(0,2)}:${d.slice(2,4)}:00`;
+  // HH:MM:SS Manuel Format
+  function formatManualHMS(v) {
+    v = v.replace(/\D/g,"");
+    if(v.length === 6) return `${v.slice(0,2)}:${v.slice(2,4)}:${v.slice(4,6)}`;
+    if(v.length === 4) return `${v.slice(0,2)}:${v.slice(2,4)}:00`;
     return v;
   }
 
-  // Noktalı giriş: 19:35 / 19:35:2 / 19:35:20
-  const parts = v.split(":");
-  if(parts.length === 2){
-    // HH:MM -> HH:MM:00
-    const h = parts[0].padStart(2,"0").slice(-2);
-    const m = parts[1].padStart(2,"0").slice(-2);
-    return `${h}:${m}:00`;
-  }
-  if(parts.length >= 3){
-    const h = (parts[0] || "0").padStart(2,"0").slice(-2);
-    const m = (parts[1] || "0").padStart(2,"0").slice(-2);
-    const sRaw = (parts[2] || "0").replace(/\D/g,"");
-    const s = sRaw.padStart(2,"0").slice(-2);
-    return `${h}:${m}:${s}`;
-  }
-  return v;
-}
-
-function wireManualInput(input){
-  input.addEventListener("focus",()=>setTimeout(()=>input.select(),0));
-  input.addEventListener("click",()=>setTimeout(()=>input.select(),0));
-
-  input.addEventListener("input",()=>{
-    // sadece izin verilen karakterler (formatlamayı burada ZORLAMAYACAK)
-    input.value = input.value.replace(/[^0-9:]/g,"");
-    calculateTotals();
-  });
-
-  input.addEventListener("blur",()=>{
-    // burada düzgün formata oturt
-    input.value = formatHMSOnBlur(input.value);
-    calculateTotals();
-  });
-}
-
-  // ----------------- Focus helpers (Enter + otomatik aşağı geçiş) -----------------
-  function isVisible(el){ return !!(el && el.offsetParent); }
-
-  function focusPrevVisible(cur){
-    const i = allInputs.indexOf(cur);
-    for(let j=i-1;j>=0;j--){
-      if(isVisible(allInputs[j])){ allInputs[j].focus(); return true; }
-    }
-    return false;
+  function toSecondsMMSS(v) {
+    if(!v || !v.includes(":")) return 0;
+    const [m,s] = v.split(":");
+    return (parseInt(m,10)||0)*60 + (parseInt(s,10)||0);
   }
 
-  function focusNextVisible(cur){
-    const i = allInputs.indexOf(cur);
-    for(let j=i+1;j<allInputs.length;j++){
-      if(isVisible(allInputs[j])){ allInputs[j].focus(); return true; }
-    }
-    return false;
+  function fromSecondsMMSS(sec) {
+    sec = Math.max(0, sec);
+    return `${String(Math.floor(sec/60)).padStart(2,"0")}:${String(sec%60).padStart(2,"0")}`;
   }
 
-  function createAreaInputs(containerId, count){
-    const c = document.getElementById(containerId);
-    for(let i=1;i<=count;i++){
-      const row = document.createElement("div");
-      row.className = "row";
+  function secondsToHMS(sec) {
+    sec = ((sec % 86400) + 86400) % 86400;
+    return `${String(Math.floor(sec/3600)).padStart(2,"0")}:${String(Math.floor((sec%3600)/60)).padStart(2,"0")}:${String(sec%60).padStart(2,"0")}`;
+  }
 
-      const idx = document.createElement("div");
-      idx.className = "idx";
-      idx.textContent = i + ".";
+  function parseHMS(v) {
+    v = v.replace(/\D/g,"");
+    if(v.length === 6) return parseInt(v.slice(0,2))*3600 + parseInt(v.slice(2,4))*60 + parseInt(v.slice(4,6));
+    if(v.length === 4) return parseInt(v.slice(0,2))*3600 + parseInt(v.slice(2,4))*60;
+    return null;
+  }
 
-      const input = document.createElement("input");
-      input.className = "time-input";
-      input.type = "text";
-      input.placeholder = "DK:SN";
-      input.inputMode = "numeric";
-      input.pattern = "[0-9]*";
-      input.autocomplete = "off";
-      input.spellcheck = false;
+  function calculateTotals() {
+    let a1=0, a2=0;
+    document.querySelectorAll("#area1 input.time-input").forEach(i=> a1 += toSecondsMMSS(i.value));
+    document.querySelectorAll("#area2 input.time-input").forEach(i=> a2 += toSecondsMMSS(i.value));
 
-      const clearBtn = document.createElement("button");
-      clearBtn.className = "icon-btn";
-      clearBtn.type = "button";
-      clearBtn.textContent = "✕";
-      clearBtn.title = "Satırı temizle";
+    total1.textContent = a1 > 0 ? fromSecondsMMSS(a1) : "—:—";
+    total2.textContent = a2 > 0 ? fromSecondsMMSS(a2) : "—:—";
 
-      wireAreaInput(input);
+    const now = new Date();
+    const nowS = now.getHours()*3600 + now.getMinutes()*60 + now.getSeconds();
 
-      clearBtn.addEventListener("click",(e)=>{
-        // iOS'ta klavyeyi tekrar açmamak için: input'a focus verme
-        e.preventDefault();
-        e.stopPropagation();
-        if(!input.value) return;
-        input.value = "";
-        updateFilledState(input);
-        calculateTotals();
-        // Eğer aktif odak bir input ise kapat
-        if(document.activeElement && document.activeElement.tagName === "INPUT"){
-          document.activeElement.blur();
+    [1,2].forEach(n => {
+      const aTotal = n===1 ? a1 : a2;
+      const hPlusS = nowS + aTotal;
+      const pill = document.getElementById("pill"+n);
+      const mInput = n===1 ? manual1 : manual2;
+      const mVal = parseHMS(mInput.value);
+      const mPill = document.getElementById("manualPill"+n);
+      const mDisplay = n===1 ? manualVal1 : manualVal2;
+
+      document.getElementById("commentVal"+n).textContent = secondsToHMS(hPlusS);
+
+      if(mVal !== null) {
+        const diff = mVal - hPlusS;
+        mDisplay.textContent = fromSecondsMMSS(Math.abs(diff));
+        
+        // RENK MANTIĞI: Hedefi (manuel saati) geçerse KIRMIZI, yoksa YEŞİL
+        if(diff >= 0) {
+          pill.className = "comment-pill status-ok";
+          mPill.className = "comment-pill status-ok";
+        } else {
+          pill.className = "comment-pill status-bad";
+          mPill.className = "comment-pill status-bad";
         }
-      });
-      row.appendChild(idx);
-      row.appendChild(input);
-      row.appendChild(clearBtn);
-      c.appendChild(row);
-
-      allInputs.push(input);
-    }
-  }
-
-  function sumArea(id){
-    let t=0;
-    document.querySelectorAll(`#${id} input`).forEach(i=> t += toSecondsMMSS(i.value));
-    return t;
-  }
-
-  function hasAnyValue(areaId){
-    return Array.from(document.querySelectorAll(`#${areaId} input`))
-      .some(i => (i.value || "").trim() !== "");
-  }
-
-  // ----------------- Core -----------------
-  
-  function secondsToMMSS(sec){
-    sec = Math.abs(sec|0);
-    const m = Math.floor(sec/60);
-    const s = sec % 60;
-    return `${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
-  }
-
-function calculateTotals(){
-    const a1 = sumArea("area1"); // seconds
-    const a2 = sumArea("area2"); // seconds
-
-    // Total (MM:SS)
-    total1.textContent = hasAnyValue("area1") ? fromSecondsMMSS(a1) : "—:—";
-    total2.textContent = hasAnyValue("area2") ? fromSecondsMMSS(a2) : "—:—";
-
-    // remain (MM:SS) = sub - total
-    const rawSub1 = (sub1.value || "").trim();
-    if(!rawSub1){
-      remain1.textContent = "—:—";
-    }else{
-      const s1 = toSecondsMMSS(sub1.value);
-      remain1.textContent = fromSecondsMMSS(s1 - a1);
-    }
-
-    const rawSub2 = (sub2.value || "").trim();
-    if(!rawSub2){
-      remain2.textContent = "—:—";
-    }else{
-      const s2 = toSecondsMMSS(sub2.value);
-      remain2.textContent = fromSecondsMMSS(s2 - a2);
-    }
-
-    // haberlerle (HH:MM:SS) = now + total  ✅ her zaman saat bas (total 0 olsa bile)
-    commentVal1.textContent = nowPlusSecondsHMS(a1);
-    commentVal2.textContent = nowPlusSecondsHMS(a2);
-
-    // çıkar (HH:MM:SS) = manual - (now + total)
-    const m1 = parseHMS(manual1.value);
-    const box1 = manualVal1.closest(".comment-pill");
-    if(m1 == null){
-      manualVal1.textContent = "—:—";
-      manualVal1.classList.remove("status-ok","status-bad");
-      if(box1) box1.classList.remove("status-ok","status-bad");
-    }else{
-      const commentSec1 = (nowSec() + a1) % 86400;
-      const delta1 = m1 - commentSec1; // manuel - haberlerle
-      if(delta1 >= 0){
-        manualVal1.textContent = secondsToMMSS(delta1);
-        manualVal1.classList.add("status-ok");
-        manualVal1.classList.remove("status-bad");
-        if(box1){ box1.classList.add("status-ok"); box1.classList.remove("status-bad"); }
-      }else{
-        // geçti -> 00:00:00'dan yukarı say (mutlak değer)
-        manualVal1.textContent = secondsToMMSS(delta1);
-        manualVal1.classList.add("status-bad");
-        manualVal1.classList.remove("status-ok");
-        if(box1){ box1.classList.add("status-bad"); box1.classList.remove("status-ok"); }
+      } else {
+        pill.className = "comment-pill";
+        mPill.className = "comment-pill";
+        mDisplay.textContent = "—:—";
       }
-    }
-
-    const m2 = parseHMS(manual2.value);
-    const box2 = manualVal2.closest(".comment-pill");
-    if(m2 == null){
-      manualVal2.textContent = "—:—";
-      manualVal2.classList.remove("status-ok","status-bad");
-      if(box2) box2.classList.remove("status-ok","status-bad");
-    }else{
-      const commentSec2 = (nowSec() + a2) % 86400;
-      const delta2 = m2 - commentSec2; // manuel - haberlerle
-      if(delta2 >= 0){
-        manualVal2.textContent = secondsToMMSS(delta2);
-        manualVal2.classList.add("status-ok");
-        manualVal2.classList.remove("status-bad");
-        if(box2){ box2.classList.add("status-ok"); box2.classList.remove("status-bad"); }
-      }else{
-        // geçti -> 00:00:00'dan yukarı say (mutlak değer)
-        manualVal2.textContent = secondsToMMSS(delta2);
-        manualVal2.classList.add("status-bad");
-        manualVal2.classList.remove("status-ok");
-        if(box2){ box2.classList.add("status-bad"); box2.classList.remove("status-ok"); }
-      }
-    }
-  }
-
-  function clearArea(areaId){
-    document.querySelectorAll(`#${areaId} input`).forEach(i=>{
-      i.value = "";
-      updateFilledState(i);
     });
-    calculateTotals();
   }
 
-  
-  // ===================== KALICI KAYIT (localStorage) =====================
-  const STORAGE_KEY = "sureHesapState_v2";
-  let saveTimer = null;
+  function wireInput(inp) {
+    // OTOMATİK SEÇME (PC ve MOBİL İÇİN)
+    inp.onfocus = function() { setTimeout(()=> this.select(), 50); };
+    inp.onclick = function() { this.select(); };
 
-  function collectState(){
-    const area1Inputs = Array.from(document.querySelectorAll("#area1 input.time-input"));
-    const area2Inputs = Array.from(document.querySelectorAll("#area2 input.time-input"));
-    return {
-      sub1: sub1.value || "",
-      sub2: sub2.value || "",
-      manual1: manual1.value || "",
-      manual2: manual2.value || "",
-      area1: area1Inputs.map(i => i.value || ""),
-      area2: area2Inputs.map(i => i.value || ""),
-      activeTab: (tab2 && tab2.classList.contains("active")) ? 2 : 1,
+    inp.oninput = () => {
+      let v = inp.value.replace(/\D/g,"");
+      // 3 hane girilince (örn: 300) otomatik 3:00 yap ve aşağı geç
+      if(v.length === 3) {
+        inp.value = autoFormatMMSS(v);
+        updateFilledState(inp);
+        calculateTotals();
+        const next = allInputs[allInputs.indexOf(inp) + 1];
+        if(next) next.focus();
+      }
+      updateFilledState(inp);
+      calculateTotals();
+    };
+    
+    inp.onblur = () => { 
+      if(inp.value) inp.value = autoFormatMMSS(inp.value); 
+      updateFilledState(inp); 
+      calculateTotals(); 
     };
   }
 
-  function applyState(state){
-    if(!state || typeof state !== "object") return;
-
-    if(typeof state.sub1 === "string") sub1.value = state.sub1;
-    if(typeof state.sub2 === "string") sub2.value = state.sub2;
-    if(typeof state.manual1 === "string") manual1.value = state.manual1;
-    if(typeof state.manual2 === "string") manual2.value = state.manual2;
-
-    const area1Inputs = Array.from(document.querySelectorAll("#area1 input.time-input"));
-    const area2Inputs = Array.from(document.querySelectorAll("#area2 input.time-input"));
-
-    if(Array.isArray(state.area1)){
-      state.area1.forEach((v, i) => { if(area1Inputs[i]) area1Inputs[i].value = v || ""; });
-    }
-    if(Array.isArray(state.area2)){
-      state.area2.forEach((v, i) => { if(area2Inputs[i]) area2Inputs[i].value = v || ""; });
-    }
-
-    // Filled state güncelle
-    [...area1Inputs, ...area2Inputs, sub1, sub2, manual1, manual2].forEach(inp => {
-      if(inp) updateFilledState(inp);
-    });
-
-    // Sekme (mobil)
-    if(state.activeTab === 2 && tab2){
-      tab2.click();
-    }else if(tab1){
-      tab1.click();
+  function createAreaInputs(id, count) {
+    const c = document.getElementById(id);
+    for(let i=1; i<=count; i++) {
+      const row = document.createElement("div");
+      row.className = "row";
+      row.innerHTML = `<div class="idx">${i}.</div><input class="time-input" placeholder="00:00" inputmode="numeric"><button class="icon-btn" type="button">✕</button>`;
+      const inp = row.querySelector("input");
+      wireInput(inp);
+      row.querySelector("button").onclick = () => { inp.value = ""; updateFilledState(inp); calculateTotals(); };
+      c.appendChild(row);
+      allInputs.push(inp);
     }
   }
 
-  function saveStateNow(){
-    try{
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(collectState()));
-    }catch(e){}
-  }
-
-  function scheduleSave(){
-    if(saveTimer) clearTimeout(saveTimer);
-    saveTimer = setTimeout(saveStateNow, 120);
-  }
-
-  function loadStateNow(){
-    try{
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if(!raw) return;
-      applyState(JSON.parse(raw));
-    }catch(e){}
-  }
-
-  // calculateTotals çağrıldıkça kaydet
-  const _calculateTotals = calculateTotals;
-  calculateTotals = function(){
-    _calculateTotals();
-    scheduleSave();
-  };
-
-  // Sayfa gizlenince / kapanınca da kaydet
-  window.addEventListener("pagehide", saveStateNow);
-  window.addEventListener("beforeunload", saveStateNow);
-  document.addEventListener("visibilitychange", ()=> {
-    if(document.visibilityState === "hidden") saveStateNow();
+  // Manuel giriş için de tıklayınca seçme ekle
+  [manual1, manual2].forEach(m => {
+    m.onfocus = function() { setTimeout(()=> this.select(), 50); };
+    m.onclick = function() { this.select(); };
+    m.onblur = () => { m.value = formatManualHMS(m.value); calculateTotals(); };
+    m.oninput = () => calculateTotals();
   });
-  // =======================================================================
 
-// ----------------- Init -----------------
-  createAreaInputs("area1", 13);
-  createAreaInputs("area2", 7);
-
-  wireSubInput(sub1);
-  wireSubInput(sub2);
-
-  wireManualInput(manual1);
-  wireManualInput(manual2);
-
-  clearArea1.onclick = ()=> clearArea("area1");
-  clearArea2.onclick = ()=> clearArea("area2");
-
-  clearSub1.onclick = ()=>{
-    if(!sub1.value) return;
-    sub1.value = "";
-    updateFilledState(sub1);
-    calculateTotals();
-    if(document.activeElement && document.activeElement.tagName==="INPUT"){ document.activeElement.blur(); }
-  };
+  createAreaInputs("area1", 13); createAreaInputs("area2", 7);
   
+  document.getElementById("tab1").onclick = () => { document.querySelector('.area[data-area="1"]').classList.add('active'); document.querySelector('.area[data-area="2"]').classList.remove('active'); document.getElementById("tab1").classList.add('active'); document.getElementById("tab2").classList.remove('active'); };
+  document.getElementById("tab2").onclick = () => { document.querySelector('.area[data-area="2"]').classList.add('active'); document.querySelector('.area[data-area="1"]').classList.remove('active'); document.getElementById("tab2").classList.add('active'); document.getElementById("tab1").classList.remove('active'); };
 
-  // İlk açılışta son kayıtları geri yükle
-  loadStateNow();
-  calculateTotals();
-clearSub2.onclick = ()=>{
-    if(!sub2.value) return;
-    sub2.value = "";
-    updateFilledState(sub2);
-    calculateTotals();
-    if(document.activeElement && document.activeElement.tagName==="INPUT"){ document.activeElement.blur(); }
-  };
+  document.getElementById("clearArea1").onclick = () => { document.querySelectorAll("#area1 input").forEach(i=>{i.value=""; updateFilledState(i);}); calculateTotals(); };
+  document.getElementById("clearArea2").onclick = () => { document.querySelectorAll("#area2 input").forEach(i=>{i.value=""; updateFilledState(i);}); calculateTotals(); };
 
-  function setActiveArea(n){
-    document.querySelectorAll(".area").forEach(a=>a.classList.remove("active"));
-    document.querySelector(`.area[data-area="${n}"]`).classList.add("active");
-    tab1.classList.toggle("active", n===1);
-    tab2.classList.toggle("active", n===2);
-  }
-  tab1.onclick = ()=> setActiveArea(1);
-  tab2.onclick = ()=> setActiveArea(2);
-
-  calculateTotals();
-  document.querySelectorAll("input").forEach(updateFilledState);
-
-  // ✅ Saat ve türevleri canlı kalsın
   setInterval(calculateTotals, 1000);
 </script>
-
 </body>
 </html>
