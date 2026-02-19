@@ -10,6 +10,8 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>🕒 Süre Hesaplama - Pro Dashboard</title>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+
 <style>
   :root {
     --bg: #f0f2f5;
@@ -32,6 +34,8 @@
     max-width: 1100px;
     margin-inline: auto;
     color: var(--dark);
+    /* Mobilde kaydırma sırasında takılmayı önler */
+    touch-action: pan-y;
   }
 
   /* GİZLİ ALANLAR */
@@ -183,8 +187,32 @@
   }
 
   .list { margin-top: 10px; max-height: 50vh; overflow-y: auto; border-top: 1px solid #f1f5f9; padding-right: 5px; }
-  .row { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px dashed #edf2f7; }
-  .idx { width: 25px; font-weight: 800; color: #cbd5e1; font-size: 14px; }
+  
+  .row { 
+    display: flex; 
+    align-items: center; 
+    gap: 8px; 
+    padding: 6px 0; 
+    border-bottom: 1px dashed #edf2f7; 
+    background: #fff; /* Sürüklerken şeffaf olmasın */
+  }
+  
+  /* Sürükleme İkonu */
+  .drag-handle {
+    cursor: grab;
+    color: #cbd5e1;
+    font-size: 20px;
+    line-height: 1;
+    padding: 5px;
+    user-select: none;
+  }
+  .drag-handle:active { cursor: grabbing; color: var(--accent); }
+
+  /* Sürükleme Efektleri */
+  .sortable-ghost { opacity: 0.4; background: #f1f5f9; }
+  .sortable-drag { background: #fff; box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+
+  .idx { width: 25px; font-weight: 800; color: #cbd5e1; font-size: 14px; user-select: none; }
   
   .time-input {
     flex: 1;
@@ -277,57 +305,44 @@
 </div>
 
 <script>
-  // ELEMENTLER
+  // DOM ELEMENTLERİ
   const total1 = document.getElementById("total1"), total2 = document.getElementById("total2");
   const manual1 = document.getElementById("manual1"), manual2 = document.getElementById("manual2");
   const manualVal1 = document.getElementById("manualVal1"), manualVal2 = document.getElementById("manualVal2");
-  const allInputs = [];
   
   let bigWindow1 = null;
   let bigWindow2 = null;
-  
-  // KAYIT ANAHTARI
-  const STORAGE_KEY = "TimerApp_PERSISTENT_DATA";
+  const STORAGE_KEY = "TimerApp_PERSISTENT_DATA_V2";
 
-  // --- 1. FONKSİYON: VERİLERİ KAYDET ---
+  // --- KAYIT SİSTEMİ ---
   function saveData() {
     const data = {
-      // Aktif sekme hangisi?
       tab: document.getElementById("tab2").classList.contains("active") ? 2 : 1,
-      
-      // Manuel Hedefler
       m1: manual1.value,
       m2: manual2.value,
-      
-      // Haber Listeleri (Dizi olarak sakla)
+      // DOM sırasına göre değerleri kaydet (Sürüklenen sıra korunur)
       list1: Array.from(document.querySelectorAll("#area1 .time-input")).map(i => i.value),
       list2: Array.from(document.querySelectorAll("#area2 .time-input")).map(i => i.value)
     };
-    
-    // Tarayıcıya yaz
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
   }
 
-  // --- 2. FONKSİYON: VERİLERİ YÜKLE ---
   function loadData() {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return; // Kayıt yoksa çık
+    if (!raw) return;
 
     try {
       const data = JSON.parse(raw);
+      
+      // Sekme
+      if (data.tab === 2) { document.getElementById("tab2").click(); } 
+      else { document.getElementById("tab1").click(); }
 
-      // Sekmeyi ayarla
-      if (data.tab === 2) {
-        document.getElementById("tab2").click();
-      } else {
-        document.getElementById("tab1").click();
-      }
-
-      // Hedefleri doldur
+      // Manuel Hedefler
       if(data.m1) manual1.value = data.m1;
       if(data.m2) manual2.value = data.m2;
 
-      // Listeleri doldur (Inputlar oluşturulduktan sonra çalışmalı!)
+      // Listeleri Doldur
       const inputs1 = document.querySelectorAll("#area1 .time-input");
       const inputs2 = document.querySelectorAll("#area2 .time-input");
 
@@ -335,26 +350,46 @@
         data.list1.forEach((val, idx) => {
           if (inputs1[idx]) {
             inputs1[idx].value = val;
-            updateFilledState(inputs1[idx]); // Siyah kutu efekti
+            updateFilledState(inputs1[idx]);
           }
         });
       }
-
       if (data.list2) {
         data.list2.forEach((val, idx) => {
           if (inputs2[idx]) {
             inputs2[idx].value = val;
-            updateFilledState(inputs2[idx]); // Siyah kutu efekti
+            updateFilledState(inputs2[idx]);
           }
         });
       }
-
-      // Hesaplamayı tetikle
       calculateTotals();
+    } catch (e) { console.error(e); }
+  }
 
-    } catch (e) {
-      console.error("Veri yükleme hatası:", e);
-    }
+  // --- SÜRÜKLE BIRAK SİSTEMİ (SORTABLE) ---
+  function initSortable(id) {
+    const el = document.getElementById(id);
+    new Sortable(el, {
+      handle: '.drag-handle', // Sadece ikondan tutunca sürükle
+      animation: 150,
+      ghostClass: 'sortable-ghost',
+      dragClass: 'sortable-drag',
+      onEnd: function() {
+        // Sürükleme bitince numaraları (1., 2., 3.) düzelt
+        updateIndices(id);
+        // Yeni sırayı kaydet
+        saveData();
+        // Toplamı tekrar hesapla (gerçi değişmez ama garanti olsun)
+        calculateTotals();
+      }
+    });
+  }
+
+  function updateIndices(areaId) {
+    const rows = document.querySelectorAll(`#${areaId} .row`);
+    rows.forEach((row, index) => {
+      row.querySelector('.idx').textContent = (index + 1) + ".";
+    });
   }
 
   // --- YARDIMCI FONKSİYONLAR ---
@@ -402,7 +437,10 @@
     return null;
   }
 
-  // PENCERE FONKSİYONLARI
+  // GLOBAL EVENT LISTENER (HER ŞEYİ KAYDET)
+  window.addEventListener('input', saveData);
+  window.addEventListener('change', saveData);
+  
   function openBigWindow(id) {
     const winName = "BigTimer" + id;
     const winRef = id === 1 ? bigWindow1 : bigWindow2;
@@ -449,6 +487,7 @@
 
   function calculateTotals() {
     let a1=0, a2=0;
+    // QuerySelectorAll DOM sırasına göre gelir, bu yüzden sürükleme sonrası sıralama doğrudur.
     document.querySelectorAll("#area1 input.time-input").forEach(i=> a1 += toSecondsMMSS(i.value));
     document.querySelectorAll("#area2 input.time-input").forEach(i=> a2 += toSecondsMMSS(i.value));
 
@@ -502,20 +541,23 @@
         inp.value = autoFormatMMSS(v);
         updateFilledState(inp);
         calculateTotals();
-        saveData(); // ANINDA KAYDET
-        const next = allInputs[allInputs.indexOf(inp) + 1];
+        saveData(); 
+        
+        // Dom'daki bir sonraki inputu bul (Sıralama değişmiş olabilir)
+        const allCurrentInputs = Array.from(document.querySelectorAll('.time-input'));
+        const next = allCurrentInputs[allCurrentInputs.indexOf(inp) + 1];
         if(next) next.focus();
       }
       updateFilledState(inp);
       calculateTotals();
-      saveData(); // ANINDA KAYDET
+      saveData();
     };
     
     inp.onblur = () => { 
       if(inp.value) inp.value = autoFormatMMSS(inp.value); 
       updateFilledState(inp); 
       calculateTotals(); 
-      saveData(); // ANINDA KAYDET
+      saveData();
     };
   }
 
@@ -524,42 +566,39 @@
     for(let i=1; i<=count; i++) {
       const row = document.createElement("div");
       row.className = "row";
-      row.innerHTML = `<div class="idx">${i}.</div><input class="time-input" placeholder="00:00" inputmode="numeric"><button class="icon-btn" type="button">✕</button>`;
+      // Sürükleme Tutamacı (⋮⋮) eklendi
+      row.innerHTML = `<div class="drag-handle">⋮⋮</div><div class="idx">${i}.</div><input class="time-input" placeholder="00:00" inputmode="numeric"><button class="icon-btn" type="button">✕</button>`;
       const inp = row.querySelector("input");
       wireInput(inp);
       row.querySelector("button").onclick = () => { 
         inp.value = ""; 
         updateFilledState(inp); 
         calculateTotals(); 
-        saveData(); // SİLİNCE KAYDET
+        saveData(); 
       };
       c.appendChild(row);
-      allInputs.push(inp);
     }
   }
 
   [manual1, manual2].forEach(m => {
     m.onfocus = function() { setTimeout(()=> this.select(), 50); };
     m.onclick = function() { this.select(); };
-    m.onblur = () => { 
-      m.value = formatManualHMS(m.value); 
-      calculateTotals(); 
-      saveData(); // KAYDET
-    };
-    m.oninput = () => { 
-      calculateTotals(); 
-      saveData(); // KAYDET
-    };
+    m.onblur = () => { m.value = formatManualHMS(m.value); calculateTotals(); saveData(); };
+    m.oninput = () => { calculateTotals(); saveData(); };
   });
 
-  // ÖNCE KUTULARI OLUŞTUR
+  // BAŞLATMA SIRASI
   createAreaInputs("area1", 13); 
   createAreaInputs("area2", 7);
   
-  // SONRA VERİLERİ YÜKLE (SIRALAMA ÖNEMLİ)
+  // Sürükle Bırak Özelliğini Başlat
+  initSortable("area1");
+  initSortable("area2");
+
+  // En Son Verileri Yükle
   loadData();
 
-  // Button Events
+  // Butonlar
   document.getElementById("tab1").onclick = () => { 
     document.querySelector('.area[data-area="1"]').classList.add('active'); 
     document.querySelector('.area[data-area="2"]').classList.remove('active'); 
@@ -574,7 +613,6 @@
     document.getElementById("tab1").classList.remove('active'); 
     saveData();
   };
-
   document.getElementById("clearArea1").onclick = () => { 
     document.querySelectorAll("#area1 input").forEach(i=>{i.value=""; updateFilledState(i);}); 
     calculateTotals(); 
@@ -586,7 +624,6 @@
     saveData(); 
   };
 
-  // SÜREKLİ HESAPLA
   setInterval(calculateTotals, 1000);
 </script>
 </body>
