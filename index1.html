@@ -26,7 +26,7 @@
 
   body {
     margin: 0;
-    padding: 12px 12px calc(12px + var(--safeBottom));
+    padding: 10px 10px calc(10px + var(--safeBottom));
     background: var(--bg);
     font-family: 'Inter', -apple-system, sans-serif;
     max-width: 1100px;
@@ -41,20 +41,22 @@
 
   .toolbar {
     display: flex;
-    gap: 10px;
+    gap: 8px;
     justify-content: center;
-    margin: calc(6px + var(--safeTop)) 0 20px;
+    margin: calc(4px + var(--safeTop)) 0 15px;
   }
   .btn {
-    padding: 12px 24px;
-    border-radius: 14px;
+    padding: 10px 16px;
+    border-radius: 12px;
     border: 1px solid var(--border);
     background: #fff;
     font-weight: 800;
     cursor: pointer;
-    min-width: 170px;
+    flex: 1;
+    max-width: 200px;
     transition: all 0.2s ease;
     color: var(--text-muted);
+    font-size: 14px;
   }
   .btn.active { background: var(--dark); color: #fff; border-color: var(--dark); }
 
@@ -63,61 +65,105 @@
     flex: 1;
     background: var(--card);
     border: 1px solid var(--border);
-    border-radius: 24px;
-    padding: 20px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+    border-radius: 20px;
+    padding: 15px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.03);
     display: flex;
     flex-direction: column;
   }
 
+  /* --- ÜST DÜZEN --- */
   .titlebar {
-    display: grid;
-    grid-template-columns: 100px 1fr;
-    gap: 12px;
+    display: flex;
+    gap: 10px;
     margin-bottom: 15px;
   }
 
   .total-mini, .comment-pill {
     display: flex;
     flex-direction: column;
-    padding: 15px;
-    border-radius: 18px;
+    justify-content: center;
+    padding: 10px 15px;
+    border-radius: 16px;
     background: #f8fafc;
-    border: 8px solid #f1f5f9;
+    border: 2px solid #eef2f7;
     transition: all 0.3s ease;
+  }
+
+  .total-mini {
+    flex: 0 0 auto;
+    min-width: 100px;
+  }
+
+  .comment-pill {
+    flex: 1; 
+    border-width: 4px;
   }
 
   /* DURUM RENKLERİ */
   .status-ok { border-color: var(--success) !important; color: var(--success) !important; }
   .status-bad { border-color: var(--danger) !important; color: var(--danger) !important; }
 
-  .tlabel, .tag { font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px; }
-  .tvalue { font-size: 25px; font-weight: 900; color: var(--accent); line-height: 1; }
+  .tlabel, .tag { 
+    font-size: 10px; 
+    font-weight: 800; 
+    color: var(--text-muted); 
+    text-transform: uppercase; 
+    margin-bottom: 2px; 
+  }
 
-  #commentVal1, #commentVal2, #manualVal1, #manualVal2 {
-    font-size: 45px;
+  .tvalue { 
+    font-size: 28px; 
+    font-weight: 900; 
+    color: var(--accent); 
+    line-height: 1.1; 
+  }
+
+  #commentVal1, #commentVal2 {
+    font-size: 32px;
     font-weight: 900;
+    line-height: 1.1;
+    color: inherit;
+  }
+
+  #manualVal1, #manualVal2 {
+    font-size: 50px;
+    font-weight: 700;
     line-height: 1;
     color: inherit;
   }
 
-  .diff-row { display: flex; flex-direction: column; gap: 12px; margin-bottom: 15px; }
+  .diff-row { display: flex; flex-direction: column; gap: 8px; margin-bottom: 15px; }
+  
+  /* YORUM KUTUSU - ORTALAMA EKLENDİ */
+  .manual-pill-box {
+     border: 6px solid #f1f5f9;
+     border-radius: 18px;
+     padding: 10px;
+     background: #fff;
+     display: flex;
+     flex-direction: column;
+     justify-content: center;
+     align-items: center; /* Yatayda ortala */
+     text-align: center;  /* Metni ortala */
+  }
 
   .manual-input {
     width: 100%;
     padding: 12px;
-    font-size: 20px;
+    font-size: 24px;
     font-weight: 800;
-    border-radius: 16px;
+    border-radius: 14px;
     border: 2px solid #e2e8f0;
     background: #fff;
     text-align: center;
     box-sizing: border-box;
+    margin-bottom: 8px;
   }
 
-  .list { margin-top: 15px; max-height: 400px; overflow-y: auto; border-top: 1px solid #f1f5f9; padding-right: 5px; }
-  .row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px dashed #edf2f7; }
-  .idx { width: 30px; font-weight: 800; color: #cbd5e1; }
+  .list { margin-top: 10px; max-height: 50vh; overflow-y: auto; border-top: 1px solid #f1f5f9; padding-right: 5px; }
+  .row { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px dashed #edf2f7; }
+  .idx { width: 25px; font-weight: 800; color: #cbd5e1; font-size: 14px; }
   
   .time-input {
     flex: 1;
@@ -130,18 +176,18 @@
     transition: all 0.2s;
   }
   
-  /* DOLU KUTU SİYAH OLSUN */
   .time-input.filled { background: var(--dark) !important; color: #fff !important; border-color: var(--dark) !important; }
 
-  .icon-btn { width: 40px; height: 40px; border-radius: 12px; border: 1px solid #e2e8f0; background: #fff; font-size: 18px; font-weight: 900; cursor: pointer; }
-  .clear-all { background: #fff; color: var(--danger); border: 1px solid #fecdd3; padding: 12px; border-radius: 14px; font-weight: 900; cursor: pointer; margin-bottom: 10px; }
+  .icon-btn { width: 38px; height: 38px; border-radius: 10px; border: 1px solid #e2e8f0; background: #fff; font-size: 16px; font-weight: 900; cursor: pointer; }
+  .clear-all { background: #fff; color: var(--danger); border: 1px solid #fecdd3; padding: 10px; border-radius: 12px; font-weight: 900; cursor: pointer; margin-bottom: 5px; font-size: 13px; }
 
   @media (max-width:900px){
     .areas { display: block; }
-    .area { display: none; border-radius: 0; min-height: 80vh; }
+    .area { display: none; border-radius: 0; min-height: 85vh; border: none; box-shadow: none; padding: 0; }
     .area.active { display: flex; }
-    .titlebar { grid-template-columns: 1fr; }
-    #commentVal1, #commentVal2, #manualVal1, #manualVal2 { font-size: 68px; }
+    .tvalue { font-size: 26px; }
+    #commentVal1, #commentVal2 { font-size: 28px; }
+    #manualVal1, #manualVal2 { font-size: 75px; }
   }
 </style>
 </head>
@@ -157,7 +203,7 @@
   <div class="area active" data-area="1">
     <div class="titlebar">
       <div class="total-mini">
-        <span class="tlabel">TOPLAM:</span>
+        <span class="tlabel">TOPLAM</span>
         <span class="tvalue" id="total1">—:—</span>
       </div>
       <div class="comment-pill" id="pill1">
@@ -165,21 +211,25 @@
         <span id="commentVal1">—:—</span>
       </div>
     </div>
+
     <button class="clear-all" id="clearArea1">Hepsini Sil</button>
+
     <div class="diff-row">
       <input id="manual1" class="manual-input" placeholder="HH:MM:SS" inputmode="numeric">
-      <div class="comment-pill" id="manualPill1">
+      
+      <div class="manual-pill-box" id="manualPill1">
         <span class="tag">YORUM</span>
         <span id="manualVal1">—:—</span>
       </div>
     </div>
+
     <div class="list" id="area1"></div>
   </div>
 
   <div class="area" data-area="2">
     <div class="titlebar">
       <div class="total-mini">
-        <span class="tlabel">TOPLAM:</span>
+        <span class="tlabel">TOPLAM</span>
         <span class="tvalue" id="total2">—:—</span>
       </div>
       <div class="comment-pill" id="pill2">
@@ -187,14 +237,18 @@
         <span id="commentVal2">—:—</span>
       </div>
     </div>
+
     <button class="clear-all" id="clearArea2">Hepsini Sil</button>
+
     <div class="diff-row">
       <input id="manual2" class="manual-input" placeholder="HH:MM:SS" inputmode="numeric">
-      <div class="comment-pill" id="manualPill2">
+      
+      <div class="manual-pill-box" id="manualPill2">
         <span class="tag">YORUM</span>
         <span id="manualVal2">—:—</span>
       </div>
     </div>
+
     <div class="list" id="area2"></div>
   </div>
 </div>
@@ -205,13 +259,11 @@
   const manualVal1 = document.getElementById("manualVal1"), manualVal2 = document.getElementById("manualVal2");
   const allInputs = [];
 
-  // Dolu input kontrolü (Siyah arka plan için)
   function updateFilledState(input) {
     if(input.value && input.value.trim() !== "") input.classList.add("filled");
     else input.classList.remove("filled");
   }
 
-  // MM:SS Otomatik Format
   function autoFormatMMSS(v) {
     v = v.replace(/\D/g,"");
     if(!v) return "";
@@ -221,7 +273,6 @@
     return `${m}:${String(s).padStart(2,"0")}`;
   }
 
-  // HH:MM:SS Manuel Format
   function formatManualHMS(v) {
     v = v.replace(/\D/g,"");
     if(v.length === 6) return `${v.slice(0,2)}:${v.slice(2,4)}:${v.slice(4,6)}`;
@@ -278,30 +329,27 @@
         const diff = mVal - hPlusS;
         mDisplay.textContent = fromSecondsMMSS(Math.abs(diff));
         
-        // RENK MANTIĞI: Hedefi (manuel saati) geçerse KIRMIZI, yoksa YEŞİL
         if(diff >= 0) {
           pill.className = "comment-pill status-ok";
-          mPill.className = "comment-pill status-ok";
+          mPill.className = "manual-pill-box status-ok";
         } else {
           pill.className = "comment-pill status-bad";
-          mPill.className = "comment-pill status-bad";
+          mPill.className = "manual-pill-box status-bad";
         }
       } else {
         pill.className = "comment-pill";
-        mPill.className = "comment-pill";
+        mPill.className = "manual-pill-box";
         mDisplay.textContent = "—:—";
       }
     });
   }
 
   function wireInput(inp) {
-    // OTOMATİK SEÇME (PC ve MOBİL İÇİN)
     inp.onfocus = function() { setTimeout(()=> this.select(), 50); };
     inp.onclick = function() { this.select(); };
 
     inp.oninput = () => {
       let v = inp.value.replace(/\D/g,"");
-      // 3 hane girilince (örn: 300) otomatik 3:00 yap ve aşağı geç
       if(v.length === 3) {
         inp.value = autoFormatMMSS(v);
         updateFilledState(inp);
@@ -334,7 +382,6 @@
     }
   }
 
-  // Manuel giriş için de tıklayınca seçme ekle
   [manual1, manual2].forEach(m => {
     m.onfocus = function() { setTimeout(()=> this.select(), 50); };
     m.onclick = function() { this.select(); };
