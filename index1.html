@@ -128,14 +128,14 @@
 
   #manualVal1, #manualVal2 {
     font-size: 50px;
-    font-weight: 700;
+    font-weight: 900;
     line-height: 1;
     color: inherit;
   }
 
   .diff-row { display: flex; flex-direction: column; gap: 8px; margin-bottom: 15px; }
   
-  /* YORUM KUTUSU - ORTALAMA EKLENDİ */
+  /* YORUM KUTUSU */
   .manual-pill-box {
      border: 6px solid #f1f5f9;
      border-radius: 18px;
@@ -144,9 +144,31 @@
      display: flex;
      flex-direction: column;
      justify-content: center;
-     align-items: center; /* Yatayda ortala */
-     text-align: center;  /* Metni ortala */
+     align-items: center;
+     text-align: center;
+     cursor: pointer; /* Tıklanabilir olduğunu göster */
+     position: relative;
   }
+  
+  /* Harici pencere butonu */
+  .popout-btn {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: rgba(0,0,0,0.05);
+    border: none;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    font-size: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.5;
+    transition: opacity 0.2s;
+  }
+  .popout-btn:hover { opacity: 1; background: rgba(0,0,0,0.1); }
 
   .manual-input {
     width: 100%;
@@ -187,7 +209,7 @@
     .area.active { display: flex; }
     .tvalue { font-size: 26px; }
     #commentVal1, #commentVal2 { font-size: 28px; }
-    #manualVal1, #manualVal2 { font-size: 75px; }
+    #manualVal1, #manualVal2 { font-size: 60px; }
   }
 </style>
 </head>
@@ -218,6 +240,7 @@
       <input id="manual1" class="manual-input" placeholder="HH:MM:SS" inputmode="numeric">
       
       <div class="manual-pill-box" id="manualPill1">
+        <button class="popout-btn" onclick="openBigWindow(1)" title="Büyük Pencerede Aç">↗</button>
         <span class="tag">YORUM</span>
         <span id="manualVal1">—:—</span>
       </div>
@@ -244,6 +267,7 @@
       <input id="manual2" class="manual-input" placeholder="HH:MM:SS" inputmode="numeric">
       
       <div class="manual-pill-box" id="manualPill2">
+        <button class="popout-btn" onclick="openBigWindow(2)" title="Büyük Pencerede Aç">↗</button>
         <span class="tag">YORUM</span>
         <span id="manualVal2">—:—</span>
       </div>
@@ -258,6 +282,10 @@
   const manual1 = document.getElementById("manual1"), manual2 = document.getElementById("manual2");
   const manualVal1 = document.getElementById("manualVal1"), manualVal2 = document.getElementById("manualVal2");
   const allInputs = [];
+  
+  // Harici Pencere Referansları
+  let bigWindow1 = null;
+  let bigWindow2 = null;
 
   function updateFilledState(input) {
     if(input.value && input.value.trim() !== "") input.classList.add("filled");
@@ -303,6 +331,65 @@
     return null;
   }
 
+  // --- HARİCİ PENCERE YÖNETİMİ ---
+  function openBigWindow(id) {
+    const winName = "BigTimer" + id;
+    const winRef = id === 1 ? bigWindow1 : bigWindow2;
+
+    if (winRef && !winRef.closed) {
+      winRef.focus();
+      return;
+    }
+
+    const newWin = window.open("", winName, "width=600,height=400,menubar=no,toolbar=no,location=no,status=no");
+    
+    // Pencere içeriğini oluştur
+    newWin.document.write(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>YORUM SAYAÇ</title>
+        <style>
+          body { 
+            margin:0; padding:0; 
+            display:flex; justify-content:center; align-items:center; 
+            height:100vh; background:#fff; font-family:sans-serif; overflow:hidden;
+          }
+          #display {
+            font-size: 25vw; /* Ekran genişliğine göre devasa font */
+            font-weight: 900;
+            line-height: 1;
+          }
+          .ok { background: #1b5e20; color: #fff; }
+          .bad { background: #ef4444; color: #fff; }
+        </style>
+      </head>
+      <body id="body">
+        <div id="display">—:—</div>
+      </body>
+      </html>
+    `);
+    newWin.document.close();
+
+    if(id === 1) bigWindow1 = newWin;
+    else bigWindow2 = newWin;
+
+    // İlk hesaplamayı hemen gönder
+    calculateTotals();
+  }
+
+  function updateBigWindow(id, text, isOk) {
+    const win = id === 1 ? bigWindow1 : bigWindow2;
+    if (win && !win.closed && win.document) {
+      const display = win.document.getElementById("display");
+      const body = win.document.getElementById("body");
+      if (display && body) {
+        display.textContent = text;
+        body.className = isOk ? "ok" : "bad";
+      }
+    }
+  }
+
   function calculateTotals() {
     let a1=0, a2=0;
     document.querySelectorAll("#area1 input.time-input").forEach(i=> a1 += toSecondsMMSS(i.value));
@@ -327,19 +414,27 @@
 
       if(mVal !== null) {
         const diff = mVal - hPlusS;
-        mDisplay.textContent = fromSecondsMMSS(Math.abs(diff));
+        const diffText = fromSecondsMMSS(Math.abs(diff));
+        mDisplay.textContent = diffText;
         
-        if(diff >= 0) {
+        const isOk = diff >= 0;
+
+        if(isOk) {
           pill.className = "comment-pill status-ok";
           mPill.className = "manual-pill-box status-ok";
         } else {
           pill.className = "comment-pill status-bad";
           mPill.className = "manual-pill-box status-bad";
         }
+        
+        // --- BÜYÜK PENCEREYİ GÜNCELLE ---
+        updateBigWindow(n, diffText, isOk);
+
       } else {
         pill.className = "comment-pill";
         mPill.className = "manual-pill-box";
         mDisplay.textContent = "—:—";
+        updateBigWindow(n, "—:—", true); // Varsayılan yeşil
       }
     });
   }
