@@ -150,7 +150,6 @@
      position: relative;
   }
   
-  /* Harici pencere açma butonu (Ok ikonu) */
   .popout-btn {
     position: absolute;
     top: 5px;
@@ -278,15 +277,87 @@
 </div>
 
 <script>
+  // ELEMENTLER
   const total1 = document.getElementById("total1"), total2 = document.getElementById("total2");
   const manual1 = document.getElementById("manual1"), manual2 = document.getElementById("manual2");
   const manualVal1 = document.getElementById("manualVal1"), manualVal2 = document.getElementById("manualVal2");
   const allInputs = [];
   
-  // Harici Pencere Referansları
   let bigWindow1 = null;
   let bigWindow2 = null;
+  
+  // KAYIT ANAHTARI
+  const STORAGE_KEY = "TimerApp_PERSISTENT_DATA";
 
+  // --- 1. FONKSİYON: VERİLERİ KAYDET ---
+  function saveData() {
+    const data = {
+      // Aktif sekme hangisi?
+      tab: document.getElementById("tab2").classList.contains("active") ? 2 : 1,
+      
+      // Manuel Hedefler
+      m1: manual1.value,
+      m2: manual2.value,
+      
+      // Haber Listeleri (Dizi olarak sakla)
+      list1: Array.from(document.querySelectorAll("#area1 .time-input")).map(i => i.value),
+      list2: Array.from(document.querySelectorAll("#area2 .time-input")).map(i => i.value)
+    };
+    
+    // Tarayıcıya yaz
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  }
+
+  // --- 2. FONKSİYON: VERİLERİ YÜKLE ---
+  function loadData() {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return; // Kayıt yoksa çık
+
+    try {
+      const data = JSON.parse(raw);
+
+      // Sekmeyi ayarla
+      if (data.tab === 2) {
+        document.getElementById("tab2").click();
+      } else {
+        document.getElementById("tab1").click();
+      }
+
+      // Hedefleri doldur
+      if(data.m1) manual1.value = data.m1;
+      if(data.m2) manual2.value = data.m2;
+
+      // Listeleri doldur (Inputlar oluşturulduktan sonra çalışmalı!)
+      const inputs1 = document.querySelectorAll("#area1 .time-input");
+      const inputs2 = document.querySelectorAll("#area2 .time-input");
+
+      if (data.list1) {
+        data.list1.forEach((val, idx) => {
+          if (inputs1[idx]) {
+            inputs1[idx].value = val;
+            updateFilledState(inputs1[idx]); // Siyah kutu efekti
+          }
+        });
+      }
+
+      if (data.list2) {
+        data.list2.forEach((val, idx) => {
+          if (inputs2[idx]) {
+            inputs2[idx].value = val;
+            updateFilledState(inputs2[idx]); // Siyah kutu efekti
+          }
+        });
+      }
+
+      // Hesaplamayı tetikle
+      calculateTotals();
+
+    } catch (e) {
+      console.error("Veri yükleme hatası:", e);
+    }
+  }
+
+  // --- YARDIMCI FONKSİYONLAR ---
   function updateFilledState(input) {
     if(input.value && input.value.trim() !== "") input.classList.add("filled");
     else input.classList.remove("filled");
@@ -331,19 +402,13 @@
     return null;
   }
 
-  // --- HARİCİ PENCERE YÖNETİMİ ---
+  // PENCERE FONKSİYONLARI
   function openBigWindow(id) {
     const winName = "BigTimer" + id;
     const winRef = id === 1 ? bigWindow1 : bigWindow2;
-
-    if (winRef && !winRef.closed) {
-      winRef.focus();
-      return;
-    }
+    if (winRef && !winRef.closed) { winRef.focus(); return; }
 
     const newWin = window.open("", winName, "width=600,height=400,menubar=no,toolbar=no,location=no,status=no");
-    
-    // Pencere içeriğini oluştur (KAPAT BUTONU EKLENDİ)
     newWin.document.write(`
       <!DOCTYPE html>
       <html>
@@ -351,39 +416,12 @@
         <title>YORUM SAYAÇ</title>
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
         <style>
-          body { 
-            margin:0; padding:0; 
-            display:flex; justify-content:center; align-items:center; 
-            height:100vh; background:#fff; font-family:sans-serif; overflow:hidden;
-            position: relative;
-          }
-          #display {
-            font-size: 25vw;
-            font-weight: 900;
-            line-height: 1;
-            font-variant-numeric: tabular-nums;
-          }
+          body { margin:0; padding:0; display:flex; justify-content:center; align-items:center; height:100vh; background:#fff; font-family:sans-serif; overflow:hidden; position: relative; }
+          #display { font-size: 25vw; font-weight: 900; line-height: 1; font-variant-numeric: tabular-nums; }
           .ok { background: #1b5e20; color: #fff; }
           .bad { background: #ef4444; color: #fff; }
-
-          /* KAPAT BUTONU STİLİ */
-          #closeBtn {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background: rgba(0, 0, 0, 0.25);
-            color: #fff;
-            border: 2px solid rgba(255,255,255,0.4);
-            padding: 12px 24px;
-            font-size: 18px;
-            font-weight: bold;
-            border-radius: 12px;
-            cursor: pointer;
-            z-index: 1000;
-            transition: background 0.2s;
-            text-transform: uppercase;
-          }
-          #closeBtn:hover { background: rgba(0, 0, 0, 0.5); }
+          #closeBtn { position: absolute; top: 20px; right: 20px; background: rgba(0,0,0,0.25); color: #fff; border: 2px solid rgba(255,255,255,0.4); padding: 12px 24px; font-size: 18px; font-weight: bold; border-radius: 12px; cursor: pointer; z-index: 1000; transition: background 0.2s; text-transform: uppercase; }
+          #closeBtn:hover { background: rgba(0,0,0,0.5); }
         </style>
       </head>
       <body id="body">
@@ -393,11 +431,7 @@
       </html>
     `);
     newWin.document.close();
-
-    if(id === 1) bigWindow1 = newWin;
-    else bigWindow2 = newWin;
-
-    // İlk hesaplamayı hemen gönder
+    if(id === 1) bigWindow1 = newWin; else bigWindow2 = newWin;
     calculateTotals();
   }
 
@@ -439,7 +473,6 @@
         const diff = mVal - hPlusS;
         const diffText = fromSecondsMMSS(Math.abs(diff));
         mDisplay.textContent = diffText;
-        
         const isOk = diff >= 0;
 
         if(isOk) {
@@ -449,10 +482,7 @@
           pill.className = "comment-pill status-bad";
           mPill.className = "manual-pill-box status-bad";
         }
-        
-        // BÜYÜK PENCEREYİ GÜNCELLE
         updateBigWindow(n, diffText, isOk);
-
       } else {
         pill.className = "comment-pill";
         mPill.className = "manual-pill-box";
@@ -472,17 +502,20 @@
         inp.value = autoFormatMMSS(v);
         updateFilledState(inp);
         calculateTotals();
+        saveData(); // ANINDA KAYDET
         const next = allInputs[allInputs.indexOf(inp) + 1];
         if(next) next.focus();
       }
       updateFilledState(inp);
       calculateTotals();
+      saveData(); // ANINDA KAYDET
     };
     
     inp.onblur = () => { 
       if(inp.value) inp.value = autoFormatMMSS(inp.value); 
       updateFilledState(inp); 
       calculateTotals(); 
+      saveData(); // ANINDA KAYDET
     };
   }
 
@@ -494,7 +527,12 @@
       row.innerHTML = `<div class="idx">${i}.</div><input class="time-input" placeholder="00:00" inputmode="numeric"><button class="icon-btn" type="button">✕</button>`;
       const inp = row.querySelector("input");
       wireInput(inp);
-      row.querySelector("button").onclick = () => { inp.value = ""; updateFilledState(inp); calculateTotals(); };
+      row.querySelector("button").onclick = () => { 
+        inp.value = ""; 
+        updateFilledState(inp); 
+        calculateTotals(); 
+        saveData(); // SİLİNCE KAYDET
+      };
       c.appendChild(row);
       allInputs.push(inp);
     }
@@ -503,20 +541,53 @@
   [manual1, manual2].forEach(m => {
     m.onfocus = function() { setTimeout(()=> this.select(), 50); };
     m.onclick = function() { this.select(); };
-    m.onblur = () => { m.value = formatManualHMS(m.value); calculateTotals(); };
-    m.oninput = () => calculateTotals();
+    m.onblur = () => { 
+      m.value = formatManualHMS(m.value); 
+      calculateTotals(); 
+      saveData(); // KAYDET
+    };
+    m.oninput = () => { 
+      calculateTotals(); 
+      saveData(); // KAYDET
+    };
   });
 
-  createAreaInputs("area1", 13); createAreaInputs("area2", 7);
+  // ÖNCE KUTULARI OLUŞTUR
+  createAreaInputs("area1", 13); 
+  createAreaInputs("area2", 7);
   
-  document.getElementById("tab1").onclick = () => { document.querySelector('.area[data-area="1"]').classList.add('active'); document.querySelector('.area[data-area="2"]').classList.remove('active'); document.getElementById("tab1").classList.add('active'); document.getElementById("tab2").classList.remove('active'); };
-  document.getElementById("tab2").onclick = () => { document.querySelector('.area[data-area="2"]').classList.add('active'); document.querySelector('.area[data-area="1"]').classList.remove('active'); document.getElementById("tab2").classList.add('active'); document.getElementById("tab1").classList.remove('active'); };
+  // SONRA VERİLERİ YÜKLE (SIRALAMA ÖNEMLİ)
+  loadData();
 
-  document.getElementById("clearArea1").onclick = () => { document.querySelectorAll("#area1 input").forEach(i=>{i.value=""; updateFilledState(i);}); calculateTotals(); };
-  document.getElementById("clearArea2").onclick = () => { document.querySelectorAll("#area2 input").forEach(i=>{i.value=""; updateFilledState(i);}); calculateTotals(); };
+  // Button Events
+  document.getElementById("tab1").onclick = () => { 
+    document.querySelector('.area[data-area="1"]').classList.add('active'); 
+    document.querySelector('.area[data-area="2"]').classList.remove('active'); 
+    document.getElementById("tab1").classList.add('active'); 
+    document.getElementById("tab2").classList.remove('active'); 
+    saveData();
+  };
+  document.getElementById("tab2").onclick = () => { 
+    document.querySelector('.area[data-area="2"]').classList.add('active'); 
+    document.querySelector('.area[data-area="1"]').classList.remove('active'); 
+    document.getElementById("tab2").classList.add('active'); 
+    document.getElementById("tab1").classList.remove('active'); 
+    saveData();
+  };
 
+  document.getElementById("clearArea1").onclick = () => { 
+    document.querySelectorAll("#area1 input").forEach(i=>{i.value=""; updateFilledState(i);}); 
+    calculateTotals(); 
+    saveData(); 
+  };
+  document.getElementById("clearArea2").onclick = () => { 
+    document.querySelectorAll("#area2 input").forEach(i=>{i.value=""; updateFilledState(i);}); 
+    calculateTotals(); 
+    saveData(); 
+  };
+
+  // SÜREKLİ HESAPLA
   setInterval(calculateTotals, 1000);
 </script>
 </body>
 </html>
-
