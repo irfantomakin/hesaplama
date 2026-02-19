@@ -146,11 +146,11 @@
      justify-content: center;
      align-items: center;
      text-align: center;
-     cursor: pointer; /* Tıklanabilir olduğunu göster */
+     cursor: pointer;
      position: relative;
   }
   
-  /* Harici pencere butonu */
+  /* Harici pencere açma butonu (Ok ikonu) */
   .popout-btn {
     position: absolute;
     top: 5px;
@@ -343,28 +343,51 @@
 
     const newWin = window.open("", winName, "width=600,height=400,menubar=no,toolbar=no,location=no,status=no");
     
-    // Pencere içeriğini oluştur
+    // Pencere içeriğini oluştur (KAPAT BUTONU EKLENDİ)
     newWin.document.write(`
       <!DOCTYPE html>
       <html>
       <head>
         <title>YORUM SAYAÇ</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
         <style>
           body { 
             margin:0; padding:0; 
             display:flex; justify-content:center; align-items:center; 
             height:100vh; background:#fff; font-family:sans-serif; overflow:hidden;
+            position: relative;
           }
           #display {
-            font-size: 25vw; /* Ekran genişliğine göre devasa font */
+            font-size: 25vw;
             font-weight: 900;
             line-height: 1;
+            font-variant-numeric: tabular-nums;
           }
           .ok { background: #1b5e20; color: #fff; }
           .bad { background: #ef4444; color: #fff; }
+
+          /* KAPAT BUTONU STİLİ */
+          #closeBtn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.25);
+            color: #fff;
+            border: 2px solid rgba(255,255,255,0.4);
+            padding: 12px 24px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 12px;
+            cursor: pointer;
+            z-index: 1000;
+            transition: background 0.2s;
+            text-transform: uppercase;
+          }
+          #closeBtn:hover { background: rgba(0, 0, 0, 0.5); }
         </style>
       </head>
       <body id="body">
+        <button id="closeBtn" onclick="window.close()">✕ KAPAT</button>
         <div id="display">—:—</div>
       </body>
       </html>
@@ -427,14 +450,14 @@
           mPill.className = "manual-pill-box status-bad";
         }
         
-        // --- BÜYÜK PENCEREYİ GÜNCELLE ---
+        // BÜYÜK PENCEREYİ GÜNCELLE
         updateBigWindow(n, diffText, isOk);
 
       } else {
         pill.className = "comment-pill";
         mPill.className = "manual-pill-box";
         mDisplay.textContent = "—:—";
-        updateBigWindow(n, "—:—", true); // Varsayılan yeşil
+        updateBigWindow(n, "—:—", true);
       }
     });
   }
