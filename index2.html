@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>🕒 Süre Hesaplama - Pro Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+<style>
+  :root {
+    --bg: #f0f2f5; --card: #ffffff; --border: #e2e8f0; --danger: #ef4444;
+    --success: #1b5e20; --accent: #2563eb; --dark: #2b2b2b; --text-muted: #64748b;
+  }
+  body { margin: 0; padding: 10px; background: var(--bg); font-family: 'Inter', sans-serif; max-width: 1100px; margin-inline: auto; }
+  
+  /* GİZLİ ALANLAR */
+  #sub1, #sub2, #clearSub1, #clearSub2, .top-diff, .time-icon { display: none !important; }
+
+  .toolbar { display: flex; gap: 8px; justify-content: center; margin-bottom: 15px; }
+  .btn { padding: 10px 16px; border-radius: 12px; border: 1px solid var(--border); background: #fff; font-weight: 800; cursor: pointer; flex: 1; max-width: 200px; }
+  .btn.active { background: var(--dark); color: #fff; border-color: var(--dark); }
+
+  .areas { display: flex; gap: 20px; }
+  .area { flex: 1; background: var(--card); border-radius: 20px; padding: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); display: flex; flex-direction: column; }
+
+  .titlebar { display: flex; gap: 10px; margin-bottom: 15px; }
+  .total-mini, .comment-pill { display: flex; flex-direction: column; padding: 10px 15px; border-radius: 16px; background: #f8fafc; border: 2px solid #eef2f7; }
+  .comment-pill { flex: 1; border-width: 4px; }
+
+  .status-ok { border-color: var(--success) !important; color: var(--success) !important; }
+  .status-bad { border-color: var(--danger) !important; color: var(--danger) !important; }
+
+  .tvalue { font-size: 28px; font-weight: 900; color: var(--accent); }
+  #commentVal1, #commentVal2 { font-size: 32px; font-weight: 900; }
+  #manualVal1, #manualVal2 { font-size: 50px; font-weight: 900; }
+
+  .manual-input { width: 100%; padding: 12px; font-size: 24px; font-weight: 800; border-radius: 14px; border: 2px solid #e2e8f0; text-align: center; margin-bottom: 8px; font-variant-numeric: tabular-nums;}
+  
+  .list { margin-top: 10px; max-height: 50vh; overflow-y: auto; border-top: 1px solid #f1f5f9; }
+  .row { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px dashed #edf2f7; background: #fff; }
+  .drag-handle { cursor: grab; color: #cbd5e1; font-size: 20px; padding: 5px; user-select: none; }
+  .idx { width: 25px; font-weight: 800; color: #cbd5e1; text-align: right;}
+  
+  .time-input { flex: 1; padding: 10px; border-radius: 10px; border: 1px solid #e2e8f0; font-size: 18px; font-weight: 700; text-align: center; transition: background 0.2s, color 0.2s, border-color 0.2s; font-variant-numeric: tabular-nums; }
+  /* Dolu Kutu Stili (Siyah) */
+  .time-input.filled { background: var(--dark) !important; color: #fff !important; border-color: var(--dark) !important; }
+  
+  .icon-btn { width: 38px; height: 38px; border-radius: 10px; border: 1px solid #e2e8f0; background: #fff; font-weight: 900; cursor: pointer; }
+
+  /* Bilgisayar ekranlarında üst sekmeleri gizle */
+  @media (min-width: 901px) {
+    .toolbar { display: none !important; }
+  }
+
+  /* Mobilde alanları sekmelere ayır */
+  @media (max-width:900px){
+    .areas { display: block; }
+    .area { display: none; }
+    .area.active { display: flex; }
+  }
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <button class="btn active" id="tab1">Reklamdan Önce</button>
+  <button class="btn" id="tab2">Reklamdan Sonra</button>
+</div>
+
+<div class="areas">
+  <div class="area active" data-area="1">
+    <div class="titlebar">
+      <div class="total-mini"><span id="total1" class="tvalue">—:—</span></div>
+      <div class="comment-pill" id="pill1"><span id="commentVal1">—:—</span></div>
+    </div>
+    <input id="manual1" class="manual-input" placeholder="HEDEF SAAT" inputmode="numeric">
+    <div class="comment-pill" id="manualPill1" style="text-align:center;"><span id="manualVal1">—:—</span></div>
+    <div class="list" id="area1"></div>
+  </div>
+
+  <div class="area" data-area="2">
+    <div class="titlebar">
+      <div class="total-mini"><span id="total2" class="tvalue">—:—</span></div>
+      <div class="comment-pill" id="pill2"><span id="commentVal2">—:—</span></div>
+    </div>
+    <input id="manual2" class="manual-input" placeholder="HEDEF SAAT" inputmode="numeric">
+    <div class="comment-pill" id="manualPill2" style="text-align:center;"><span id="manualVal2">—:—</span></div>
+    <div class="list" id="area2"></div>
+  </div>
+</div>
+
+<script>
+  // --- Temel Mantık ve Kayıt ---
+  const STORAGE_KEY = "TimerApp_V6";
+  function saveData() {
+    const data = {
+      m1: document.getElementById("manual1").value,
+      m2: document.getElementById("manual2").value,
+      list1: Array.from(document.querySelectorAll("#area1 .time-input")).map(i => i.value),
+      list2: Array.from(document.querySelectorAll("#area2 .time-input")).map(i => i.value)
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  }
+
+  function loadData() {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+    const data = JSON.parse(raw);
+    document.getElementById("manual1").value = data.m1 || "";
+    document.getElementById("manual2").value = data.m2 || "";
+    const in1 = document.querySelectorAll("#area1 .time-input"), in2 = document.querySelectorAll("#area2 .time-input");
+    if(data.list1) data.list1.forEach((v, i) => { if(in1[i]) { in1[i].value = v; updateFilledState(in1[i]); }});
+    if(data.list2) data.list2.forEach((v, i) => { if(in2[i]) { in2[i].value = v; updateFilledState(in2[i]); }});
+    calculateTotals();
+  }
+
+  function toSecondsMMSS(v) {
+    if(!v || !v.includes(":")) return 0;
+    const [m,s] = v.split(":");
+    return (parseInt(m,10)||0)*60 + (parseInt(s,10)||0);
+  }
+
+  function fromSecondsMMSS(sec) {
+    sec = Math.max(0, sec);
+    return `${String(Math.floor(sec/60)).padStart(2,"0")}:${String(sec%60).padStart(2,"0")}`;
+  }
+
+  function autoFormatMMSS(v) {
+    v = v.replace(/\D/g,"");
+    if(!v) return "";
+    if(v.length <= 2) return `0:${v.padStart(2,"0")}`;
+    let m = parseInt(v.slice(0,-2),10) || 0, s = parseInt(v.slice(-2),10) || 0;
+    m += Math.floor(s/60); s = s % 60;
+    return `${m}:${String(s).padStart(2,"0")}`;
+  }
+
+  function formatTargetTime(v) {
+    v = v.replace(/\D/g, "");
+    if (v.length >= 6) return `${v.slice(0, 2)}:${v.slice(2, 4)}:${v.slice(4, 6)}`;
+    if (v.length >= 4) return `${v.slice(0, 2)}:${v.slice(2, 4)}:00`;
+    if (v.length >= 2) return `${v.padStart(2, "0")}:00:00`;
+    return v;
+  }
+
+  function calculateTotals() {
+    let a1=0, a2=0;
+    document.querySelectorAll("#area1 .time-input").forEach(i => a1 += toSecondsMMSS(i.value));
+    document.querySelectorAll("#area2 .time-input").forEach(i => a2 += toSecondsMMSS(i.value));
+    
+    document.getElementById("total1").textContent = a1 > 0 ? fromSecondsMMSS(a1) : "—:—";
+    document.getElementById("total2").textContent = a2 > 0 ? fromSecondsMMSS(a2) : "—:—";
+
+    const nowS = new Date().getHours()*3600 + new Date().getMinutes()*60 + new Date().getSeconds();
+    
+    [1,2].forEach(n => {
+      const total = n === 1 ? a1 : a2;
+      const hPlusS = nowS + total;
+      document.getElementById("commentVal"+n).textContent = new Date(hPlusS * 1000).toISOString().substr(11, 8);
+      
+      const mValRaw = document.getElementById("manual"+n).value.replace(/\D/g, "");
+      
+      if (mValRaw.length >= 4) {
+        const hS = parseInt(mValRaw.slice(0,2)) * 3600 + 
+                   parseInt(mValRaw.slice(2,4)) * 60 + 
+                   (mValRaw.length >= 6 ? parseInt(mValRaw.slice(4,6)) : 0);
+                   
+        const diff = hS - hPlusS;
+        document.getElementById("manualVal"+n).textContent = fromSecondsMMSS(Math.abs(diff));
+        document.getElementById("manualPill"+n).className = diff >= 0 ? "comment-pill status-ok" : "comment-pill status-bad";
+      } else {
+        document.getElementById("manualVal"+n).textContent = "—:—";
+        document.getElementById("manualPill"+n).className = "comment-pill";
+      }
+    });
+  }
+
+  // Dolu Kutu Siyah Olma Durumu Güncellemesi
+  function updateFilledState(i) { 
+    if(i.value && i.value.trim() !== "") {
+      i.classList.add("filled");
+    } else {
+      i.classList.remove("filled");
+    }
+  }
+
+  // Tüm süreli inputları barındıran dizi (Odak atlamak için)
+  let allTimeInputs = [];
+
+  function createAreaInputs(id, count) {
+    const c = document.getElementById(id);
+    for(let i=1; i<=count; i++) {
+      const row = document.createElement("div");
+      row.className = "row";
+      row.innerHTML = `<div class="drag-handle">⋮⋮</div><div class="idx">${i}.</div><input class="time-input" placeholder="00:00" inputmode="numeric"><button class="icon-btn" tabindex="-1">✕</button>`;
+      const inp = row.querySelector("input");
+      allTimeInputs.push(inp);
+
+      // Odaklanıldığında metni seç (Kolay silme için)
+      inp.addEventListener("focus", () => setTimeout(() => inp.select(), 0));
+      inp.addEventListener("click", () => setTimeout(() => inp.select(), 0));
+
+      inp.addEventListener("input", function() {
+        // Sadece rakamları al
+        let v = this.value.replace(/\D/g, "");
+        
+        // 3 hane girildiğinde otomatik formatla ve aşağı geç
+        if(v.length === 3) {
+          this.value = autoFormatMMSS(v);
+          updateFilledState(this);
+          calculateTotals();
+          saveData();
+          
+          // Bir sonraki inputa odaklan
+          const currentIndex = allTimeInputs.indexOf(this);
+          if (currentIndex !== -1 && currentIndex < allTimeInputs.length - 1) {
+            allTimeInputs[currentIndex + 1].focus();
+          }
+        }
+        updateFilledState(this);
+        calculateTotals();
+        saveData();
+      });
+
+      inp.addEventListener("blur", function() {
+        if(this.value) this.value = autoFormatMMSS(this.value);
+        updateFilledState(this);
+        calculateTotals();
+        saveData();
+      });
+
+      // Silme butonu
+      row.querySelector("button").onclick = () => { 
+        inp.value = ""; 
+        updateFilledState(inp); 
+        calculateTotals(); 
+        saveData(); 
+      };
+      c.appendChild(row);
+    }
+    // Sürükle bırak özelliği
+    new Sortable(c, { 
+      handle: '.drag-handle', 
+      animation: 150, 
+      onEnd: function() {
+        // Sürükleme sonrası allTimeInputs dizisini dom sırasına göre güncelle
+        allTimeInputs = Array.from(document.querySelectorAll('.time-input'));
+        saveData();
+      }
+    });
+  }
+
+  // Hedef saat formatlama
+  [1, 2].forEach(n => {
+    const manualInput = document.getElementById("manual" + n);
+    manualInput.addEventListener("blur", function() {
+      if (this.value) this.value = formatTargetTime(this.value);
+      calculateTotals();
+      saveData();
+    });
+    manualInput.addEventListener("keydown", function(e) {
+      if (e.key === "Enter") this.blur();
+    });
+  });
+
+  createAreaInputs("area1", 20); createAreaInputs("area2", 7);
+  // Başlangıçta allTimeInputs dizisini oluştur
+  allTimeInputs = Array.from(document.querySelectorAll('.time-input'));
+  loadData();
+  setInterval(calculateTotals, 1000);
+
+  // Sekme değiştirme mantığı
+  document.getElementById("tab1").onclick = () => { document.querySelector('[data-area="1"]').classList.add("active"); document.querySelector('[data-area="2"]').classList.remove("active"); document.getElementById("tab1").classList.add("active"); document.getElementById("tab2").classList.remove("active");};
+  document.getElementById("tab2").onclick = () => { document.querySelector('[data-area="2"]').classList.add("active"); document.querySelector('[data-area="1"]').classList.remove("active"); document.getElementById("tab2").classList.add("active"); document.getElementById("tab1").classList.remove("active");};
+</script>
+</body>
+</html>
