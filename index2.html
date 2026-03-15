@@ -24,7 +24,7 @@
 
   .titlebar { display: flex; gap: 10px; margin-bottom: 15px; }
   .total-mini, .comment-pill { display: flex; flex-direction: column; padding: 10px 15px; border-radius: 16px; background: #f8fafc; border: 2px solid #eef2f7; }
-  .comment-pill { flex: 1; border-width: 4px; }
+  .comment-pill { flex: 1; border-width: 4px; position: relative; }
 
   .status-ok { border-color: var(--success) !important; color: var(--success) !important; }
   .status-bad { border-color: var(--danger) !important; color: var(--danger) !important; }
@@ -41,22 +41,40 @@
   .idx { width: 25px; font-weight: 800; color: #cbd5e1; text-align: right;}
   
   .time-input { flex: 1; padding: 10px; border-radius: 10px; border: 1px solid #e2e8f0; font-size: 18px; font-weight: 700; text-align: center; transition: background 0.2s, color 0.2s, border-color 0.2s; font-variant-numeric: tabular-nums; }
-  /* Dolu Kutu Stili (Siyah) */
   .time-input.filled { background: var(--dark) !important; color: #fff !important; border-color: var(--dark) !important; }
   
   .icon-btn { width: 38px; height: 38px; border-radius: 10px; border: 1px solid #e2e8f0; background: #fff; font-weight: 900; cursor: pointer; }
 
-  /* Bilgisayar ekranlarında üst sekmeleri gizle */
-  @media (min-width: 901px) {
-    .toolbar { display: none !important; }
+  /* TAM EKRAN BUTONU */
+  .fs-btn {
+    position: absolute; top: 12px; right: 12px;
+    width: 38px; height: 38px; border-radius: 10px; border: none;
+    background: rgba(0,0,0,0.06); color: var(--text-muted); cursor: pointer;
+    display: flex; align-items: center; justify-content: center; transition: all 0.2s;
   }
+  .fs-btn:hover { background: rgba(0,0,0,0.15); color: var(--dark); }
+  .fs-btn svg { width: 20px; height: 20px; }
 
-  /* Mobilde alanları sekmelere ayır */
-  @media (max-width:900px){
-    .areas { display: block; }
-    .area { display: none; }
-    .area.active { display: flex; }
+  /* TAM EKRAN ARAYÜZÜ */
+  #fsOverlay {
+    position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+    background: #1e293b; z-index: 99999;
+    display: flex; flex-direction: column; justify-content: center; align-items: center;
+    transition: background-color 0.3s ease;
   }
+  #fsOverlay.hidden { display: none !important; }
+  #fsOverlay.ok { background-color: var(--success); }
+  #fsOverlay.bad { background-color: var(--danger); }
+  
+  #fsTime { font-size: clamp(80px, 25vw, 400px); font-weight: 900; color: #fff; font-variant-numeric: tabular-nums; line-height: 1; text-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+
+  .fs-close { position: absolute; background: rgba(0,0,0,0.25); border: 2px solid rgba(255,255,255,0.3); color: #fff; cursor: pointer; font-weight: 800; transition: all 0.2s; }
+  .fs-close:hover { background: rgba(0,0,0,0.5); border-color: #fff; }
+  .fs-close.top-right { top: 25px; right: 25px; width: 50px; height: 50px; border-radius: 50%; font-size: 24px; display: flex; align-items: center; justify-content: center; }
+  .fs-close.bottom-center { bottom: 50px; padding: 18px 40px; border-radius: 16px; font-size: 20px; letter-spacing: 1px; text-transform: uppercase; }
+
+  @media (min-width: 901px) { .toolbar { display: none !important; } }
+  @media (max-width:900px){ .areas { display: block; } .area { display: none; } .area.active { display: flex; } #fsTime { font-size: 35vw; } }
 </style>
 </head>
 <body>
@@ -73,7 +91,12 @@
       <div class="comment-pill" id="pill1"><span id="commentVal1">—:—</span></div>
     </div>
     <input id="manual1" class="manual-input" placeholder="HEDEF SAAT" inputmode="numeric">
-    <div class="comment-pill" id="manualPill1" style="text-align:center;"><span id="manualVal1">—:—</span></div>
+    <div class="comment-pill" id="manualPill1" style="text-align:center;">
+      <button class="fs-btn" onclick="openFS(1)" title="Tam Ekran Yap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path></svg>
+      </button>
+      <span id="manualVal1">—:—</span>
+    </div>
     <div class="list" id="area1"></div>
   </div>
 
@@ -83,16 +106,30 @@
       <div class="comment-pill" id="pill2"><span id="commentVal2">—:—</span></div>
     </div>
     <input id="manual2" class="manual-input" placeholder="HEDEF SAAT" inputmode="numeric">
-    <div class="comment-pill" id="manualPill2" style="text-align:center;"><span id="manualVal2">—:—</span></div>
+    <div class="comment-pill" id="manualPill2" style="text-align:center;">
+      <button class="fs-btn" onclick="openFS(2)" title="Tam Ekran Yap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path></svg>
+      </button>
+      <span id="manualVal2">—:—</span>
+    </div>
     <div class="list" id="area2"></div>
   </div>
 </div>
 
+<div id="fsOverlay" class="hidden">
+  <button class="fs-close top-right" onclick="closeFS()">✕</button>
+  <div id="fsTime">—:—</div>
+  <button class="fs-close bottom-center" onclick="closeFS()">Tam Ekranı Kapat</button>
+</div>
+
 <script>
-  // --- Temel Mantık ve Kayıt ---
-  const STORAGE_KEY = "TimerApp_V6";
+  // --- KAYA GİBİ SAĞLAM KAYIT SİSTEMİ ---
+  const STORAGE_KEY = "TimerApp_ROCK_SOLID_V1";
+  let currentFsArea = null;
+
   function saveData() {
     const data = {
+      activeTab: document.getElementById("tab2").classList.contains("active") ? 2 : 1,
       m1: document.getElementById("manual1").value,
       m2: document.getElementById("manual2").value,
       list1: Array.from(document.querySelectorAll("#area1 .time-input")).map(i => i.value),
@@ -104,14 +141,33 @@
   function loadData() {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return;
-    const data = JSON.parse(raw);
-    document.getElementById("manual1").value = data.m1 || "";
-    document.getElementById("manual2").value = data.m2 || "";
-    const in1 = document.querySelectorAll("#area1 .time-input"), in2 = document.querySelectorAll("#area2 .time-input");
-    if(data.list1) data.list1.forEach((v, i) => { if(in1[i]) { in1[i].value = v; updateFilledState(in1[i]); }});
-    if(data.list2) data.list2.forEach((v, i) => { if(in2[i]) { in2[i].value = v; updateFilledState(in2[i]); }});
-    calculateTotals();
+    try {
+      const data = JSON.parse(raw);
+      
+      // Hangi sekmede kalındıysa onu aç
+      if (data.activeTab === 2) {
+        document.getElementById("tab2").click();
+      } else {
+        document.getElementById("tab1").click();
+      }
+
+      document.getElementById("manual1").value = data.m1 || "";
+      document.getElementById("manual2").value = data.m2 || "";
+      
+      const in1 = document.querySelectorAll("#area1 .time-input"), in2 = document.querySelectorAll("#area2 .time-input");
+      if(data.list1) data.list1.forEach((v, i) => { if(in1[i]) { in1[i].value = v; updateFilledState(in1[i]); }});
+      if(data.list2) data.list2.forEach((v, i) => { if(in2[i]) { in2[i].value = v; updateFilledState(in2[i]); }});
+      
+      calculateTotals();
+    } catch(e) { console.error("Kayıt okuma hatası", e); }
   }
+
+  // --- GÜVENLİK AĞLARI (Sayfa kapanırken veya yenilenirken anında kaydet) ---
+  window.addEventListener("beforeunload", saveData);
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "hidden") saveData();
+  });
+  // --------------------------------------------------------------------------
 
   function toSecondsMMSS(v) {
     if(!v || !v.includes(":")) return 0;
@@ -164,25 +220,53 @@
                    (mValRaw.length >= 6 ? parseInt(mValRaw.slice(4,6)) : 0);
                    
         const diff = hS - hPlusS;
-        document.getElementById("manualVal"+n).textContent = fromSecondsMMSS(Math.abs(diff));
-        document.getElementById("manualPill"+n).className = diff >= 0 ? "comment-pill status-ok" : "comment-pill status-bad";
+        const diffText = fromSecondsMMSS(Math.abs(diff));
+        const isOk = diff >= 0;
+
+        document.getElementById("manualVal"+n).textContent = diffText;
+        document.getElementById("manualPill"+n).className = isOk ? "comment-pill status-ok" : "comment-pill status-bad";
+
+        if(currentFsArea === n) {
+          document.getElementById("fsTime").textContent = diffText;
+          document.getElementById("fsOverlay").className = isOk ? "ok" : "bad";
+        }
+
       } else {
         document.getElementById("manualVal"+n).textContent = "—:—";
         document.getElementById("manualPill"+n).className = "comment-pill";
+        if(currentFsArea === n) {
+          document.getElementById("fsTime").textContent = "—:—";
+          document.getElementById("fsOverlay").className = "";
+        }
       }
     });
   }
 
-  // Dolu Kutu Siyah Olma Durumu Güncellemesi
-  function updateFilledState(i) { 
-    if(i.value && i.value.trim() !== "") {
-      i.classList.add("filled");
-    } else {
-      i.classList.remove("filled");
+  function openFS(areaNum) {
+    currentFsArea = areaNum;
+    document.getElementById('fsOverlay').classList.remove('hidden');
+    calculateTotals();
+    const elem = document.documentElement;
+    if (elem.requestFullscreen) { elem.requestFullscreen().catch(err=>{}); }
+    else if (elem.webkitRequestFullscreen) { elem.webkitRequestFullscreen(); }
+    else if (elem.msRequestFullscreen) { elem.msRequestFullscreen(); }
+  }
+
+  function closeFS() {
+    currentFsArea = null;
+    document.getElementById('fsOverlay').classList.add('hidden');
+    if (document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement) {
+      if (document.exitFullscreen) { document.exitFullscreen(); }
+      else if (document.webkitExitFullscreen) { document.webkitExitFullscreen(); }
+      else if (document.msExitFullscreen) { document.msExitFullscreen(); }
     }
   }
 
-  // Tüm süreli inputları barındıran dizi (Odak atlamak için)
+  function updateFilledState(i) { 
+    if(i.value && i.value.trim() !== "") { i.classList.add("filled"); } 
+    else { i.classList.remove("filled"); }
+  }
+
   let allTimeInputs = [];
 
   function createAreaInputs(id, count) {
@@ -194,22 +278,17 @@
       const inp = row.querySelector("input");
       allTimeInputs.push(inp);
 
-      // Odaklanıldığında metni seç (Kolay silme için)
       inp.addEventListener("focus", () => setTimeout(() => inp.select(), 0));
       inp.addEventListener("click", () => setTimeout(() => inp.select(), 0));
 
       inp.addEventListener("input", function() {
-        // Sadece rakamları al
         let v = this.value.replace(/\D/g, "");
-        
-        // 3 hane girildiğinde otomatik formatla ve aşağı geç
         if(v.length === 3) {
           this.value = autoFormatMMSS(v);
           updateFilledState(this);
           calculateTotals();
-          saveData();
+          saveData(); // Anında kaydet
           
-          // Bir sonraki inputa odaklan
           const currentIndex = allTimeInputs.indexOf(this);
           if (currentIndex !== -1 && currentIndex < allTimeInputs.length - 1) {
             allTimeInputs[currentIndex + 1].focus();
@@ -217,7 +296,7 @@
         }
         updateFilledState(this);
         calculateTotals();
-        saveData();
+        saveData(); // Anında kaydet
       });
 
       inp.addEventListener("blur", function() {
@@ -227,49 +306,45 @@
         saveData();
       });
 
-      // Silme butonu
+      // Yapıştırma anında da kaydet
+      inp.addEventListener("paste", function() {
+        setTimeout(() => { updateFilledState(this); calculateTotals(); saveData(); }, 50);
+      });
+
       row.querySelector("button").onclick = () => { 
-        inp.value = ""; 
-        updateFilledState(inp); 
-        calculateTotals(); 
-        saveData(); 
+        inp.value = ""; updateFilledState(inp); calculateTotals(); saveData(); 
       };
       c.appendChild(row);
     }
-    // Sürükle bırak özelliği
     new Sortable(c, { 
-      handle: '.drag-handle', 
-      animation: 150, 
+      handle: '.drag-handle', animation: 150, 
       onEnd: function() {
-        // Sürükleme sonrası allTimeInputs dizisini dom sırasına göre güncelle
         allTimeInputs = Array.from(document.querySelectorAll('.time-input'));
         saveData();
       }
     });
   }
 
-  // Hedef saat formatlama
   [1, 2].forEach(n => {
     const manualInput = document.getElementById("manual" + n);
     manualInput.addEventListener("blur", function() {
       if (this.value) this.value = formatTargetTime(this.value);
-      calculateTotals();
-      saveData();
+      calculateTotals(); saveData();
     });
-    manualInput.addEventListener("keydown", function(e) {
-      if (e.key === "Enter") this.blur();
-    });
+    manualInput.addEventListener("keydown", function(e) { if (e.key === "Enter") this.blur(); });
+    // Hedef saate manuel yazarken anında kaydet
+    manualInput.addEventListener("input", function() { calculateTotals(); saveData(); });
   });
 
-  createAreaInputs("area1", 20); createAreaInputs("area2", 7);
-  // Başlangıçta allTimeInputs dizisini oluştur
+  createAreaInputs("area1", 13); createAreaInputs("area2", 8);
   allTimeInputs = Array.from(document.querySelectorAll('.time-input'));
+  
   loadData();
   setInterval(calculateTotals, 1000);
 
-  // Sekme değiştirme mantığı
-  document.getElementById("tab1").onclick = () => { document.querySelector('[data-area="1"]').classList.add("active"); document.querySelector('[data-area="2"]').classList.remove("active"); document.getElementById("tab1").classList.add("active"); document.getElementById("tab2").classList.remove("active");};
-  document.getElementById("tab2").onclick = () => { document.querySelector('[data-area="2"]').classList.add("active"); document.querySelector('[data-area="1"]').classList.remove("active"); document.getElementById("tab2").classList.add("active"); document.getElementById("tab1").classList.remove("active");};
+  // Sekme değiştirme butonlarına basıldığında da aktif sekmeyi kaydet
+  document.getElementById("tab1").onclick = () => { document.querySelector('[data-area="1"]').classList.add("active"); document.querySelector('[data-area="2"]').classList.remove("active"); document.getElementById("tab1").classList.add("active"); document.getElementById("tab2").classList.remove("active"); saveData(); };
+  document.getElementById("tab2").onclick = () => { document.querySelector('[data-area="2"]').classList.add("active"); document.querySelector('[data-area="1"]').classList.remove("active"); document.getElementById("tab2").classList.add("active"); document.getElementById("tab1").classList.remove("active"); saveData(); };
 </script>
 </body>
 </html>
