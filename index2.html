@@ -3,14 +3,15 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>🕒 Tomakin Süre Hesaplama - v3</title>
+<title>🕒 Süre Hesaplama - v3.2</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
 <style>
   :root {
     --bg: #f0f2f5; --card: #ffffff; --border: #e2e8f0; --danger: #ef4444;
     --success: #1b5e20; --accent: #2563eb; --dark: #2b2b2b; --text-muted: #64748b;
   }
-  body { margin: 0; padding: 10px; background: var(--bg); font-family: 'Inter', sans-serif; max-width: 1100px; margin-inline: auto; }
+  *, *::before, *::after { box-sizing: border-box; }
+  body { margin: 0; padding: 10px; background: var(--bg); font-family: 'Inter', sans-serif; max-width: 1100px; margin-inline: auto; overflow-x: hidden; }
   
   /* GİZLİ ALANLAR */
   #sub1, #sub2, #clearSub1, #clearSub2, .top-diff, .time-icon { display: none !important; }
@@ -23,11 +24,13 @@
   .area { flex: 1; background: var(--card); border-radius: 20px; padding: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); display: flex; flex-direction: column; }
 
   .titlebar { display: flex; gap: 10px; margin-bottom: 15px; }
-  .total-mini, .comment-pill { display: flex; flex-direction: column; padding: 10px 15px; border-radius: 16px; background: #f8fafc; border: 2px solid #eef2f7; }
-  .comment-pill { flex: 1; border-width: 4px; position: relative; }
+  .total-mini, .comment-pill { display: flex; flex-direction: column; justify-content: center; padding: 10px 15px; border-radius: 16px; background: #f8fafc; border: 2px solid #eef2f7; }
+  .comment-pill { flex: 1; border-width: 4px; position: relative; align-items: center; }
 
   .status-ok { border-color: var(--success) !important; color: var(--success) !important; }
   .status-bad { border-color: var(--danger) !important; color: var(--danger) !important; }
+
+  .mini-label { font-size: 12px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 2px; letter-spacing: 0.5px; line-height: 1; }
 
   .tvalue { font-size: 28px; font-weight: 900; color: var(--accent); }
   #commentVal1, #commentVal2 { font-size: 32px; font-weight: 900; }
@@ -36,26 +39,26 @@
   .manual-input { width: 100%; padding: 12px; font-size: 24px; font-weight: 800; border-radius: 14px; border: 2px solid #e2e8f0; text-align: center; margin-bottom: 8px; font-variant-numeric: tabular-nums;}
   
   .list { margin-top: 10px; max-height: 50vh; overflow-y: auto; border-top: 1px solid #f1f5f9; }
-  .row { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px dashed #edf2f7; background: #fff; }
-  .drag-handle { cursor: grab; color: #cbd5e1; font-size: 20px; padding: 5px; user-select: none; }
-  .idx { width: 25px; font-weight: 800; color: #cbd5e1; text-align: right;}
+  .row { display: flex; align-items: center; gap: 8px; padding: 6px 5px; border-bottom: 1px dashed #edf2f7; background: #fff; }
+  .drag-handle { cursor: grab; color: #cbd5e1; font-size: 20px; padding: 5px; user-select: none; flex-shrink: 0; }
+  .idx { width: 32px; font-weight: 800; color: #cbd5e1; text-align: right; flex-shrink: 0; }
   
-  .time-input { flex: 1; padding: 10px; border-radius: 10px; border: 1px solid #e2e8f0; font-size: 18px; font-weight: 700; text-align: center; transition: background 0.2s, color 0.2s, border-color 0.2s; font-variant-numeric: tabular-nums; }
+  .time-input { flex: 1; min-width: 0; padding: 10px; border-radius: 10px; border: 1px solid #e2e8f0; font-size: 18px; font-weight: 700; text-align: center; transition: background 0.2s, color 0.2s, border-color 0.2s; font-variant-numeric: tabular-nums; }
   .time-input.filled { background: var(--dark) !important; color: #fff !important; border-color: var(--dark) !important; }
   
-  .icon-btn { width: 38px; height: 38px; border-radius: 10px; border: 1px solid #e2e8f0; background: #fff; font-weight: 900; cursor: pointer; }
+  .icon-btn { width: 38px; height: 38px; border-radius: 10px; border: 1px solid #e2e8f0; background: #fff; font-weight: 900; cursor: pointer; flex-shrink: 0; }
 
-  /* TAM EKRAN BUTONU */
+  /* TAM EKRAN/POPUP BUTONU */
   .fs-btn {
     position: absolute; top: 12px; right: 12px;
     width: 38px; height: 38px; border-radius: 10px; border: none;
-    background: rgba(0,0,0,0.06); color: var(--text-muted); cursor: pointer;
-    display: flex; align-items: center; justify-content: center; transition: all 0.2s;
+    background: rgba(0,0,0,0.06); color: inherit; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; transition: all 0.2s; opacity: 0.6;
   }
-  .fs-btn:hover { background: rgba(0,0,0,0.15); color: var(--dark); }
+  .fs-btn:hover { background: rgba(0,0,0,0.15); opacity: 1; }
   .fs-btn svg { width: 20px; height: 20px; }
 
-  /* TAM EKRAN ARAYÜZÜ */
+  /* MOBİL TAM EKRAN ARAYÜZÜ */
   #fsOverlay {
     position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
     background: #1e293b; z-index: 99999;
@@ -87,12 +90,19 @@
 <div class="areas">
   <div class="area active" data-area="1">
     <div class="titlebar">
-      <div class="total-mini"><span id="total1" class="tvalue">—:—</span></div>
-      <div class="comment-pill" id="pill1"><span id="commentVal1">—:—</span></div>
+      <div class="total-mini">
+        <div class="mini-label">Haber Toplamı</div>
+        <span id="total1" class="tvalue">—:—</span>
+      </div>
+      <div class="comment-pill" id="pill1">
+        <div class="mini-label" style="opacity:0; user-select:none;">-</div>
+        <span id="commentVal1">—:—</span>
+      </div>
     </div>
     <input id="manual1" class="manual-input" placeholder="HEDEF SAAT" inputmode="numeric">
     <div class="comment-pill" id="manualPill1" style="text-align:center;">
-      <button class="fs-btn" onclick="openFS(1)" title="Tam Ekran Yap">
+      
+      <button class="fs-btn" onclick="openFS(1)" title="Harici Pencerede Aç">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path></svg>
       </button>
       <span id="manualVal1">—:—</span>
@@ -102,12 +112,19 @@
 
   <div class="area" data-area="2">
     <div class="titlebar">
-      <div class="total-mini"><span id="total2" class="tvalue">—:—</span></div>
-      <div class="comment-pill" id="pill2"><span id="commentVal2">—:—</span></div>
+      <div class="total-mini">
+        <div class="mini-label">Haber Toplamı</div>
+        <span id="total2" class="tvalue">—:—</span>
+      </div>
+      <div class="comment-pill" id="pill2">
+        <div class="mini-label" style="opacity:0; user-select:none;">-</div>
+        <span id="commentVal2">—:—</span>
+      </div>
     </div>
     <input id="manual2" class="manual-input" placeholder="HEDEF SAAT" inputmode="numeric">
     <div class="comment-pill" id="manualPill2" style="text-align:center;">
-      <button class="fs-btn" onclick="openFS(2)" title="Tam Ekran Yap">
+     
+      <button class="fs-btn" onclick="openFS(2)" title="Harici Pencerede Aç">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path></svg>
       </button>
       <span id="manualVal2">—:—</span>
@@ -123,9 +140,9 @@
 </div>
 
 <script>
-  // --- KAYA GİBİ SAĞLAM KAYIT SİSTEMİ ---
   const STORAGE_KEY = "TimerApp_ROCK_SOLID_V1";
-  let currentFsArea = null;
+  let currentFsArea = null; // Sadece mobil overlay için
+  let popupWin = null;      // Sadece masaüstü harici pencere için
 
   function saveData() {
     const data = {
@@ -144,7 +161,6 @@
     try {
       const data = JSON.parse(raw);
       
-      // Hangi sekmede kalındıysa onu aç
       if (data.activeTab === 2) {
         document.getElementById("tab2").click();
       } else {
@@ -162,12 +178,10 @@
     } catch(e) { console.error("Kayıt okuma hatası", e); }
   }
 
-  // --- GÜVENLİK AĞLARI (Sayfa kapanırken veya yenilenirken anında kaydet) ---
   window.addEventListener("beforeunload", saveData);
   document.addEventListener("visibilitychange", () => {
     if (document.visibilityState === "hidden") saveData();
   });
-  // --------------------------------------------------------------------------
 
   function toSecondsMMSS(v) {
     if(!v || !v.includes(":")) return 0;
@@ -226,35 +240,85 @@
         document.getElementById("manualVal"+n).textContent = diffText;
         document.getElementById("manualPill"+n).className = isOk ? "comment-pill status-ok" : "comment-pill status-bad";
 
-        if(currentFsArea === n) {
+        // Masaüstü Harici Pencere Güncellemesi (Bağımsız)
+        if (popupWin && !popupWin.closed && popupWin.areaNum === n) {
+          popupWin.document.getElementById("time").textContent = diffText;
+          popupWin.document.body.className = isOk ? "ok" : "bad";
+        }
+
+        // Mobil Overlay Güncellemesi (Bağımsız)
+        if (currentFsArea === n) {
           document.getElementById("fsTime").textContent = diffText;
-          document.getElementById("fsOverlay").className = isOk ? "ok" : "bad";
+          const overlay = document.getElementById("fsOverlay");
+          overlay.classList.remove("ok", "bad");
+          overlay.classList.add(isOk ? "ok" : "bad");
         }
 
       } else {
         document.getElementById("manualVal"+n).textContent = "—:—";
         document.getElementById("manualPill"+n).className = "comment-pill";
+        
+        if (popupWin && !popupWin.closed && popupWin.areaNum === n) {
+          popupWin.document.getElementById("time").textContent = "—:—";
+          popupWin.document.body.className = "";
+        }
+
         if(currentFsArea === n) {
           document.getElementById("fsTime").textContent = "—:—";
-          document.getElementById("fsOverlay").className = "";
+          document.getElementById("fsOverlay").classList.remove("ok", "bad");
         }
       }
     });
   }
 
   function openFS(areaNum) {
-    currentFsArea = areaNum;
-    document.getElementById('fsOverlay').classList.remove('hidden');
-    calculateTotals();
-    const elem = document.documentElement;
-    if (elem.requestFullscreen) { elem.requestFullscreen().catch(err=>{}); }
-    else if (elem.webkitRequestFullscreen) { elem.webkitRequestFullscreen(); }
-    else if (elem.msRequestFullscreen) { elem.msRequestFullscreen(); }
+    if (window.innerWidth > 900) {
+      // BİLGİSAYAR: Sadece Harici Popup Aç (Arka plan etkilenmez)
+      if (popupWin && !popupWin.closed) {
+        popupWin.areaNum = areaNum;
+        popupWin.focus();
+      } else {
+        let w = 600, h = 400;
+        let left = (screen.width - w) / 2;
+        let top = (screen.height - h) / 2;
+        popupWin = window.open("", "TimerPopup", `width=${w},height=${h},top=${top},left=${left},menubar=no,toolbar=no,location=no,status=no`);
+        popupWin.areaNum = areaNum;
+        popupWin.document.write(`
+          <!DOCTYPE html>
+          
+          <style>
+            body { margin: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; font-family: 'Inter', sans-serif; transition: background 0.3s; background: #1e293b; color: #fff; }
+            body.ok { background-color: #1b5e20; }
+            body.bad { background-color: #ef4444; }
+            .label { font-size: 24px; font-weight: 800; opacity: 0.8; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 2px;}
+            #time { font-size: 25vw; font-weight: 900; font-variant-numeric: tabular-nums; line-height: 1; text-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+          </style>
+          </head><body class="">
+          
+          <div id="time">—:—</div>
+          </body></html>
+        `);
+        popupWin.document.close();
+        
+        popupWin.onbeforeunload = () => { popupWin = null; };
+      }
+      calculateTotals();
+    } else {
+      // MOBİL: Sadece Ekran İçi Tam Ekran Overlay Aç
+      currentFsArea = areaNum;
+      document.getElementById('fsOverlay').classList.remove('hidden');
+      calculateTotals();
+      const elem = document.documentElement;
+      if (elem.requestFullscreen) { elem.requestFullscreen().catch(err=>{}); }
+      else if (elem.webkitRequestFullscreen) { elem.webkitRequestFullscreen(); }
+      else if (elem.msRequestFullscreen) { elem.msRequestFullscreen(); }
+    }
   }
 
   function closeFS() {
     currentFsArea = null;
     document.getElementById('fsOverlay').classList.add('hidden');
+    document.getElementById('fsOverlay').classList.remove('ok', 'bad');
     if (document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement) {
       if (document.exitFullscreen) { document.exitFullscreen(); }
       else if (document.webkitExitFullscreen) { document.webkitExitFullscreen(); }
@@ -287,7 +351,7 @@
           this.value = autoFormatMMSS(v);
           updateFilledState(this);
           calculateTotals();
-          saveData(); // Anında kaydet
+          saveData(); 
           
           const currentIndex = allTimeInputs.indexOf(this);
           if (currentIndex !== -1 && currentIndex < allTimeInputs.length - 1) {
@@ -296,7 +360,7 @@
         }
         updateFilledState(this);
         calculateTotals();
-        saveData(); // Anında kaydet
+        saveData(); 
       });
 
       inp.addEventListener("blur", function() {
@@ -306,7 +370,6 @@
         saveData();
       });
 
-      // Yapıştırma anında da kaydet
       inp.addEventListener("paste", function() {
         setTimeout(() => { updateFilledState(this); calculateTotals(); saveData(); }, 50);
       });
@@ -332,7 +395,6 @@
       calculateTotals(); saveData();
     });
     manualInput.addEventListener("keydown", function(e) { if (e.key === "Enter") this.blur(); });
-    // Hedef saate manuel yazarken anında kaydet
     manualInput.addEventListener("input", function() { calculateTotals(); saveData(); });
   });
 
@@ -342,7 +404,6 @@
   loadData();
   setInterval(calculateTotals, 1000);
 
-  // Sekme değiştirme butonlarına basıldığında da aktif sekmeyi kaydet
   document.getElementById("tab1").onclick = () => { document.querySelector('[data-area="1"]').classList.add("active"); document.querySelector('[data-area="2"]').classList.remove("active"); document.getElementById("tab1").classList.add("active"); document.getElementById("tab2").classList.remove("active"); saveData(); };
   document.getElementById("tab2").onclick = () => { document.querySelector('[data-area="2"]').classList.add("active"); document.querySelector('[data-area="1"]').classList.remove("active"); document.getElementById("tab2").classList.add("active"); document.getElementById("tab1").classList.remove("active"); saveData(); };
 </script>
