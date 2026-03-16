@@ -3,7 +3,11 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>🕒 Süre Hesaplama - v3.2</title>
+<title>🕒 Tomakin Süre Hesaplama - v3.3</title>
+
+<link rel="icon" type="image/png" href="image/icon2.png" />
+<link rel="apple-touch-icon" href="image/icon2.png" />
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
 <style>
   :root {
@@ -101,7 +105,7 @@
     </div>
     <input id="manual1" class="manual-input" placeholder="HEDEF SAAT" inputmode="numeric">
     <div class="comment-pill" id="manualPill1" style="text-align:center;">
-      
+      <div class="mini-label" style="color: inherit; opacity: 0.85;">Yorum Süresi</div>
       <button class="fs-btn" onclick="openFS(1)" title="Harici Pencerede Aç">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path></svg>
       </button>
@@ -123,7 +127,7 @@
     </div>
     <input id="manual2" class="manual-input" placeholder="HEDEF SAAT" inputmode="numeric">
     <div class="comment-pill" id="manualPill2" style="text-align:center;">
-     
+      <div class="mini-label" style="color: inherit; opacity: 0.85;">Yorum Süresi</div>
       <button class="fs-btn" onclick="openFS(2)" title="Harici Pencerede Aç">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path></svg>
       </button>
@@ -285,7 +289,8 @@
         popupWin.areaNum = areaNum;
         popupWin.document.write(`
           <!DOCTYPE html>
-          
+          <html><head><title>Yorum Süresi</title>
+          <link rel="icon" type="image/png" href="image/icon2.png" />
           <style>
             body { margin: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; font-family: 'Inter', sans-serif; transition: background 0.3s; background: #1e293b; color: #fff; }
             body.ok { background-color: #1b5e20; }
@@ -294,7 +299,7 @@
             #time { font-size: 25vw; font-weight: 900; font-variant-numeric: tabular-nums; line-height: 1; text-shadow: 0 10px 30px rgba(0,0,0,0.2); }
           </style>
           </head><body class="">
-          
+          <div class="label">Yorum Süresi</div>
           <div id="time">—:—</div>
           </body></html>
         `);
