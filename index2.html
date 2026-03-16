@@ -8,6 +8,10 @@
 <link rel="icon" type="image/png" href="image/icon2.png" />
 <link rel="apple-touch-icon" href="image/icon2.png" />
 
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800;900&display=swap" rel="stylesheet">
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
 <style>
   :root {
@@ -75,13 +79,20 @@
   
   #fsTime { font-size: clamp(80px, 25vw, 400px); font-weight: 900; color: #fff; font-variant-numeric: tabular-nums; line-height: 1; text-shadow: 0 10px 30px rgba(0,0,0,0.2); }
 
-  .fs-close { position: absolute; background: rgba(0,0,0,0.25); border: 2px solid rgba(255,255,255,0.3); color: #fff; cursor: pointer; font-weight: 800; transition: all 0.2s; }
-  .fs-close:hover { background: rgba(0,0,0,0.5); border-color: #fff; }
-  .fs-close.top-right { top: 25px; right: 25px; width: 50px; height: 50px; border-radius: 50%; font-size: 24px; display: flex; align-items: center; justify-content: center; }
-  .fs-close.bottom-center { bottom: 50px; padding: 18px 40px; border-radius: 16px; font-size: 20px; letter-spacing: 1px; text-transform: uppercase; }
-
   @media (min-width: 901px) { .toolbar { display: none !important; } }
-  @media (max-width:900px){ .areas { display: block; } .area { display: none; } .area.active { display: flex; } #fsTime { font-size: 35vw; } }
+  
+  /* MOBİL GÖRÜNÜM AYARLARI */
+  @media (max-width:900px){ 
+    .areas { display: block; } 
+    .area { display: none; } 
+    .area.active { display: flex; } 
+    #fsTime { font-size: 35vw; } 
+    
+    /* EKLENEN: Mobilde giriş kutuları ve rakamların fontlarını en kalın hale getir */
+    .time-input, .manual-input, .idx, .tvalue, #commentVal1, #commentVal2, #manualVal1, #manualVal2 { 
+      font-weight: 900 !important; 
+    }
+  }
 </style>
 </head>
 <body>
