@@ -75,7 +75,6 @@
   
   .icon-btn { width: 38px; height: 38px; border-radius: 10px; border: 1px solid var(--border); background: var(--input-bg); color: var(--text-main); font-weight: 900; cursor: pointer; flex-shrink: 0; transition: all 0.3s; }
 
-  /* TAM EKRAN/POPUP BUTONU */
   .fs-btn {
     position: absolute; top: 12px; right: 12px;
     width: 38px; height: 38px; border-radius: 10px; border: none;
@@ -85,7 +84,6 @@
   .fs-btn:hover { background: rgba(128,128,128,0.25); opacity: 1; }
   .fs-btn svg { width: 20px; height: 20px; }
 
-  /* KARANLIK MOD BUTONU */
   .theme-toggle {
     position: fixed; bottom: 20px; right: 20px; width: 50px; height: 50px;
     border-radius: 50%; background: var(--card); border: 2px solid var(--border);
@@ -96,7 +94,6 @@
   }
   .theme-toggle:hover { transform: scale(1.1); }
 
-  /* MOBİL TAM EKRAN ARAYÜZÜ */
   #fsOverlay {
     position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
     background: #1e293b; z-index: 99999;
@@ -116,7 +113,6 @@
 
   @media (min-width: 901px) { .toolbar { display: none !important; } }
   
-  /* MOBİL GÖRÜNÜM AYARLARI */
   @media (max-width:900px){ 
     .areas { display: block; } 
     .area { display: none; } 
@@ -174,10 +170,10 @@
     </div>
     
     <div style="display: flex; gap: 10px; margin-bottom: 8px;">
-      <input id="adDuration" class="manual-input" placeholder="REKLAM SÜRESİ" inputmode="numeric" style="border: 2px dashed var(--accent); color: var(--accent); margin-bottom: 0; flex: 1;">
-      <div class="comment-pill" id="adEntryPill" style="margin: 0; flex: 1; border: 2px solid var(--accent); justify-content: center; align-items: center; background: rgba(37, 99, 235, 0.05);">
-        <div class="mini-label" style="color: var(--accent);">REKLAMA GİRİŞ</div>
-        <span id="adEntryVal" style="font-size: 24px; font-weight: 900; color: var(--accent);">—:—</span>
+      <input id="adDuration" class="manual-input" placeholder="REKLAM?" inputmode="numeric" style="border: 2px dashed var(--accent); color: var(--accent); margin-bottom: 0; flex: 1;">
+      <div class="comment-pill" id="adEntryPill" style="margin: 0; flex: 1; border: 3px solid #eab308; justify-content: center; align-items: center; background: #fde047; border-radius: 14px;">
+        <div class="mini-label" style="color: #000; font-weight: 900;">REKLAMA GİRİŞ</div>
+        <span id="adEntryVal" style="font-size: 26px; font-weight: 900; color: #000;">—:—</span>
       </div>
     </div>
     
@@ -199,7 +195,6 @@
 </div>
 
 <script>
-  // TEMA BAŞLATMA MANTIĞI
   function initTheme() {
     const savedTheme = localStorage.getItem("TimerApp_Theme") || "light";
     document.documentElement.setAttribute("data-theme", savedTheme);
@@ -216,7 +211,7 @@
   
   initTheme();
 
-  const STORAGE_KEY = "TimerApp_ROCK_SOLID_V3";
+  const STORAGE_KEY = "TimerApp_ROCK_SOLID_V4";
   let currentFsArea = null; 
   let popupWin = null;      
 
@@ -237,13 +232,7 @@
     if (!raw) return;
     try {
       const data = JSON.parse(raw);
-      
-      if (data.activeTab === 2) {
-        document.getElementById("tab2").click();
-      } else {
-        document.getElementById("tab1").click();
-      }
-
+      if (data.activeTab === 2) { document.getElementById("tab2").click(); } else { document.getElementById("tab1").click(); }
       document.getElementById("manual1").value = data.m1 || "";
       document.getElementById("manual2").value = data.m2 || "";
       document.getElementById("adDuration").value = data.adDur || ""; 
@@ -257,9 +246,7 @@
   }
 
   window.addEventListener("beforeunload", saveData);
-  document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "hidden") saveData();
-  });
+  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden") saveData(); });
 
   function toSecondsMMSS(v) {
     if(!v || !v.includes(":")) return 0;
@@ -272,9 +259,8 @@
     return `${String(Math.floor(sec/60)).padStart(2,"0")}:${String(sec%60).padStart(2,"0")}`;
   }
   
-  // Gece yarısı geçişlerini destekleyen saat (HH:MM:SS) çeviricisi
   function secondsToHMS(sec) {
-    sec = ((sec % 86400) + 86400) % 86400; // Gece yarısını eksilerde korumak için
+    sec = ((sec % 86400) + 86400) % 86400;
     const h = Math.floor(sec / 3600);
     const m = Math.floor((sec % 3600) / 60);
     const s = sec % 60;
@@ -331,7 +317,6 @@
         document.getElementById("manualVal"+n).textContent = diffText;
         document.getElementById("manualPill"+n).className = isOk ? "comment-pill status-ok" : "comment-pill status-bad";
 
-        // YENİ: Reklama Giriş Saati Hesaplaması (Hedef - (Haberler + Reklam))
         if (n === 2) {
           const entrySec = hS - a2 - adSec;
           document.getElementById("adEntryVal").textContent = secondsToHMS(entrySec);
