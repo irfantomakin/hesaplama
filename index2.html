@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>Süre Hesaplama</title>
+<title>Süre Hesaplama - Pro Dashboard</title>
 
 <link rel="icon" type="image/png" href="image/icon2.png" />
 <link rel="apple-touch-icon" href="image/icon2.png" />
@@ -124,7 +124,6 @@
     #fsTime { font-size: 35vw; } 
     .theme-toggle { bottom: 15px; right: 15px; width: 45px; height: 45px; font-size: 20px; }
     
-    /* Mobilde giriş kutuları ve rakamların fontlarını en kalın hale getir */
     .time-input, .manual-input, .idx, .tvalue, #commentVal1, #commentVal2, #manualVal1, #manualVal2 { 
       font-weight: 900 !important; 
     }
@@ -173,6 +172,15 @@
         <span id="commentVal2">—:—</span>
       </div>
     </div>
+    
+    <div style="display: flex; gap: 10px; margin-bottom: 8px;">
+      <input id="adDuration" class="manual-input" placeholder="REKLAM SÜRESİ" inputmode="numeric" style="border: 2px dashed var(--accent); color: var(--accent); margin-bottom: 0; flex: 1;">
+      <div class="comment-pill" id="adEntryPill" style="margin: 0; flex: 1; border: 2px solid var(--accent); justify-content: center; align-items: center; background: rgba(37, 99, 235, 0.05);">
+        <div class="mini-label" style="color: var(--accent);">SON REKLAMA GİRİŞ</div>
+        <span id="adEntryVal" style="font-size: 24px; font-weight: 900; color: var(--accent);">—:—</span>
+      </div>
+    </div>
+    
     <input id="manual2" class="manual-input" placeholder="HEDEF SAAT" inputmode="numeric">
     <div class="comment-pill" id="manualPill2" style="text-align:center;">
       <button class="fs-btn" onclick="openFS(2)" title="Harici Pencerede Aç">
@@ -206,17 +214,18 @@
     localStorage.setItem("TimerApp_Theme", newTheme);
   }
   
-  initTheme(); // Sayfa yüklenirken temayı uygula
+  initTheme();
 
-  const STORAGE_KEY = "TimerApp_ROCK_SOLID_V1";
-  let currentFsArea = null; // Sadece mobil overlay için
-  let popupWin = null;      // Sadece masaüstü harici pencere için
+  const STORAGE_KEY = "TimerApp_ROCK_SOLID_V3";
+  let currentFsArea = null; 
+  let popupWin = null;      
 
   function saveData() {
     const data = {
       activeTab: document.getElementById("tab2").classList.contains("active") ? 2 : 1,
       m1: document.getElementById("manual1").value,
       m2: document.getElementById("manual2").value,
+      adDur: document.getElementById("adDuration").value, 
       list1: Array.from(document.querySelectorAll("#area1 .time-input")).map(i => i.value),
       list2: Array.from(document.querySelectorAll("#area2 .time-input")).map(i => i.value)
     };
@@ -237,6 +246,7 @@
 
       document.getElementById("manual1").value = data.m1 || "";
       document.getElementById("manual2").value = data.m2 || "";
+      document.getElementById("adDuration").value = data.adDur || ""; 
       
       const in1 = document.querySelectorAll("#area1 .time-input"), in2 = document.querySelectorAll("#area2 .time-input");
       if(data.list1) data.list1.forEach((v, i) => { if(in1[i]) { in1[i].value = v; updateFilledState(in1[i]); }});
@@ -261,6 +271,15 @@
     sec = Math.max(0, sec);
     return `${String(Math.floor(sec/60)).padStart(2,"0")}:${String(sec%60).padStart(2,"0")}`;
   }
+  
+  // Gece yarısı geçişlerini destekleyen saat (HH:MM:SS) çeviricisi
+  function secondsToHMS(sec) {
+    sec = ((sec % 86400) + 86400) % 86400; // Gece yarısını eksilerde korumak için
+    const h = Math.floor(sec / 3600);
+    const m = Math.floor((sec % 3600) / 60);
+    const s = sec % 60;
+    return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+  }
 
   function autoFormatMMSS(v) {
     v = v.replace(/\D/g,"");
@@ -284,6 +303,8 @@
     document.querySelectorAll("#area1 .time-input").forEach(i => a1 += toSecondsMMSS(i.value));
     document.querySelectorAll("#area2 .time-input").forEach(i => a2 += toSecondsMMSS(i.value));
     
+    const adSec = toSecondsMMSS(document.getElementById("adDuration").value);
+
     document.getElementById("total1").textContent = a1 > 0 ? fromSecondsMMSS(a1) : "—:—";
     document.getElementById("total2").textContent = a2 > 0 ? fromSecondsMMSS(a2) : "—:—";
 
@@ -291,7 +312,9 @@
     
     [1,2].forEach(n => {
       const total = n === 1 ? a1 : a2;
-      const hPlusS = nowS + total;
+      const extraSec = n === 2 ? adSec : 0; 
+      const hPlusS = nowS + total + extraSec;
+      
       document.getElementById("commentVal"+n).textContent = new Date(hPlusS * 1000).toISOString().substr(11, 8);
       
       const mValRaw = document.getElementById("manual"+n).value.replace(/\D/g, "");
@@ -308,13 +331,17 @@
         document.getElementById("manualVal"+n).textContent = diffText;
         document.getElementById("manualPill"+n).className = isOk ? "comment-pill status-ok" : "comment-pill status-bad";
 
-        // Masaüstü Harici Pencere Güncellemesi (Bağımsız)
+        // YENİ: Reklama Giriş Saati Hesaplaması (Hedef - (Haberler + Reklam))
+        if (n === 2) {
+          const entrySec = hS - a2 - adSec;
+          document.getElementById("adEntryVal").textContent = secondsToHMS(entrySec);
+        }
+
         if (popupWin && !popupWin.closed && popupWin.areaNum === n) {
           popupWin.document.getElementById("time").textContent = diffText;
           popupWin.document.body.className = isOk ? "ok" : "bad";
         }
 
-        // Mobil Overlay Güncellemesi (Bağımsız)
         if (currentFsArea === n) {
           document.getElementById("fsTime").textContent = diffText;
           const overlay = document.getElementById("fsOverlay");
@@ -325,6 +352,8 @@
       } else {
         document.getElementById("manualVal"+n).textContent = "—:—";
         document.getElementById("manualPill"+n).className = "comment-pill";
+        
+        if (n === 2) { document.getElementById("adEntryVal").textContent = "—:—"; }
         
         if (popupWin && !popupWin.closed && popupWin.areaNum === n) {
           popupWin.document.getElementById("time").textContent = "—:—";
@@ -341,7 +370,6 @@
 
   function openFS(areaNum) {
     if (window.innerWidth > 900) {
-      // BİLGİSAYAR: Sadece Harici Popup Aç (Arka plan etkilenmez)
       if (popupWin && !popupWin.closed) {
         popupWin.areaNum = areaNum;
         popupWin.focus();
@@ -366,12 +394,10 @@
           </body></html>
         `);
         popupWin.document.close();
-        
         popupWin.onbeforeunload = () => { popupWin = null; };
       }
       calculateTotals();
     } else {
-      // MOBİL: Sadece Ekran İçi Tam Ekran Overlay Aç
       currentFsArea = areaNum;
       document.getElementById('fsOverlay').classList.remove('hidden');
       calculateTotals();
@@ -464,6 +490,16 @@
     manualInput.addEventListener("keydown", function(e) { if (e.key === "Enter") this.blur(); });
     manualInput.addEventListener("input", function() { calculateTotals(); saveData(); });
   });
+
+  const adInput = document.getElementById("adDuration");
+  adInput.addEventListener("focus", () => setTimeout(() => adInput.select(), 0));
+  adInput.addEventListener("click", () => setTimeout(() => adInput.select(), 0));
+  adInput.addEventListener("input", function() { calculateTotals(); saveData(); });
+  adInput.addEventListener("blur", function() {
+    if (this.value) this.value = autoFormatMMSS(this.value); 
+    calculateTotals(); saveData();
+  });
+  adInput.addEventListener("keydown", function(e) { if (e.key === "Enter") this.blur(); });
 
   createAreaInputs("area1", 20); createAreaInputs("area2", 8);
   allTimeInputs = Array.from(document.querySelectorAll('.time-input'));
