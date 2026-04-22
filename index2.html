@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>Tomakin Süre Hesaplama</title>
+<title>Süre Hesaplama - Pro Dashboard</title>
 
 <link rel="icon" type="image/png" href="image/icon2.png" />
 <link rel="apple-touch-icon" href="image/icon2.png" />
@@ -50,7 +50,7 @@
   .areas { display: flex; gap: 20px; }
   .area { flex: 1; background: var(--card); border-radius: 20px; padding: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); display: flex; flex-direction: column; transition: background-color 0.3s; }
 
-  .titlebar { display: flex; gap: 10px; margin-bottom: 15px; }
+  .titlebar { display: flex; gap: 10px; margin-bottom: 15px; align-items: stretch; }
   .total-mini, .comment-pill { display: flex; flex-direction: column; justify-content: center; padding: 10px 15px; border-radius: 16px; background: var(--pill-bg); border: 2px solid var(--border); transition: all 0.3s; }
   .comment-pill { flex: 1; border-width: 4px; position: relative; align-items: center; }
 
@@ -65,7 +65,7 @@
 
   .manual-input { width: 100%; padding: 12px; font-size: 24px; font-weight: 800; border-radius: 14px; border: 2px solid var(--border); background: var(--input-bg); color: var(--text-main); text-align: center; margin-bottom: 8px; font-variant-numeric: tabular-nums; transition: all 0.3s;}
   
-  .list { margin-top: 10px; max-height: 50vh; overflow-y: auto; border-top: 1px solid var(--border); }
+  .list { margin-top: 10px; max-height: 50vh; overflow-y: auto; border-top: 1px solid var(--border); padding-right: 5px;}
   .row { display: flex; align-items: center; gap: 8px; padding: 6px 5px; border-bottom: 1px dashed var(--border); background: var(--row-bg); transition: background-color 0.3s; }
   .drag-handle { cursor: grab; color: var(--text-muted); font-size: 20px; padding: 5px; user-select: none; flex-shrink: 0; }
   .idx { width: 32px; font-weight: 800; color: var(--text-muted); text-align: right; flex-shrink: 0; }
@@ -147,6 +147,15 @@
         <span id="commentVal1">—:—</span>
       </div>
     </div>
+    
+    <div style="display: flex; gap: 10px; margin-bottom: 8px;">
+      <input id="adDuration" class="manual-input" placeholder="REKLAM SÜRESİ" inputmode="numeric" style="border: 2px dashed var(--accent); color: var(--accent); margin-bottom: 0; flex: 1;">
+      <div class="comment-pill" id="adEntryPill" style="margin: 0; flex: 1; border: 3px solid #eab308; justify-content: center; align-items: center; background: #fde047; border-radius: 14px;">
+        <div class="mini-label" style="color: #000; font-weight: 900;">REKLAMA GİRİŞ</div>
+        <span id="adEntryVal" style="font-size: 26px; font-weight: 900; color: #000;">—:—</span>
+      </div>
+    </div>
+    
     <input id="manual1" class="manual-input" placeholder="HEDEF SAAT" inputmode="numeric">
     <div class="comment-pill" id="manualPill1" style="text-align:center;">
       <button class="fs-btn" onclick="openFS(1)" title="Harici Pencerede Aç">
@@ -166,14 +175,6 @@
       <div class="comment-pill" id="pill2">
         <div class="mini-label" style="opacity:0; user-select:none;">-</div>
         <span id="commentVal2">—:—</span>
-      </div>
-    </div>
-    
-    <div style="display: flex; gap: 10px; margin-bottom: 8px;">
-      <input id="adDuration" class="manual-input" placeholder="REKLAM?" inputmode="numeric" style="border: 2px dashed var(--accent); color: var(--accent); margin-bottom: 0; flex: 1;">
-      <div class="comment-pill" id="adEntryPill" style="margin: 0; flex: 1; border: 3px solid #eab308; justify-content: center; align-items: center; background: #fde047; border-radius: 14px;">
-        <div class="mini-label" style="color: #000; font-weight: 900;">REKLAMA GİRİŞ</div>
-        <span id="adEntryVal" style="font-size: 26px; font-weight: 900; color: #000;">—:—</span>
       </div>
     </div>
     
@@ -211,7 +212,7 @@
   
   initTheme();
 
-  const STORAGE_KEY = "TimerApp_ROCK_SOLID_V4";
+  const STORAGE_KEY = "TimerApp_ROCK_SOLID_V7";
   let currentFsArea = null; 
   let popupWin = null;      
 
@@ -298,6 +299,8 @@
     
     [1,2].forEach(n => {
       const total = n === 1 ? a1 : a2;
+      
+      // REKLAM SÜRESİ 2. ALANIN HESABINA EKLENİYOR
       const extraSec = n === 2 ? adSec : 0; 
       const hPlusS = nowS + total + extraSec;
       
@@ -317,6 +320,7 @@
         document.getElementById("manualVal"+n).textContent = diffText;
         document.getElementById("manualPill"+n).className = isOk ? "comment-pill status-ok" : "comment-pill status-bad";
 
+        // MATEMATİK BURADA DÜZELTİLDİ: "2. Alanın Hedef Saati - 2. Alan Haberleri - Reklam" kullanılıyor
         if (n === 2) {
           const entrySec = hS - a2 - adSec;
           document.getElementById("adEntryVal").textContent = secondsToHMS(entrySec);
@@ -338,6 +342,7 @@
         document.getElementById("manualVal"+n).textContent = "—:—";
         document.getElementById("manualPill"+n).className = "comment-pill";
         
+        // 2. Alanın hedefi yoksa reklam giriş saati gizlenir
         if (n === 2) { document.getElementById("adEntryVal").textContent = "—:—"; }
         
         if (popupWin && !popupWin.closed && popupWin.areaNum === n) {
