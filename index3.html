@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Süre Hesaplama - Pro Rundown</title>
+
+<link rel="icon" type="image/png" href="image/icon2.png" />
+<link rel="apple-touch-icon" href="image/icon2.png" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800;900&display=swap" rel="stylesheet">
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+<style>
+  /* TEMA DEĞİŞKENLERİ */
+  :root {
+    --bg: #f0f2f5; --card: #ffffff; --border: #e2e8f0; --danger: #ef4444;
+    --success: #1b5e20; --accent: #2563eb; --dark: #2b2b2b; --text-muted: #64748b;
+    --text-main: #000000; --input-bg: #ffffff;
+    --filled-bg: #2b2b2b; --filled-text: #ffffff;
+    --pill-bg: #f8fafc; --row-bg: #ffffff;
+    --fs-btn-bg: rgba(0,0,0,0.06);
+  }
+  
+  [data-theme="dark"] {
+    --bg: #0f172a; --card: #1e293b; --border: #334155; --danger: #f87171;
+    --success: #4ade80; --accent: #3b82f6; --dark: #f8fafc; --text-muted: #94a3b8;
+    --text-main: #f8fafc; --input-bg: #0f172a;
+    --filled-bg: #3b82f6; --filled-text: #ffffff;
+    --pill-bg: #0f172a; --row-bg: #1e293b;
+    --fs-btn-bg: rgba(255,255,255,0.1);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+  body { 
+    margin: 0; padding: 15px 10px 100px 10px; background: var(--bg); color: var(--text-main); 
+    font-family: 'Inter', sans-serif; max-width: 1000px; margin-inline: auto; 
+    overflow-x: hidden; transition: background-color 0.3s, color 0.3s;
+  }
+  
+  /* BLOK (REKLAM BÖLÜMÜ) TASARIMI */
+  #blocksContainer { display: flex; flex-direction: column; gap: 25px; }
+  
+  .block-card { background: var(--card); border-radius: 20px; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.04); border: 2px solid var(--border); transition: background-color 0.3s; position: relative; }
+  
+  .block-header { display: flex; gap: 15px; align-items: stretch; flex-wrap: wrap; margin-bottom: 5px; }
+  .block-inputs { flex: 1; min-width: 200px; display: flex; flex-direction: column; gap: 10px; }
+  .block-outputs { flex: 2; min-width: 300px; display: flex; gap: 10px; }
+
+  .comment-pill { display: flex; flex-direction: column; justify-content: center; padding: 10px 15px; border-radius: 16px; background: var(--pill-bg); border: 4px solid var(--border); transition: all 0.3s; flex: 1; align-items: center; position: relative; }
+  
+  .status-ok { border-color: var(--success) !important; color: var(--success) !important; }
+  .status-bad { border-color: var(--danger) !important; color: var(--danger) !important; }
+  .status-warning { border-color: #eab308 !important; background: #fde047 !important; color: #000 !important; }
+
+  .mini-label { font-size: 13px; font-weight: 900; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px; letter-spacing: 0.5px; line-height: 1; text-align: center; }
+  .status-warning .mini-label { color: #000; }
+
+  .val-text { font-size: 32px; font-weight: 900; color: inherit; }
+  .diff-val-text { font-size: 44px; font-weight: 900; color: inherit; }
+
+  .manual-input { width: 100%; padding: 14px; font-size: 22px; font-weight: 800; border-radius: 14px; border: 2px solid var(--border); background: var(--input-bg); color: var(--text-main); text-align: center; font-variant-numeric: tabular-nums; transition: all 0.3s; outline: none; }
+  .manual-input:focus { border-color: var(--accent); }
+  .input-ad { border: 2px dashed var(--accent); color: var(--accent); }
+  .target-input.is-manual { border-color: var(--accent); background: rgba(37,99,235,0.05); }
+  
+  /* EN ÜSTTEKİ REKLAM ÖZETİ TASARIMI */
+  .ad-summary-display { 
+    border: 2px dashed var(--accent); color: var(--accent); background: rgba(37,99,235,0.05); 
+    font-size: 16px; font-weight: 800; display: none; flex-direction: column; 
+    justify-content: center; align-items: center; padding: 8px; border-radius: 14px; 
+    overflow-y: auto; max-height: 64px; text-align: center;
+  }
+  .ad-summary-display div { line-height: 1.3; }
+
+  /* HABER LİSTESİ TASARIMI */
+  .list { margin-top: 10px; border-top: 2px solid var(--border); padding-top: 10px; min-height: 20px; }
+  .row { display: flex; align-items: center; gap: 8px; padding: 6px 5px; border-bottom: 1px dashed var(--border); background: var(--row-bg); transition: background-color 0.3s; border-radius: 8px; }
+  .row:hover { background: var(--bg); }
+  
+  .drag-handle { cursor: grab; color: var(--text-muted); font-size: 20px; padding: 5px; user-select: none; flex-shrink: 0; }
+  .drag-handle:active { cursor: grabbing; color: var(--accent); }
+  .idx { width: 36px; font-weight: 900; color: var(--text-muted); text-align: right; flex-shrink: 0; font-size: 16px; }
+  
+  .time-input { flex: 1; min-width: 0; padding: 12px; border-radius: 10px; border: 1px solid var(--border); background: var(--input-bg); color: var(--text-main); font-size: 20px; font-weight: 800; text-align: center; transition: all 0.2s; font-variant-numeric: tabular-nums; outline: none; }
+  .time-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
+  .time-input.filled { background: var(--filled-bg) !important; color: var(--filled-text) !important; border-color: var(--filled-bg) !important; }
+  
+  /* AKSİYON BUTONLARI (TEMİZLE VE SİL) */
+  .row-actions { display: flex; gap: 4px; flex-shrink: 0; }
+  .icon-btn { width: 42px; height: 42px; border-radius: 10px; border: 1px solid var(--border); background: var(--input-bg); font-weight: 900; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
+  
+  .btn-clear { color: var(--text-muted); font-size: 22px; }
+  .btn-clear:hover { background: #e2e8f0; color: #000; border-color: #cbd5e1; }
+  
+  .btn-del { color: var(--danger); font-size: 16px; }
+  .btn-del:hover { background: var(--danger); color: #fff; border-color: var(--danger); }
+
+  /* EYLEM BUTONLARI */
+  .add-row-btn { width: 100%; padding: 12px; margin-top: 10px; border-radius: 12px; border: 2px dashed var(--border); background: transparent; color: var(--text-muted); font-weight: 800; font-size: 16px; cursor: pointer; transition: all 0.2s; }
+  .add-row-btn:hover { border-color: var(--accent); color: var(--accent); background: rgba(37,99,235,0.05); }
+
+  .del-block-btn { position: absolute; top: -15px; right: -10px; width: 34px; height: 34px; border-radius: 50%; background: var(--danger); color: #fff; border: 4px solid var(--bg); font-weight: 900; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; opacity: 0.3; transition: all 0.2s; z-index: 10; }
+  .block-card:hover .del-block-btn { opacity: 1; }
+  .del-block-btn:hover { transform: scale(1.1); }
+
+  /* ALT EKLEME ALANI */
+  .add-block-container { display: flex; max-width: 600px; margin: 30px auto; gap: 10px; align-items: stretch; }
+  .row-count-wrapper { display: flex; flex-direction: column; justify-content: center; align-items: center; background: var(--pill-bg); border: 2px solid var(--border); border-radius: 16px; padding: 5px 15px; min-width: 90px; }
+  .row-count-wrapper .mini-label { margin: 0 0 2px 0; font-size: 11px; }
+  .row-count-input { width: 100%; text-align: center; font-size: 22px; font-weight: 900; background: transparent; border: none; color: var(--text-main); outline: none; }
+  .global-add-btn { flex: 1; display: block; padding: 18px; border-radius: 16px; border: none; background: var(--filled-bg); color: var(--filled-text); font-size: 18px; font-weight: 900; cursor: pointer; box-shadow: 0 10px 25px rgba(0,0,0,0.1); transition: all 0.2s; }
+  .global-add-btn:hover { transform: translateY(-3px); box-shadow: 0 15px 35px rgba(0,0,0,0.2); }
+
+  /* TAM EKRAN/POPUP BUTONU */
+  .fs-btn { position: absolute; top: 12px; right: 12px; width: 36px; height: 36px; border-radius: 10px; border: none; background: var(--fs-btn-bg); color: inherit; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; opacity: 0.6; }
+  .fs-btn:hover { background: rgba(128,128,128,0.25); opacity: 1; }
+  .fs-btn svg { width: 18px; height: 18px; }
+
+  /* KARANLIK MOD BUTONU */
+  .theme-toggle { position: fixed; bottom: 20px; right: 20px; width: 50px; height: 50px; border-radius: 50%; background: var(--card); border: 2px solid var(--border); color: var(--text-main); font-size: 24px; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.2); z-index: 999; display: flex; align-items: center; justify-content: center; transition: all 0.3s ease; }
+  .theme-toggle:hover { transform: scale(1.1); }
+
+  /* MOBİL TAM EKRAN ARAYÜZÜ */
+  #fsOverlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #1e293b; z-index: 99999; display: flex; flex-direction: column; justify-content: center; align-items: center; transition: background-color 0.3s ease; }
+  #fsOverlay.hidden { display: none !important; }
+  #fsOverlay.ok { background-color: #1b5e20; }
+  #fsOverlay.bad { background-color: #ef4444; }
+  #fsTime { font-size: clamp(80px, 25vw, 400px); font-weight: 900; color: #fff; font-variant-numeric: tabular-nums; line-height: 1; text-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+  .fs-close { position: absolute; background: rgba(0,0,0,0.25); border: 2px solid rgba(255,255,255,0.3); color: #fff; cursor: pointer; font-weight: 800; transition: all 0.2s; }
+  .fs-close:hover { background: rgba(0,0,0,0.5); border-color: #fff; }
+  .fs-close.top-right { top: 25px; right: 25px; width: 50px; height: 50px; border-radius: 50%; font-size: 24px; display: flex; align-items: center; justify-content: center; }
+  .fs-close.bottom-center { bottom: 50px; padding: 18px 40px; border-radius: 16px; font-size: 20px; letter-spacing: 1px; text-transform: uppercase; }
+
+  @media (max-width:900px){ 
+    .block-outputs { flex-direction: column; min-width: 100%; }
+    .val-text { font-size: 28px; }
+    .diff-val-text { font-size: 38px; }
+  }
+</style>
+</head>
+<body>
+
+<button id="themeToggle" class="theme-toggle" onclick="toggleTheme()" title="Karanlık / Aydınlık Mod">🌙</button>
+
+<div id="blocksContainer"></div>
+
+<div class="add-block-container">
+  <div class="row-count-wrapper" title="Yeni açılacak bölümdeki varsayılan satır sayısı">
+    <span class="mini-label">SATIR</span>
+    <input type="number" id="defaultRowCount" value="13" min="1" max="50" class="row-count-input">
+  </div>
+  <button class="global-add-btn" onclick="addNewBlock()">➕ YENİ REKLAM BÖLÜMÜ EKLE</button>
+</div>
+
+<div id="fsOverlay" class="hidden">
+  <button class="fs-close top-right" onclick="closeFS()">✕</button>
+  <div id="fsTime">—:—</div>
+  <button class="fs-close bottom-center" onclick="closeFS()">Tam Ekranı Kapat</button>
+</div>
+
+<script>
+  function initTheme() {
+    const savedTheme = localStorage.getItem("TimerApp_Theme") || "light";
+    document.documentElement.setAttribute("data-theme", savedTheme);
+    document.getElementById("themeToggle").textContent = savedTheme === "dark" ? "☀️" : "🌙";
+  }
+  function toggleTheme() {
+    const currentTheme = document.documentElement.getAttribute("data-theme");
+    const newTheme = currentTheme === "dark" ? "light" : "dark";
+    document.documentElement.setAttribute("data-theme", newTheme);
+    document.getElementById("themeToggle").textContent = newTheme === "dark" ? "☀️" : "🌙";
+    localStorage.setItem("TimerApp_Theme", newTheme);
+  }
+  initTheme();
+
+  const STORAGE_KEY = "TimerApp_Dynamic_V8"; 
+  let currentFsArea = null; 
+  let popupWin = null;      
+  
+  // GLOBAL HABER SAYACI: ID'lerin benzersiz olmasını ve sıralamanın bozulmamasını sağlar
+  let globalNewsCounter = 1;
+
+  function toSecondsMMSS(v) {
+    if(!v || !v.includes(":")) return 0;
+    const [m,s] = v.split(":");
+    return (parseInt(m,10)||0)*60 + (parseInt(s,10)||0);
+  }
+
+  function fromSecondsMMSS(sec) {
+    sec = Math.max(0, sec);
+    return `${String(Math.floor(sec/60)).padStart(2,"0")}:${String(sec%60).padStart(2,"0")}`;
+  }
+  
+  function secondsToHMS(sec) {
+    sec = ((sec % 86400) + 86400) % 86400; 
+    const h = Math.floor(sec / 3600);
+    const m = Math.floor((sec % 3600) / 60);
+    const s = sec % 60;
+    return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+  }
+
+  function autoFormatMMSS(v) {
+    v = v.replace(/\D/g,"");
+    if(!v) return "";
+    if(v.length <= 2) return `00:${v.padStart(2,"0")}`; 
+    let m = parseInt(v.slice(0,-2),10) || 0, s = parseInt(v.slice(-2),10) || 0;
+    m += Math.floor(s/60); s = s % 60;
+    return `${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
+  }
+
+  function formatTargetTime(v) {
+    v = v.replace(/\D/g, "");
+    if (v.length >= 6) return `${v.slice(0, 2)}:${v.slice(2, 4)}:${v.slice(4, 6)}`;
+    if (v.length >= 4) return `${v.slice(0, 2)}:${v.slice(2, 4)}:00`;
+    if (v.length >= 2) return `${v.padStart(2, "0")}:00:00`;
+    return v;
+  }
+
+  function calculateTotals() {
+    const blocks = Array.from(document.querySelectorAll('.block-card'));
+    const nowS = new Date().getHours()*3600 + new Date().getMinutes()*60 + new Date().getSeconds();
+    
+    const adSummaries = [];
+    blocks.forEach((block, index) => {
+      if (index > 0) {
+        let v = block.querySelector('.ad-input').value;
+        if (v.trim() !== "") adSummaries.push(`${index}. Reklam: ${v}`);
+      }
+    });
+
+    let runningTimeSec = nowS;
+    const blockStats = [];
+
+    blocks.forEach((block, index) => {
+      const targetInputEl = block.querySelector('.target-input');
+      const adInputEl = block.querySelector('.ad-input');
+      const adSummaryEl = block.querySelector('.ad-summary-display');
+      const timeInputs = block.querySelectorAll('.time-input');
+      
+      let newsSumSec = 0;
+      timeInputs.forEach(inp => newsSumSec += toSecondsMMSS(inp.value));
+      
+      let adSec = 0;
+
+      if (index === 0) {
+        adInputEl.style.display = 'none';
+        adSummaryEl.style.display = 'flex';
+        if(adSummaries.length > 0) {
+            adSummaryEl.innerHTML = adSummaries.map(s => `<div>${s}</div>`).join('');
+        } else {
+            adSummaryEl.innerHTML = `<div style="opacity:0.5; font-size:12px; font-weight:700;">SONRAKİ REKLAMLAR BURADA LİSTELENİR</div>`;
+        }
+        adSec = 0; 
+      } else {
+        adInputEl.style.display = 'block';
+        adSummaryEl.style.display = 'none';
+        adSec = toSecondsMMSS(adInputEl.value);
+      }
+      
+      runningTimeSec += newsSumSec + adSec;
+      blockStats.push({ block, targetInputEl, newsSumSec, adSec, estEndSec: runningTimeSec });
+    });
+
+    let inheritedTargetSec = null;
+
+    for (let i = blockStats.length - 1; i >= 0; i--) {
+      const stat = blockStats[i];
+      const block = stat.block;
+      
+      block.querySelector('.news-sum-val').textContent = stat.newsSumSec > 0 ? fromSecondsMMSS(stat.newsSumSec) : "00:00";
+
+      let blockAdEntrySec = null;
+
+      if (i === blockStats.length - 1) {
+        const targetValRaw = stat.targetInputEl.value.replace(/\D/g, "");
+        if (targetValRaw.length >= 4) {
+          const targetSec = parseInt(targetValRaw.slice(0,2)) * 3600 + parseInt(targetValRaw.slice(2,4)) * 60 + (targetValRaw.length >= 6 ? parseInt(targetValRaw.slice(4,6)) : 0);
+          blockAdEntrySec = targetSec - stat.newsSumSec - stat.adSec;
+        }
+      } else {
+        if (inheritedTargetSec !== null) {
+          blockAdEntrySec = inheritedTargetSec - stat.newsSumSec - stat.adSec;
+        }
+      }
+
+      inheritedTargetSec = blockAdEntrySec; 
+
+      if (blockAdEntrySec !== null) {
+         block.querySelector('.ad-entry-val').textContent = secondsToHMS(blockAdEntrySec);
+      } else {
+         block.querySelector('.ad-entry-val').textContent = "—:—";
+      }
+
+      let targetSecForFark = null;
+      
+      if (i === blockStats.length - 1) {
+         const targetValRaw = stat.targetInputEl.value.replace(/\D/g, "");
+         if (targetValRaw.length >= 4) {
+             targetSecForFark = parseInt(targetValRaw.slice(0,2)) * 3600 + parseInt(targetValRaw.slice(2,4)) * 60 + (targetValRaw.length >= 6 ? parseInt(targetValRaw.slice(4,6)) : 0);
+         }
+      } else {
+         if (stat.targetInputEl.classList.contains('is-manual') && stat.targetInputEl.value.trim() !== "") {
+             const targetValRaw = stat.targetInputEl.value.replace(/\D/g, "");
+             if (targetValRaw.length >= 4) {
+                 targetSecForFark = parseInt(targetValRaw.slice(0,2)) * 3600 + parseInt(targetValRaw.slice(2,4)) * 60 + (targetValRaw.length >= 6 ? parseInt(targetValRaw.slice(4,6)) : 0);
+             }
+         } else {
+             if (blockAdEntrySec !== null) {
+                 targetSecForFark = blockAdEntrySec - 60; 
+                 if(document.activeElement !== stat.targetInputEl) {
+                     stat.targetInputEl.value = secondsToHMS(targetSecForFark);
+                 }
+             } else {
+                 if(document.activeElement !== stat.targetInputEl) {
+                     stat.targetInputEl.value = "";
+                 }
+             }
+         }
+      }
+
+      if (targetSecForFark !== null) {
+          const diffSec = targetSecForFark - stat.estEndSec;
+          const diffText = fromSecondsMMSS(Math.abs(diffSec));
+          const isOk = diffSec >= 0;
+          
+          const diffPill = block.querySelector('.diff-pill');
+          block.querySelector('.diff-val').textContent = diffText;
+          diffPill.className = `comment-pill diff-pill ${isOk ? 'status-ok' : 'status-bad'}`;
+
+          const blockId = block.getAttribute('data-id');
+          if (popupWin && !popupWin.closed && popupWin.areaNum === blockId) {
+              popupWin.document.getElementById("time").textContent = diffText;
+              popupWin.document.body.className = isOk ? "ok" : "bad";
+          }
+          if (currentFsArea === blockId) {
+              document.getElementById("fsTime").textContent = diffText;
+              const overlay = document.getElementById("fsOverlay");
+              overlay.className = isOk ? "ok" : "bad";
+          }
+      } else {
+          block.querySelector('.diff-val').textContent = "—:—";
+          block.querySelector('.diff-pill').className = "comment-pill diff-pill";
+          const blockId = block.getAttribute('data-id');
+          if (popupWin && !popupWin.closed && popupWin.areaNum === blockId) {
+              popupWin.document.getElementById("time").textContent = "—:—";
+              popupWin.document.body.className = "";
+          }
+          if (currentFsArea === blockId) {
+              document.getElementById("fsTime").textContent = "—:—";
+              document.getElementById("fsOverlay").className = "";
+          }
+      }
+    }
+  }
+
+  function updateFilledState(inp) { 
+    if(inp.value && inp.value.trim() !== "") inp.classList.add("filled"); 
+    else inp.classList.remove("filled"); 
+  }
+
+  function handleInputEvents(inp) {
+    inp.addEventListener("focus", () => setTimeout(() => inp.select(), 0));
+    inp.addEventListener("click", () => setTimeout(() => inp.select(), 0));
+
+    inp.addEventListener("keydown", function(e) {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        this.value = autoFormatMMSS(this.value);
+        updateFilledState(this); calculateTotals(); saveData(); 
+        const allInputs = Array.from(document.querySelectorAll('.time-input'));
+        const currentIndex = allInputs.indexOf(this);
+        if (currentIndex !== -1 && currentIndex < allInputs.length - 1) { 
+            allInputs[currentIndex + 1].focus(); 
+        } else {
+            this.blur();
+        }
+      }
+    });
+
+    inp.addEventListener("input", function() {
+      let v = this.value.replace(/\D/g, "");
+      if(v.length === 4) {
+        this.value = autoFormatMMSS(v);
+        updateFilledState(this); calculateTotals(); saveData(); 
+        const allInputs = Array.from(document.querySelectorAll('.time-input'));
+        const currentIndex = allInputs.indexOf(this);
+        if (currentIndex !== -1 && currentIndex < allInputs.length - 1) { allInputs[currentIndex + 1].focus(); }
+      } else if (v.length > 4) {
+        this.value = autoFormatMMSS(v.slice(0, 4));
+      }
+      updateFilledState(this); calculateTotals(); saveData(); 
+    });
+
+    inp.addEventListener("blur", function() {
+      if(this.value) this.value = autoFormatMMSS(this.value);
+      updateFilledState(this); calculateTotals(); saveData();
+    });
+
+    inp.addEventListener("paste", function() {
+      setTimeout(() => { updateFilledState(this); calculateTotals(); saveData(); }, 50);
+    });
+  }
+
+  function appendRowToBlock(blockId, valObj = "") {
+    const listContainer = document.getElementById(`list-${blockId}`);
+    const row = document.createElement("div");
+    row.className = "row";
+    
+    let timeVal = "";
+    let rowId = globalNewsCounter;
+
+    // Yükleme sırasında eski veya yeni veriyi güvenle ayır
+    if (valObj !== "") {
+      if (typeof valObj === 'string') {
+        timeVal = valObj;
+      } else {
+        timeVal = valObj.time || "";
+        rowId = valObj.id || globalNewsCounter;
+      }
+    }
+
+    // Her satır eklendiğinde global sayacı her zaman en yüksek ID'nin 1 fazlası yap
+    globalNewsCounter = Math.max(globalNewsCounter, rowId + 1);
+
+    row.innerHTML = `
+      <div class="drag-handle" title="Haberi Taşı">⋮⋮</div>
+      <div class="idx">${rowId}.</div>
+      <input class="time-input" placeholder="00:00" inputmode="numeric" value="${timeVal}">
+      <div class="row-actions">
+        <button class="icon-btn btn-clear" tabindex="-1" title="Süreyi Temizle" onclick="clearRow(this)">↺</button>
+        <button class="icon-btn btn-del" tabindex="-1" title="Haberi Sil" onclick="deleteRow(this)">✕</button>
+      </div>
+    `;
+    
+    const inp = row.querySelector("input");
+    handleInputEvents(inp);
+    if(timeVal) updateFilledState(inp);
+    listContainer.appendChild(row);
+    calculateTotals(); saveData();
+  }
+
+  // SÜREYİ SIFIRLAMA (TEMİZLE) FONKSİYONU
+  function clearRow(btnEl) {
+    const inp = btnEl.closest('.row').querySelector('.time-input');
+    inp.value = "";
+    updateFilledState(inp);
+    calculateTotals();
+    saveData();
+    inp.focus(); // Temizledikten sonra içine yazabilmen için odaklar
+  }
+
+  function deleteRow(btnEl) {
+    btnEl.closest('.row').remove();
+    // NOT: Sürükle bırak veya silme sonrası artık "updateGlobalRowIndices" çalışmıyor.
+    // Böylece kimlik numaraları (1, 2, 3...) asılı kalır ve reji düzeni bozulmaz.
+    calculateTotals(); saveData();
+  }
+
+  function buildBlockHTML(id, targetVal = "", adVal = "") {
+    return `
+    <div class="block-card" id="block-${id}" data-id="${id}">
+      <button class="del-block-btn" onclick="removeBlock('${id}')" title="Bu Reklam Bölümünü Sil">✕</button>
+      
+      <div class="block-header">
+        <div class="block-inputs">
+          <input type="text" class="manual-input target-input" placeholder="HEDEF SAAT" title="Otomatik hesaplanır. Manuel de değiştirebilirsiniz." inputmode="numeric" value="${targetVal}">
+          <input type="text" class="manual-input input-ad ad-input" placeholder="REKLAM SÜRESİ" inputmode="numeric" value="${adVal}">
+          <div class="ad-summary-display"></div>
+        </div>
+        
+        <div class="block-outputs">
+          <div class="comment-pill" style="background: var(--filled-bg); border-color: var(--filled-bg); color: var(--filled-text);">
+            <div class="mini-label" style="color: rgba(255,255,255,0.7);">HABER TOPLAMI</div>
+            <span class="val-text news-sum-val">—:—</span>
+          </div>
+
+          <div class="comment-pill status-warning">
+            <div class="mini-label">REKLAMA GİRİŞ</div>
+            <span class="val-text ad-entry-val">—:—</span>
+          </div>
+          
+          <div class="comment-pill diff-pill">
+            <button class="fs-btn" onclick="openFS('${id}')" title="Tam Ekran Yap">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path></svg>
+            </button>
+            <div class="mini-label">FARK (YORUM)</div>
+            <span class="diff-val-text diff-val">—:—</span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="list" id="list-${id}"></div>
+      <button class="add-row-btn" onclick="appendRowToBlock('${id}')">➕ Bu Bölüme Haber Ekle</button>
+    </div>
+    `;
+  }
+
+  function addNewBlock(data = null) {
+    const id = data && data.id ? data.id : "b_" + Date.now().toString(36);
+    const targetVal = data ? data.target : "";
+    const adVal = data ? data.ad : "";
+    const isTargetManual = data && data.isTargetManual === true;
+
+    let newsArr = [];
+    if (data && data.news && data.news.length > 0) {
+      newsArr = data.news;
+    } else {
+      const rowCount = parseInt(document.getElementById("defaultRowCount").value) || 13;
+      newsArr = Array(rowCount).fill("");
+    }
+
+    document.getElementById("blocksContainer").insertAdjacentHTML('beforeend', buildBlockHTML(id, targetVal, adVal));
+    const blockEl = document.getElementById(`block-${id}`);
+    
+    const targetInp = blockEl.querySelector('.target-input');
+    const adInp = blockEl.querySelector('.ad-input');
+
+    if (isTargetManual) { targetInp.classList.add('is-manual'); }
+
+    targetInp.addEventListener("input", function() {
+      this.classList.add('is-manual');
+      if (this.value.trim() === "") { this.classList.remove('is-manual'); }
+      calculateTotals(); saveData();
+    });
+
+    [targetInp, adInp].forEach(inp => {
+      inp.addEventListener("focus", () => setTimeout(() => inp.select(), 0));
+      inp.addEventListener("click", () => setTimeout(() => inp.select(), 0));
+      inp.addEventListener("keydown", function(e) { if (e.key === "Enter") this.blur(); });
+    });
+
+    targetInp.addEventListener("blur", function() { if (this.value) this.value = formatTargetTime(this.value); calculateTotals(); saveData(); });
+    adInp.addEventListener("input", function() { calculateTotals(); saveData(); });
+    adInp.addEventListener("blur", function() { if (this.value) this.value = autoFormatMMSS(this.value); calculateTotals(); saveData(); });
+
+    newsArr.forEach(val => appendRowToBlock(id, val));
+
+    new Sortable(document.getElementById(`list-${id}`), {
+      group: 'sharedNews', animation: 150, handle: '.drag-handle',
+      onEnd: function() { calculateTotals(); saveData(); }
+    });
+
+    calculateTotals(); saveData();
+  }
+
+  function removeBlock(id) {
+    if(confirm("Bu reklam bölümünü ve içindeki haberleri silmek istediğinize emin misiniz?")) {
+      document.getElementById(`block-${id}`).remove();
+      calculateTotals(); saveData();
+      if(document.querySelectorAll('.block-card').length === 0) addNewBlock();
+    }
+  }
+
+  function saveData() {
+    const blocks = Array.from(document.querySelectorAll('.block-card')).map(block => ({
+      id: block.getAttribute('data-id'), 
+      target: block.querySelector('.target-input').value,
+      isTargetManual: block.querySelector('.target-input').classList.contains('is-manual'),
+      ad: block.querySelector('.ad-input').value, 
+      news: Array.from(block.querySelectorAll('.row')).map(row => ({
+         time: row.querySelector('.time-input').value,
+         id: parseInt(row.querySelector('.idx').textContent)
+      }))
+    }));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(blocks));
+  }
+
+  function loadData() {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      try {
+        const blocks = JSON.parse(raw);
+        if (blocks && blocks.length > 0) { blocks.forEach(bData => addNewBlock(bData)); return; }
+      } catch(e) { console.error("Kayıt okuma hatası", e); }
+    }
+    addNewBlock();
+  }
+
+  function openFS(blockId) {
+    if (window.innerWidth > 900) {
+      if (popupWin && !popupWin.closed) { popupWin.areaNum = blockId; popupWin.focus(); } else {
+        let w = 600, h = 400, left = (screen.width - w) / 2, top = (screen.height - h) / 2;
+        popupWin = window.open("", "TimerPopup", `width=${w},height=${h},top=${top},left=${left},menubar=no,toolbar=no,location=no,status=no`);
+        popupWin.areaNum = blockId;
+        popupWin.document.write(`<!DOCTYPE html><html><head><title>Süre (Blok)</title><style>body { margin: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; font-family: 'Inter', sans-serif; transition: background 0.3s; background: #1e293b; color: #fff; } body.ok { background-color: #1b5e20; } body.bad { background-color: #ef4444; } #time { font-size: 25vw; font-weight: 900; font-variant-numeric: tabular-nums; line-height: 1; text-shadow: 0 10px 30px rgba(0,0,0,0.2); }</style></head><body class=""><div id="time">—:—</div></body></html>`);
+        popupWin.document.close(); popupWin.onbeforeunload = () => { popupWin = null; };
+      }
+      calculateTotals();
+    } else {
+      currentFsArea = blockId; document.getElementById('fsOverlay').classList.remove('hidden'); calculateTotals();
+      const elem = document.documentElement;
+      if (elem.requestFullscreen) { elem.requestFullscreen().catch(err=>{}); } else if (elem.webkitRequestFullscreen) { elem.webkitRequestFullscreen(); } else if (elem.msRequestFullscreen) { elem.msRequestFullscreen(); }
+    }
+  }
+
+  function closeFS() {
+    currentFsArea = null; document.getElementById('fsOverlay').classList.add('hidden');
+    if (document.fullscreenElement) { document.exitFullscreen().catch(e=>{}); }
+  }
+
+  window.addEventListener("beforeunload", saveData);
+  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden") saveData(); });
+
+  loadData();
+  setInterval(calculateTotals, 1000);
+</script>
+</body>
+</html>
