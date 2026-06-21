@@ -40,11 +40,18 @@
     overflow-x: hidden; transition: background-color 0.3s, color 0.3s;
   }
   
+  /* ŞIK KAYDIRMA ÇUBUĞU (SCROLLBAR) TASARIMI */
+  ::-webkit-scrollbar { width: 8px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
   /* BLOK (REKLAM BÖLÜMÜ) TASARIMI */
   #blocksContainer { display: flex; flex-direction: column; gap: 25px; }
   
-  .block-card { background: var(--card); border-radius: 20px; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.04); border: 2px solid var(--border); transition: background-color 0.3s; position: relative; }
+  .block-card { background: var(--card); border-radius: 20px; padding: 20px 20px 10px 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.04); border: 2px solid var(--border); transition: background-color 0.3s; position: relative; }
   
+  .block-header-wrapper { padding-bottom: 10px; }
   .block-header { display: flex; gap: 15px; align-items: stretch; flex-wrap: wrap; margin-bottom: 5px; }
   .block-inputs { flex: 1; min-width: 200px; display: flex; flex-direction: column; gap: 10px; }
   .block-outputs { flex: 2; min-width: 300px; display: flex; gap: 10px; }
@@ -75,8 +82,16 @@
   }
   .ad-summary-display div { line-height: 1.3; }
 
-  /* HABER LİSTESİ TASARIMI */
-  .list { margin-top: 10px; border-top: 2px solid var(--border); padding-top: 10px; min-height: 20px; }
+  /* HABER LİSTESİ (KAYDIRILABİLİR ALAN) TASARIMI */
+  .list { 
+    margin-top: 5px; 
+    border-top: 2px solid var(--border); 
+    padding-top: 10px; 
+    min-height: 20px; 
+    max-height: 45vh; /* EKRANA GÖRE LİSTEYİ SINIRLAR VE KAYDIRMA ÇUBUĞU ÇIKARIR */
+    overflow-y: auto; 
+    padding-right: 5px;
+  }
   .row { display: flex; align-items: center; gap: 8px; padding: 6px 5px; border-bottom: 1px dashed var(--border); background: var(--row-bg); transition: background-color 0.3s; border-radius: 8px; }
   .row:hover { background: var(--bg); }
   
@@ -99,7 +114,7 @@
   .btn-del:hover { background: var(--danger); color: #fff; border-color: var(--danger); }
 
   /* EYLEM BUTONLARI */
-  .add-row-btn { width: 100%; padding: 12px; margin-top: 10px; border-radius: 12px; border: 2px dashed var(--border); background: transparent; color: var(--text-muted); font-weight: 800; font-size: 16px; cursor: pointer; transition: all 0.2s; }
+  .add-row-btn { width: 100%; padding: 12px; margin-top: 10px; margin-bottom: 5px; border-radius: 12px; border: 2px dashed var(--border); background: transparent; color: var(--text-muted); font-weight: 800; font-size: 16px; cursor: pointer; transition: all 0.2s; }
   .add-row-btn:hover { border-color: var(--accent); color: var(--accent); background: rgba(37,99,235,0.05); }
 
   .del-block-btn { position: absolute; top: -15px; right: -10px; width: 34px; height: 34px; border-radius: 50%; background: var(--danger); color: #fff; border: 4px solid var(--bg); font-weight: 900; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; opacity: 0.3; transition: all 0.2s; z-index: 10; }
@@ -138,6 +153,7 @@
     .block-outputs { flex-direction: column; min-width: 100%; }
     .val-text { font-size: 28px; }
     .diff-val-text { font-size: 38px; }
+    .list { max-height: 50vh; }
   }
 </style>
 </head>
@@ -176,11 +192,10 @@
   }
   initTheme();
 
-  const STORAGE_KEY = "TimerApp_Dynamic_V8"; 
+  const STORAGE_KEY = "TimerApp_Dynamic_V9"; 
   let currentFsArea = null; 
   let popupWin = null;      
   
-  // GLOBAL HABER SAYACI: ID'lerin benzersiz olmasını ve sıralamanın bozulmamasını sağlar
   let globalNewsCounter = 1;
 
   function toSecondsMMSS(v) {
@@ -412,7 +427,6 @@
     let timeVal = "";
     let rowId = globalNewsCounter;
 
-    // Yükleme sırasında eski veya yeni veriyi güvenle ayır
     if (valObj !== "") {
       if (typeof valObj === 'string') {
         timeVal = valObj;
@@ -422,7 +436,6 @@
       }
     }
 
-    // Her satır eklendiğinde global sayacı her zaman en yüksek ID'nin 1 fazlası yap
     globalNewsCounter = Math.max(globalNewsCounter, rowId + 1);
 
     row.innerHTML = `
@@ -442,20 +455,17 @@
     calculateTotals(); saveData();
   }
 
-  // SÜREYİ SIFIRLAMA (TEMİZLE) FONKSİYONU
   function clearRow(btnEl) {
     const inp = btnEl.closest('.row').querySelector('.time-input');
     inp.value = "";
     updateFilledState(inp);
     calculateTotals();
     saveData();
-    inp.focus(); // Temizledikten sonra içine yazabilmen için odaklar
+    inp.focus(); 
   }
 
   function deleteRow(btnEl) {
     btnEl.closest('.row').remove();
-    // NOT: Sürükle bırak veya silme sonrası artık "updateGlobalRowIndices" çalışmıyor.
-    // Böylece kimlik numaraları (1, 2, 3...) asılı kalır ve reji düzeni bozulmaz.
     calculateTotals(); saveData();
   }
 
@@ -464,32 +474,34 @@
     <div class="block-card" id="block-${id}" data-id="${id}">
       <button class="del-block-btn" onclick="removeBlock('${id}')" title="Bu Reklam Bölümünü Sil">✕</button>
       
-      <div class="block-header">
-        <div class="block-inputs">
-          <input type="text" class="manual-input target-input" placeholder="HEDEF SAAT" title="Otomatik hesaplanır. Manuel de değiştirebilirsiniz." inputmode="numeric" value="${targetVal}">
-          <input type="text" class="manual-input input-ad ad-input" placeholder="REKLAM SÜRESİ" inputmode="numeric" value="${adVal}">
-          <div class="ad-summary-display"></div>
-        </div>
-        
-        <div class="block-outputs">
-          <div class="comment-pill" style="background: var(--filled-bg); border-color: var(--filled-bg); color: var(--filled-text);">
-            <div class="mini-label" style="color: rgba(255,255,255,0.7);">HABER TOPLAMI</div>
-            <span class="val-text news-sum-val">—:—</span>
-          </div>
+      <div class="block-header-wrapper">
+          <div class="block-header">
+            <div class="block-inputs">
+              <input type="text" class="manual-input target-input" placeholder="HEDEF SAAT" title="Otomatik hesaplanır. Manuel de değiştirebilirsiniz." inputmode="numeric" value="${targetVal}">
+              <input type="text" class="manual-input input-ad ad-input" placeholder="REKLAM SÜRESİ" inputmode="numeric" value="${adVal}">
+              <div class="ad-summary-display"></div>
+            </div>
+            
+            <div class="block-outputs">
+              <div class="comment-pill" style="background: var(--filled-bg); border-color: var(--filled-bg); color: var(--filled-text);">
+                <div class="mini-label" style="color: rgba(255,255,255,0.7);">HABER TOPLAMI</div>
+                <span class="val-text news-sum-val">—:—</span>
+              </div>
 
-          <div class="comment-pill status-warning">
-            <div class="mini-label">REKLAMA GİRİŞ</div>
-            <span class="val-text ad-entry-val">—:—</span>
+              <div class="comment-pill status-warning">
+                <div class="mini-label">REKLAMA GİRİŞ</div>
+                <span class="val-text ad-entry-val">—:—</span>
+              </div>
+              
+              <div class="comment-pill diff-pill">
+                <button class="fs-btn" onclick="openFS('${id}')" title="Tam Ekran Yap">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path></svg>
+                </button>
+                <div class="mini-label">FARK (YORUM)</div>
+                <span class="diff-val-text diff-val">—:—</span>
+              </div>
+            </div>
           </div>
-          
-          <div class="comment-pill diff-pill">
-            <button class="fs-btn" onclick="openFS('${id}')" title="Tam Ekran Yap">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path></svg>
-            </button>
-            <div class="mini-label">FARK (YORUM)</div>
-            <span class="diff-val-text diff-val">—:—</span>
-          </div>
-        </div>
       </div>
       
       <div class="list" id="list-${id}"></div>
@@ -539,7 +551,7 @@
     newsArr.forEach(val => appendRowToBlock(id, val));
 
     new Sortable(document.getElementById(`list-${id}`), {
-      group: 'sharedNews', animation: 150, handle: '.drag-handle',
+      group: 'sharedNews', animation: 150, handle: '.drag-handle', scroll: true,
       onEnd: function() { calculateTotals(); saveData(); }
     });
 
